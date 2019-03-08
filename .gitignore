@@ -1,2 +1,4 @@
 data/hcp_docs
 *~
+notebooks/
+.idea

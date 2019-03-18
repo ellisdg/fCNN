@@ -2,3 +2,4 @@ data/hcp_docs
 *~
 notebooks/
 .idea
+.DS_Store

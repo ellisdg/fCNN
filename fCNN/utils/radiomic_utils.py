@@ -4,13 +4,11 @@ from itertools import chain
 from multiprocessing import Pool, Manager, Process
 from functools import partial
 import os
-import sys
 from nipype.interfaces.freesurfer import MRIConvert
 from nipype.interfaces.semtools import BRAINSFit
 from nilearn.image import reorder_img, resample_to_img
 import matplotlib.pyplot as plt
 
-sys.path.append('/home/neuro-user/PycharmProjects/BRATS')
 from unet3d.utils.utils import *
 from unet3d.utils.sitk_utils import *
 from unet3d.utils.nilearn_custom_utils.nilearn_utils import *

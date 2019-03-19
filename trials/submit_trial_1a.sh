@@ -10,7 +10,6 @@
 #SBATCH --output=/work/aizenberg/dgellis/job.%J.out
 
 module load cuda
-module load keras-gpu
 module load anaconda
 source activate fcnn
 

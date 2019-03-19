@@ -9,6 +9,7 @@
 #SBATCH --error=/work/aizenberg/dgellis/fCNN/logs/job.%J.err
 #SBATCH --output=/work/aizenberg/dgellis/fCNN/logs/job.%J.out
 
+module load cuda
 module load anaconda
 source activate fcnn
 

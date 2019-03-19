@@ -103,7 +103,7 @@ class HCPRegressionSequence(SingleSiteSequence):
             # vertices should be shape (n_vertices, 3)
             # enforce correct left/right ordering of vertex data
             vertices = np.concatenate([extract_gifti_surface_vertices(surface,
-                                                                      anatomical_structure_primary=surface_name)
+                                                                      primary_anatomical_structure=surface_name)
                                        for surface, surface_name in zip(surfaces, self.surface_names)],
                                       axis=0)
 

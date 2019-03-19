@@ -1,82 +1,16 @@
-import SimpleITK as sitk
 import numpy as np
-from itertools import chain
 from multiprocessing import Pool, Manager, Process
 from functools import partial
 import os
-from nipype.interfaces.freesurfer import MRIConvert
-from nipype.interfaces.semtools import BRAINSFit
 from nilearn.image import reorder_img, resample_to_img
 import matplotlib.pyplot as plt
+import nibabel as nib
 
-from unet3d.utils.utils import *
-from unet3d.utils.sitk_utils import *
-from unet3d.utils.nilearn_custom_utils.nilearn_utils import *
+from unet3d.utils.utils import update_progress
 from unet3d.normalize import normalize_data as unet3d_normalize
 from unet3d.data import resample as unet3d_resample
 from unet3d.data import move_channels_first, move_channels_last
 from unet3d.augment import permute_data, random_permutation_key
-import sqlite3
-
-
-def load_db(db_file):
-    return sqlite3.connect(db_file)
-
-
-def logical_and(array_list):
-    array = array_list[0]
-    for other_array in array_list[1:]:
-        array = np.logical_and(array, other_array)
-    return array
-
-
-def logical_or(array_list):
-    array = array_list[0]
-    for other_array in array_list[1:]:
-        array = np.logical_or(array, other_array)
-    return array
-
-
-def load_point_categories(dataframe, db_file):
-    db_connection = load_db(db_file)
-    categories = list()
-    db_cursor = db_connection.cursor()
-    for row_index, row in dataframe.iterrows():
-        point_name = row['point_name']
-        if 'negative' in point_name.lower():
-            category = 'N'
-        else:
-            category = get_point_category_from_cursor(db_cursor, point_name, row['subject_id'],
-                                          row['surgery_id'])
-        categories.append(category)
-    return np.asarray(categories)
-
-
-def get_point_category_from_cursor(db_cursor, point_name, subject_id, surgery_id):
-    cmd = ("SELECT Point.category FROM Point,PointSet,Surgery,Subject "
-           "WHERE Point.point_set_id=PointSet.id "
-           "AND Point.category is not NULL "
-           "AND PointSet.surgery_id=Surgery.id "
-           "AND Surgery.subject_id=Subject.id "
-           "AND Surgery.name='{surgery_id:02d}' "
-           "AND Subject.id={subject_id} "
-           "AND Point.name='{point_name}'".format(subject_id=subject_id,
-                                                  surgery_id=surgery_id,
-                                                  point_name=point_name))
-    db_cursor.execute(cmd)
-    results = db_cursor.fetchall()
-    assert len(results) == 1
-    return results[0][0]
-
-
-def get_point_category(point_name, subject_id, surgery_id, 
-                       db_file="/home/neuro-user/Data/SQL/mappingdb.sqlite"):
-    if 'negative' in point_name.lower():
-        return 'N'
-    with sqlite3.connect(db_file) as db_connection:
-        cursor = db_connection.cursor()
-        return get_point_category_from_cursor(db_cursor=cursor, point_name=point_name, subject_id=subject_id,
-                                              surgery_id=surgery_id)
 
     
 def compute_affine_from_point(point, window, spacing):
@@ -104,85 +38,6 @@ def fetch_data_for_point(point, image, window, flip=False, interpolation='linear
     return image_data
 
 
-def compute_feature_images(image, feature_names):
-    feature_images = list()
-    for feature_image, feature_name, feature_args in get_feature_generators(image, feature_names):
-        feature_images.append(feature_image)
-    return feature_images
-
-
-def get_feature_generators(image, feature_names):
-    image_generators = []
-    for feature_name in feature_names:
-        image_generators = chain(image_generators, getattr(imageoperations, 'get{}Image'.format(feature_name))(image, None))
-    return image_generators
-
-
-def write_feature_images(image, output_directory):
-    config = load_config()
-    for feature_image, feature_name, feature_args in get_feature_generators(image, config["feature_images"]):
-        image_filename = os.path.join(output_directory, feature_name + ".nii.gz")
-        sitk.WriteImage(feature_image, image_filename)
-
-        
-def compute_features_from_index(index, results, brainmask, images, mask_radius, extractor):
-    mask = sitk.Cast(brainmask != brainmask, sitk.sitkUInt8)
-    mask.SetPixel(*index, 1)
-    dilated_mask = sitk.BinaryDilate(mask, mask_radius)
-    masked_mask = sitk.Mask(dilated_mask, brainmask)
-    sitk.WriteImage(masked_mask, 'test.nii.gz')
-
-    for image_type in images:
-        # compute features
-        for feature_name, image in images[image_type].items():
-            _features = extractor.computeFeatures(image=image, 
-                                                  mask=masked_mask, 
-                                                  imageTypeName=feature_name)
-            for key, value in _features.items():
-                results_key = "_".join((image_type, feature_name, key))
-                if results_key not in results:
-                    results[results_key] = list()
-                results[results_key].append(value)
-
-                
-def resample(in_file, ref_file, out_file, interpolator=sitk.sitkLinear):
-    image = sitk_resample_to_image(image=sitk.ReadImage(in_file), 
-                                   reference_image=sitk.ReadImage(ref_file),
-                                   interpolator=interpolator)
-    return sitk.WriteImage(image, out_file)
-
-
-def multilabel_dilation(img, radius=1, kernel=sitk.BinaryDilateImageFilter.Ball):
-    distImg = sitk.SignedMaurerDistanceMap(img != 0, insideIsPositive=False, squaredDistance=False,
-                                           useImageSpacing=False)
-    dilatImg = sitk.BinaryDilate(img != 0, radius, kernel)
-    wsImg = sitk.MorphologicalWatershedFromMarkers(distImg, img, markWatershedLine=False)
-    return sitk.Cast(wsImg, img.GetPixelID()) * sitk.Cast(dilatImg, img.GetPixelID())
-
-
-def watershed(labelmap):
-    distImg = sitk.SignedMaurerDistanceMap(labelmap != 0, insideIsPositive=False, squaredDistance=False,
-                                           useImageSpacing=False)
-    wsImg = sitk.MorphologicalWatershedFromMarkers(distImg, labelmap, markWatershedLine=False)
-    return wsImg
-
-
-def watershed_mask(mask, labelmap):
-    return watershed(labelmap) * mask
-
-    
-def convert(in_file, out_file):
-    return MRIConvert(in_file=in_file, out_file=out_file).run()
-
-
-def correct_bias(in_file, out_file):
-    return N4BiasFieldCorrection(input_image=in_file, output_image=out_file).run()
-
-
-def register(in_file, ref_file, out_file, **kwargs):
-    return BRAINSFit(movingVolume=in_file, fixedVolume=ref_file, outputVolume=out_file, **kwargs).run()
-
-
 def window_data(data, lower_percentile=None, upper_percentile=99):
     data = np.copy(data)
     if lower_percentile:
@@ -201,21 +56,6 @@ def normalize(in_file, out_file):
     data = np.subtract(data, mean)
     data = np.divide(data, std)
     image.__class__(data, image.affine).to_filename(out_file)
-
-
-def apply_mask(image_file, mask_file, out_file):
-    image = sitk.ReadImage(image_file)
-    mask = sitk.ReadImage(mask_file)
-    masked_image = sitk.Mask(image, mask)
-    sitk.WriteImage(masked_image, out_file)
-
-    
-def load_extractor(config_filename='config.json'):
-    _config = load_config(config_filename)
-    extractor = RadiomicsFeaturesExtractor()
-    extractor.disableAllFeatures()
-    extractor.enableFeaturesByName(**_config['features'])
-    return extractor
 
 
 def get_points_from_surgery(surgery, name="labeled_points"):

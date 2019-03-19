@@ -20,4 +20,4 @@ LOG=/work/aizenberg/dgellis/fCNN/log_${TRIAL}.csv
 
 export PYTHONPATH=/home/aizenberg/dgellis/3DUNetCNN:$PYTHONPATH
 
-python /home/aizenberg/dgellis/fCNN/trials/run_trial.py ${CONFIG} ${MODEL} ${LOG} {$HCC_CONFIG}
+python /home/aizenberg/dgellis/fCNN/trials/run_trial.py ${CONFIG} ${MODEL} ${LOG} ${HCC_CONFIG}

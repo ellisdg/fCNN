@@ -86,9 +86,10 @@ class MultiScannerSequence(SingleSiteSequence):
 
 
 class HCPRegressionSequence(SingleSiteSequence):
-    def __init__(self, filenames, batch_size, target_labels, window, spacing, metric_names, classification=None,
+    def __init__(self, filenames, batch_size, window, spacing, metric_names, classification=None,
                  surface_names=('CortexLeft', 'CortexRight'), **kwargs):
-        super().__init__(filenames, batch_size, target_labels, window, spacing, classification=classification, **kwargs)
+        super().__init__(filenames, batch_size, target_labels=tuple(), window=window, spacing=spacing,
+                         classification=classification, **kwargs)
         self.metric_names = metric_names
         self.surface_names = surface_names
 
@@ -111,7 +112,7 @@ class HCPRegressionSequence(SingleSiteSequence):
             metrics = nib_load_files(metric_filenames)
             for surface_name, metric in zip(self.surface_names, metrics):
                 # enforce correct left/right ordering of metric data
-                assert metric.meta.meta['AnatomicalStructurePrimary'] == surface_name
+                assert metric.meta.metadata['AnatomicalStructurePrimary'] == surface_name
                 hemisphere_metric_data = list()
                 for metric_name in self.metric_names:
                     subject_metric_name = metric_name.format(subject_id)

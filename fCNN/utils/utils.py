@@ -6,6 +6,12 @@ import sqlite3
 import collections
 import six
 import seaborn
+import json
+
+
+def load_json(filename):
+    with open(filename, 'r') as opened_file:
+        return json.load(opened_file)
 
 
 def is_iterable(arg):

@@ -1,139 +1,75 @@
-
-# coding: utf-8
-
-# In[1]:
-
-
-import sys
-sys.path.append("/home/neuro-user/Data/REPORTS/Radiomics/")
-
-
-# In[2]:
-
-
-import pandas as pd
 import os
-import keras
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, CSVLogger
-from resnet import load_model, ResnetBuilder, sensitivity, specificity, j_stat
+from .resnet import load_model, ResnetBuilder
 import numpy as np
-from utils import load_json
-from radiomic_utils import SingleSiteSequence, load_fs_lut
+from .utils.utils import load_json
+from .utils.sequences import HCPRegressionSequence
 
 
-# # 1. Load configuration data
+def run_training(config_filename, model_filename, training_log_filename, verbose=1, use_multiprocessing=False,
+                 n_workers=1, max_queue_size=5):
+    """
+    :param verbose:
+    :param use_multiprocessing:
+    :param n_workers:
+    :param max_queue_size:
+    :param config_filename:
+    :param model_filename:
+    :param training_log_filename:
+    :return:
 
-# In[3]:
+    Anything that directly affects the training results should go into the config file. Other specifications such as
+    multiprocessing optimization should be arguments to this function, as these arguments affect the computation time,
+    but the results should not vary based on whether multiprocessing is used or not.
+    """
+    config = load_json(config_filename)
+    window = np.asarray(config['window'])
+    spacing = np.asarray(config['spacing'])
 
+    # 2. Create model
+    if os.path.exists(model_filename):
+        model = load_model(model_filename)
+    else:
+        input_shape = tuple(window.tolist() + [config['n_features']])
+        model = ResnetBuilder.build_resnet_34(input_shape, 1, activation=config['activation'])
+        model.compile(optimizer=config['optimizer'], loss=config['loss'])
 
-config_file = '/home/neuro-user/Data/REPORTS/Radiomics/12B_multiscanner_dti_training_config.json'
-resnet_config = load_json(config_file)
-training_files = resnet_config['training_files']['HCP']
-validation_files = resnet_config['validation_files']['HCP']
-window = np.asarray(resnet_config['window'])
-spacing = np.asarray(resnet_config['spacing'])
-input_shape = resnet_config['input_shape']
+    # 4. Create Generators
 
+    training_generator = HCPRegressionSequence(filenames=config['training_filenames'],
+                                               batch_size=config['batch_size'],
+                                               flip=config['flip'],
+                                               reorder=config['reorder'],
+                                               window=window,
+                                               spacing=spacing,
+                                               points_per_subject=config['points_per_subject'],
+                                               surface_names=config['surface_names'],
+                                               metric_names=config['metric_names'])
 
-# # 2. Create model
+    validation_generator = HCPRegressionSequence(filenames=config['validation_filenames'],
+                                                 batch_size=config['validation_batch_size'],
+                                                 flip=False,
+                                                 reorder=config['reorder'],
+                                                 window=window,
+                                                 spacing=spacing,
+                                                 points_per_subject=config['validation_points_per_subject'],
+                                                 surface_names=config['surface_names'],
+                                                 metric_names=config['metric_names'])
 
-# In[4]:
+    # 5. Run Training
 
-
-model_path = '../01_data/12_hcp_language_dti_model_resnet34.h5'
-if os.path.exists(model_path):
-    model = load_model(model_path)
-else:
-    input_shape = tuple(window.tolist() + [4])
-    model = ResnetBuilder.build_resnet_34(input_shape, 1, activation='sigmoid')
-    model.compile(metrics=['accuracy', sensitivity, specificity, j_stat], 
-                  optimizer='Adam', loss='binary_crossentropy')
-
-
-# # 4. Create Generators
-
-# In[4]:
-
-
-batch_size = 50
-points_per_subject = 10
-validation_points_per_subject = 75
-validation_batch_size = 75
-
-
-# In[5]:
-
-
-fs_lut = load_fs_lut()
-label_names = ["parsopercularis",
-               "parstriangularis",
-               "superiortemporal",
-               "supramarginal"]
-target_labels = list()
-for hemi in ('lh', 'rh'):
-    for label_name in label_names:
-        target_labels.append(fs_lut['ctx-{}-{}'.format(hemi, label_name)])
-target_labels = tuple(target_labels)
-
-
-# In[7]:
-
-
-training_generator = SingleSiteSequence(filenames=training_files,
-                                        batch_size=batch_size,
-                                        flip=False,
-                                        reorder=False,
-                                        window=window,
-                                        target_labels=target_labels,
-                                        spacing=spacing,
-                                        points_per_subject=points_per_subject)
-
-validation_generator = SingleSiteSequence(filenames=validation_files,
-                                          batch_size=validation_batch_size,
-                                          flip=False,
-                                          reorder=False,
-                                          window=window,
-                                          target_labels=target_labels,
-                                          spacing=spacing,
-                                          points_per_subject=validation_points_per_subject)
-
-
-# # 5. Run Training
-
-# In[32]:
-
-
-checkpointer = ModelCheckpoint(filepath=model_path,
-                               verbose=1,
-                               save_best_only=True)
-reduce_lr = ReduceLROnPlateau(monitor='val_loss', 
-                              factor=0.5,
-                              patience=20, 
-                              min_lr=1e-5)
-csv_logger = CSVLogger('../01_data/12_hcp_dti_freesurfer-labels_training_log.csv',
-                       append=True)
-history = model.fit_generator(generator=training_generator, 
-                              epochs=2000,
-                              use_multiprocessing=True,
-                              workers=10,
-                              max_queue_size=20,
-                              callbacks=[checkpointer, reduce_lr, csv_logger],
-                              validation_data=validation_generator)
-
-
-# # 6. Save configuration
-
-# In[8]:
-
-
-config = {"window": window.tolist(),
-          "spacing": spacing.tolist(),
-          "input_shape": input_shape,
-          "target_labels": target_labels,
-          "validation_files": validation_files,
-          "training_files": training_files}
-
-from utils import dump_json
-
-dump_json(config, "../01_data/12_dti_hcp_freesurfer-labels_config.json")
-
+    checkpointer = ModelCheckpoint(filepath=model_filename,
+                                   verbose=verbose,
+                                   save_best_only=config['save_best_only'])
+    reduce_lr = ReduceLROnPlateau(monitor='val_loss',
+                                  factor=config['decay_factor'],
+                                  patience=config['decay_patience'],
+                                  min_lr=config['min_learning_rate'])
+    csv_logger = CSVLogger(training_log_filename, append=True)
+    history = model.fit_generator(generator=training_generator,
+                                  epochs=config['n_epochs'],
+                                  use_multiprocessing=use_multiprocessing,
+                                  workers=n_workers,
+                                  max_queue_size=max_queue_size,
+                                  callbacks=[checkpointer, reduce_lr, csv_logger],
+                                  validation_data=validation_generator)

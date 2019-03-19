@@ -5,8 +5,7 @@ import os
 from nilearn.image import reorder_img, resample_to_img
 import matplotlib.pyplot as plt
 import nibabel as nib
-import sys
-sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "3DUnetCNN"))
+
 from unet3d.utils.utils import update_progress
 from unet3d.normalize import normalize_data as unet3d_normalize
 from unet3d.data import resample as unet3d_resample

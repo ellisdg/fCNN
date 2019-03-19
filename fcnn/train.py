@@ -31,7 +31,7 @@ def run_training(config_filename, model_filename, training_log_filename, verbose
         model = load_model(model_filename)
     else:
         input_shape = tuple(window.tolist() + [config['n_features']])
-        model = ResnetBuilder.build_resnet_34(input_shape, 1, activation=config['activation'])
+        model = ResnetBuilder.build_resnet_34(input_shape, len(config['metric_names']), activation=config['activation'])
         model.compile(optimizer=config['optimizer'], loss=config['loss'])
 
     # 4. Create Generators

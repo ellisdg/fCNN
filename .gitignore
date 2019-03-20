@@ -5,3 +5,4 @@ notebooks/
 .DS_Store
 __pycache__
 trials/trial_1a
+*#

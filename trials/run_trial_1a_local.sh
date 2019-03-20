@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-conda activate mappingdb
-
 TRIAL=trial_1a
 CONFIG=/home/neuro-user/PycharmProjects/fCNN/data/trial1_local_config.json
 HCC_CONFIG=/home/neuro-user/PycharmProjects/fCNN/data/local_config.json

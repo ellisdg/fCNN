@@ -6,3 +6,5 @@ notebooks/
 __pycache__
 *#
 *.ipynb
+trials/trial_1a
+*#

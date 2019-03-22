@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-TRIAL=trial_1a
+TRIAL=trial_3a
 CONFIG=/home/neuro-user/PycharmProjects/fCNN/data/trial1_local_config.json
 HCC_CONFIG=/home/neuro-user/PycharmProjects/fCNN/data/local_config.json
 MODEL=/home/neuro-user/PycharmProjects/fCNN/trials/${TRIAL}/model_${TRIAL}.h5

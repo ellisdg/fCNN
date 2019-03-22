@@ -1,4 +1,5 @@
 import numpy as np
+import nibabel as nib
 from keras.utils import Sequence
 
 from .radiomic_utils import binary_classification, multilabel_classification, fetch_data, pick_random_list_elements, \
@@ -135,3 +136,27 @@ class HCPRegressionSequence(SingleSiteSequence):
                 batch_x.append(x)
                 batch_y.append(y)
         return np.asarray(batch_x), np.asarray(batch_y)
+
+
+class SubjectPredictionSequence(Sequence):
+    def __init__(self, feature_filename, surface_filename, surface_name, batch_size=50, window=(64, 64, 64), flip=False,
+                 spacing=(1, 1, 1)):
+        self.feature_image = nib.load(feature_filename)
+        self.surface = nib.load(surface_filename)
+        self.vertices = extract_gifti_surface_vertices(self.surface, primary_anatomical_structure=surface_name)
+        self.batch_size = batch_size
+        self.window = window
+        self.flip = flip
+        self.spacing = spacing
+
+    def __len__(self):
+        return int(np.ceil(np.divide(len(self.vertices), self.batch_size)))
+
+    def __getitem__(self, idx):
+        batch_vertices = self.vertices[idx * self.batch_size:(idx + 1) * self.batch_size]
+        batch = [fetch_data_for_point(vertex,
+                                      self.feature_image,
+                                      window=self.window,
+                                      flip=self.flip,
+                                      spacing=self.spacing) for vertex in batch_vertices]
+        return np.asarray(batch)

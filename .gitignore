@@ -6,5 +6,14 @@ notebooks/
 __pycache__
 *#
 *.ipynb
-trials/trial_1a
+trials/trial_3a
 *#
+.ipynb_checkpoints/
+fcnn/__init__.pyc
+fcnn/resnet.pyc
+fcnn/train.pyc
+fcnn/utils/__init__.pyc
+fcnn/utils/radiomic_utils.pyc
+fcnn/utils/sequences.pyc
+fcnn/utils/utils.pyc
+trials/trial_3a/

@@ -7,8 +7,9 @@ from .utils.sequences import HCPRegressionSequence
 
 
 def run_training(config_filename, model_filename, training_log_filename, verbose=1, use_multiprocessing=False,
-                 n_workers=1, max_queue_size=5):
+                 n_workers=1, max_queue_size=5, model_name='resnet_34'):
     """
+    :param model_name:
     :param verbose:
     :param use_multiprocessing:
     :param n_workers:
@@ -26,12 +27,16 @@ def run_training(config_filename, model_filename, training_log_filename, verbose
     window = np.asarray(config['window'])
     spacing = np.asarray(config['spacing'])
 
+    if 'model_name' in config:
+        model_name = config['model_name']
+
     # 2. Create model
     if os.path.exists(model_filename):
         model = load_model(model_filename)
     else:
         input_shape = tuple(window.tolist() + [config['n_features']])
-        model = ResnetBuilder.build_resnet_34(input_shape, len(config['metric_names']), activation=config['activation'])
+        model = getattr(ResnetBuilder, 'build_' + model_name)(input_shape, len(config['metric_names']),
+                                                              activation=config['activation'])
         model.compile(optimizer=config['optimizer'], loss=config['loss'])
 
     # 4. Create Generators

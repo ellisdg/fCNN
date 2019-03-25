@@ -1,5 +1,6 @@
 import sys
 import pandas as pd
+import seaborn
 from matplotlib import pyplot as plt
 
 if __name__ == '__main__':
@@ -7,6 +8,8 @@ if __name__ == '__main__':
 
     categories = ("loss",)
 
+    seaborn.set_palette("muted")
+    seaborn.set_style("whitegrid")
     fig, subplots = plt.subplots(1 + len(categories), 1, sharex=True, figsize=(8, 12))
     subplots[0].plot(training_log.index, training_log['lr'])
     subplots[0].set_title('Learning Rate')

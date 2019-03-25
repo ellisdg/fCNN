@@ -24,4 +24,8 @@ if __name__ == '__main__':
     except IndexError:
         multiprocessing_config = dict()
 
-    make_predictions(config_filename, model_filename, n_subjects=n_subjects, **multiprocessing_config)
+    model_basename = os.path.basename(model_filename)
+    make_predictions(config_filename, model_filename, n_subjects=n_subjects,
+                     output_replacements=('.func.gii', '.{}_prediction.func.gii'.format(model_basename.replace(".h5",
+                                                                                                               ''))),
+                     **multiprocessing_config)

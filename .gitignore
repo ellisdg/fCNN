@@ -6,6 +6,9 @@ notebooks/
 __pycache__
 *#
 *.ipynb
+trials/trial_1a
+*.nii
+*.gii
 trials/trial_3a
 *#
 .ipynb_checkpoints/

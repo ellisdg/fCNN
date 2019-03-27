@@ -1,5 +1,6 @@
 import os
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, CSVLogger
+import keras
 from .resnet import load_model, ResnetBuilder
 import numpy as np
 from .utils.utils import load_json
@@ -39,8 +40,10 @@ def run_training(config_filename, model_filename, training_log_filename, verbose
                                                               activation=config['activation'])
         model.compile(optimizer=config['optimizer'], loss=config['loss'])
 
-    # 4. Create Generators
+    if "initial_learning_rate" in config:
+        keras.backend.set_value(model.optimizer.lr, config['initial_learning_rate'])
 
+    # 4. Create Generators
     training_generator = HCPRegressionSequence(filenames=config['training_filenames'],
                                                batch_size=config['batch_size'],
                                                flip=config['flip'],

@@ -4,8 +4,8 @@
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:4
 #SBATCH --constraint=gpu_k40
-#SBATCH --ntasks-per-node=30
-#SBATCH --mem-per-cpu=2130       # Maximum memory required per CPU (in megabytes)
+#SBATCH --ntasks-per-node=16
+#SBATCH --mem-per-cpu=4000       # Maximum memory required per CPU (in megabytes)
 #SBATCH --error=/work/aizenberg/dgellis/fCNN/logs/job.%J.err
 #SBATCH --output=/work/aizenberg/dgellis/fCNN/logs/job.%J.out
 

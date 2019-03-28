@@ -52,7 +52,7 @@ def compute_dti_image(inputs, brainmask):
     dti_data_list = list()
     for image, bvals, bvecs in inputs:
         gtab = gradient_table(bvals=bvals, bvecs=bvecs)
-        data = image.get_data
+        data = image.get_data()
         brainmask_resampled = resample_to_img(source_img=brainmask,
                                               target_img=image,
                                               interpolation='nearest')

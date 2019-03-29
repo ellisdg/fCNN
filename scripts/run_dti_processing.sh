@@ -9,4 +9,6 @@
 module load anaconda
 source activate dti
 
+OUTPUT="$(which python)"
+echo "${OUTPUT}"
 python /home/aizenberg/dgellis/fCNN/scripts/process_dti.py ${1} ${2}

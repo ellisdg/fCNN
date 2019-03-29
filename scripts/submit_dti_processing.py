@@ -20,7 +20,6 @@ def main():
         cmd = ['sbatch', script_filename, arg_subjects, hcp_dir]
         print(" ".join(cmd))
         subprocess.call(cmd)
-        break
 
 
 if __name__ == '__main__':

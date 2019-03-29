@@ -10,7 +10,6 @@ trials/trial_1a
 *.nii
 *.gii
 trials/trial_3a
-*#
 .ipynb_checkpoints/
 fcnn/__init__.pyc
 fcnn/resnet.pyc

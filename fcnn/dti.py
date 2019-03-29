@@ -68,7 +68,9 @@ def compute_dti_image(inputs, brainmask):
     return dti_image
 
 
-def process_dti(subject_directory, output_basename='dti_12.nii.gz'):
-    image, bvals, bvecs, brainmask = load_dmri_data(subject_directory)
-    dti_image = compute_dti_image(split_dmri_image(image, bvals, bvecs), brainmask)
-    dti_image.to_filename(os.path.join(subject_directory, 'T1w', 'Diffusion', output_basename))
+def process_dti(subject_directory, output_basename='dti_12.nii.gz', overwrite=False):
+    dti_output_filename = os.path.join(subject_directory, 'T1w', 'Diffusion', output_basename)
+    if overwrite or not os.path.exists(dti_output_filename):
+        image, bvals, bvecs, brainmask = load_dmri_data(subject_directory)
+        dti_image = compute_dti_image(split_dmri_image(image, bvals, bvecs), brainmask)
+        dti_image.to_filename(dti_output_filename)

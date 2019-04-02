@@ -9,6 +9,8 @@
 module load anaconda
 source activate dti
 
+export PYTHONPATH=/home/aizenberg/dgellis/3DUnetCNN:$PYTHONPATH
+
 OUTPUT="$(which python)"
 echo "${OUTPUT}"
 /home/aizenberg/dgellis/.conda/envs/dti/bin/python /home/aizenberg/dgellis/fCNN/scripts/process_low_quality_dti.py ${1} ${2}

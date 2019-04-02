@@ -73,7 +73,7 @@ def random_direction_dti(image, bvals, bvecs, brainmask, target_bval=1000, n_dir
         random_image = resample_image_to_spacing(random_image, spacing, interpolation=interpolation)
     tenfit = compute_dti(random_image, random_bvals, random_bvecs, brainmask)
     dti_data = np.concatenate((tenfit.md[..., None], tenfit.color_fa), axis=3)
-    dti_image = new_img_like(image, dti_data)
+    dti_image = new_img_like(random_image, dti_data)
     return dti_image
 
 

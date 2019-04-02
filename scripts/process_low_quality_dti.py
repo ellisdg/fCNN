@@ -10,4 +10,4 @@ if __name__ == '__main__':
     for subject in subjects:
         print("Processing :", subject)
         subject_dir = os.path.join(hcp_dir, subject)
-        process_random_direction_dti(subject_dir)
+        process_random_direction_dti(subject_dir, overwrite=True)

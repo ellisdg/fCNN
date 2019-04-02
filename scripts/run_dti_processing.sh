@@ -11,4 +11,4 @@ source activate dti
 
 OUTPUT="$(which python)"
 echo "${OUTPUT}"
-/home/aizenberg/dgellis/.conda/envs/dti/bin/python /home/aizenberg/dgellis/fCNN/scripts/process_dti.py ${1} ${2}
+/home/aizenberg/dgellis/.conda/envs/dti/bin/python /home/aizenberg/dgellis/fCNN/scripts/process_multi_b_value_dti.py ${1} ${2}

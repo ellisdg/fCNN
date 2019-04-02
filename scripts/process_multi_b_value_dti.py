@@ -1,7 +1,7 @@
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
-from fcnn.dti import process_dti
+from fcnn.dti import process_multi_b_value_dti
 
 
 if __name__ == '__main__':
@@ -10,4 +10,4 @@ if __name__ == '__main__':
     for subject in subjects:
         print("Processing :", subject)
         subject_dir = os.path.join(hcp_dir, subject)
-        process_dti(subject_dir)
+        process_multi_b_value_dti(subject_dir)

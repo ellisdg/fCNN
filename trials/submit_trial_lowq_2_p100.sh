@@ -1,6 +1,6 @@
 #!/bin/sh
 #SBATCH --time=168:00:00          # Run time in hh:mm:ss
-#SBATCH --job-name=trial_7
+#SBATCH --job-name=lowq_2
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:2
 #SBATCH --constraint=gpu_p100

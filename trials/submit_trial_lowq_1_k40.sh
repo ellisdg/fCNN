@@ -13,7 +13,7 @@ module load cuda
 module load anaconda
 source activate fcnn-1.12
 
-TRIAL=trial_lowq_1
+TRIAL=lowq_1
 CONFIG=/home/aizenberg/dgellis/fCNN/data/${TRIAL}_config.json
 HCC_CONFIG=/home/aizenberg/dgellis/fCNN/data/hcc_k40_8cpu_config.json
 MODEL=/work/aizenberg/dgellis/fCNN/model_${TRIAL}.h5

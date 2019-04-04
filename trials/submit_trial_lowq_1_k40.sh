@@ -15,7 +15,7 @@ source activate fcnn-1.12
 
 TRIAL=trial_lowq_1
 CONFIG=/home/aizenberg/dgellis/fCNN/data/${TRIAL}_config.json
-HCC_CONFIG=/home/aizenberg/dgellis/fCNN/data/hcc_k40_config.json
+HCC_CONFIG=/home/aizenberg/dgellis/fCNN/data/hcc_k40_8cpu_config.json
 MODEL=/work/aizenberg/dgellis/fCNN/model_${TRIAL}.h5
 LOG=/work/aizenberg/dgellis/fCNN/log_${TRIAL}.csv
 

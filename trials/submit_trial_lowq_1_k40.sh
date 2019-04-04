@@ -20,5 +20,6 @@ MODEL=/work/aizenberg/dgellis/fCNN/model_${TRIAL}.h5
 LOG=/work/aizenberg/dgellis/fCNN/log_${TRIAL}.csv
 
 export PYTHONPATH=/home/aizenberg/dgellis/3DUnetCNN:$PYTHONPATH
+export KERAS_BACKEND=tensorflow
 
-python /home/aizenberg/dgellis/fCNN/trials/run_trial.py ${CONFIG} ${MODEL} ${LOG} ${HCC_CONFIG}
+/home/aizenberg/dgellis/.conda/envs/fcnn-1.12/bin/python /home/aizenberg/dgellis/fCNN/trials/run_trial.py ${CONFIG} ${MODEL} ${LOG} ${HCC_CONFIG}

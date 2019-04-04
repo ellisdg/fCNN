@@ -1,6 +1,6 @@
 #!/bin/sh
 #SBATCH --time=168:00:00          # Run time in hh:mm:ss
-#SBATCH --job-name=trial_lowq_1
+#SBATCH --job-name=lowq_1
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:4
 #SBATCH --constraint=gpu_k40
@@ -13,7 +13,7 @@ module load cuda
 module load anaconda
 source activate fcnn-1.12
 
-TRIAL=lowq_1
+TRIAL=trial_lowq_1
 CONFIG=/home/aizenberg/dgellis/fCNN/data/${TRIAL}_config.json
 HCC_CONFIG=/home/aizenberg/dgellis/fCNN/data/hcc_k40_8cpu_config.json
 MODEL=/work/aizenberg/dgellis/fCNN/model_${TRIAL}.h5

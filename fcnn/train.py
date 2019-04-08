@@ -38,6 +38,7 @@ def run_training(config_filename, model_filename, training_log_filename, verbose
         input_shape = tuple(window.tolist() + [config['n_features']])
         model = getattr(ResnetBuilder, 'build_' + model_name)(input_shape, len(config['metric_names']),
                                                               activation=config['activation'])
+    if model.optimizer is None:
         model.compile(optimizer=config['optimizer'], loss=config['loss'])
 
     if "initial_learning_rate" in config:

@@ -16,9 +16,10 @@ def predict_subject(model, feature_filename, surface_filenames, surface_names, m
         prediction = model.predict_generator(generator, use_multiprocessing=use_multiprocessing, workers=workers,
                                              max_queue_size=max_queue_size, verbose=1)
         gifti_image = nib.gifti.GiftiImage()
+        image_metadata = {'AnatomicalStructurePrimary': surface_name}
+        gifti_image.meta.from_dict(image_metadata)
         for col, metric_name in enumerate(metric_names):
-            metadata = {'AnatomicalStructurePrimary': surface_name,
-                        'Name': metric_name}
+            metadata = {'Name': metric_name}
             darray = nib.gifti.GiftiDataArray(data=prediction[:, col], meta=metadata)
             gifti_image.add_gifti_data_array(darray)
         gifti_image.to_filename(output_filename)

@@ -25,7 +25,11 @@ if __name__ == '__main__':
         multiprocessing_config = dict()
 
     model_basename = os.path.basename(model_filename)
+    output_directory = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'trials', 'predictions')
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
     make_predictions(config_filename, model_filename, n_subjects=n_subjects,
-                     output_replacements=('.func.gii', '.{}_prediction.func.gii'.format(model_basename.replace(".h5",
-                                                                                                               ''))),
+                     output_directory=output_directory,
+                     output_replacements=('.func.gii',
+                                          '.{}_prediction.func.gii'.format(model_basename.replace(".h5", ''))),
                      **multiprocessing_config)

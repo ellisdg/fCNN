@@ -45,3 +45,12 @@ def make_predictions(config_filename, model_filename, output_directory='./', n_s
                         output_filenames, batch_size=batch_size, window=np.asarray(config['window']),
                         spacing=np.asarray(config['spacing']), flip=False,
                         use_multiprocessing=use_multiprocessing, workers=n_workers, max_queue_size=max_queue_size)
+
+
+def predict_local_subject(model, feature_filename, surface_filename, batch_size=50, window=(64, 64, 64),
+                          spacing=(1, 1, 1), flip=False, use_multiprocessing=False, workers=1, max_queue_size=10,):
+    generator = SubjectPredictionSequence(feature_filename=feature_filename, surface_filename=surface_filename,
+                                          surface_name=None, batch_size=batch_size, window=window,
+                                          flip=flip, spacing=spacing)
+    return model.predict_generator(generator, use_multiprocessing=use_multiprocessing, workers=workers,
+                                   max_queue_size=max_queue_size, verbose=1)

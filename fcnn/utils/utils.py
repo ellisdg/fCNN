@@ -24,3 +24,15 @@ def logical_or(array_list):
 def get_index_value(iterable, index):
     if iterable:
         return iterable[index]
+
+
+def read_polydata(filename):
+    import vtk
+    reader = vtk.vtkPolyDataReader()
+    reader.SetFileName(filename)
+    reader.Update()
+    return reader.GetOutput()
+
+
+def extract_polydata_vertices(polydata):
+    return np.asarray([polydata.GetPoint(index) for index in range(polydata.GetNumberOfPoints())])

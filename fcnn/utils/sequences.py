@@ -5,6 +5,7 @@ from keras.utils import Sequence
 from .radiomic_utils import binary_classification, multilabel_classification, fetch_data, pick_random_list_elements, \
     load_image, fetch_data_for_point
 from .hcp import nib_load_files, extract_gifti_array, extract_gifti_surface_vertices
+from .utils import read_polydata, extract_polydata_vertices
 
 
 class SingleSiteSequence(Sequence):
@@ -142,8 +143,14 @@ class SubjectPredictionSequence(Sequence):
     def __init__(self, feature_filename, surface_filename, surface_name, batch_size=50, window=(64, 64, 64), flip=False,
                  spacing=(1, 1, 1)):
         self.feature_image = nib.load(feature_filename)
-        self.surface = nib.load(surface_filename)
-        self.vertices = extract_gifti_surface_vertices(self.surface, primary_anatomical_structure=surface_name)
+        if ".gii" in surface_filename:
+            surface = nib.load(surface_filename)
+            self.vertices = extract_gifti_surface_vertices(surface, primary_anatomical_structure=surface_name)
+        elif ".vtk" in surface_filename:
+            surface = read_polydata(surface_filename)
+            self.vertices = extract_polydata_vertices(surface)
+        else:
+            raise RuntimeError("Uknown file type: ", surface_filename)
         self.batch_size = batch_size
         self.window = window
         self.flip = flip

@@ -1,6 +1,6 @@
 #!/bin/sh
 #SBATCH --time=168:00:00          # Run time in hh:mm:ss
-#SBATCH --job-name=LQ32MOTOR
+#SBATCH --job-name=LQ34MOTOR
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:2
 #SBATCH --constraint=gpu_p100
@@ -13,7 +13,7 @@ module load cuda
 module load anaconda
 source activate fcnn-1.12
 
-TRIAL=trial_lowq_32_MOTOR
+TRIAL=trial_lowq_34_MOTOR
 CONFIG=/home/aizenberg/dgellis/fCNN/data/${TRIAL}_config.json
 HCC_CONFIG=/home/aizenberg/dgellis/fCNN/data/hcc_p100_config.json
 MODEL=/work/aizenberg/dgellis/fCNN/model_${TRIAL}.h5

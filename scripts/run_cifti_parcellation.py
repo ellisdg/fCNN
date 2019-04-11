@@ -47,8 +47,8 @@ if __name__ == '__main__':
                                         "-metric", "CORTEX_LEFT", left_output,
                                         "-metric", "CORTEX_RIGHT", right_output]
                             cmd = " ".join(cmd_args)
-                            print(cmd)
-                            subprocess.call(cmd_args)
+                            # print(cmd)
+                            # subprocess.call(cmd_args)
                         else:
                             print("Already processed:", cifti_filename)
                     else:

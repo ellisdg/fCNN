@@ -43,7 +43,7 @@ if __name__ == '__main__':
                             print(cmd)
                             subprocess.call(cmd_args)
                             cmd_args = ["/work/aizenberg/dgellis/tools/workbench/bin_rh_linux64/wb_command",
-                                        "-cifti-separate", parcellated_filename, "COLUMN",
+                                        "-cifti-separate", parcellated_filename, "ROW",
                                         "-metric", "CORTEX_LEFT", left_output,
                                         "-metric", "CORTEX_RIGHT", right_output]
                             cmd = " ".join(cmd_args)

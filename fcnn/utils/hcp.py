@@ -29,3 +29,24 @@ def extract_gifti_array(gifti_object,
 def extract_gifti_array_names(gifti_object, key='Name'):
     return [array.metadata[key] for array in gifti_object.darrays]
 
+
+def extract_parcellated_scalar_map_names(pscalar, map_index=0):
+    return [index.map_name for index in pscalar.header.get_index_map(map_index)]
+
+
+def extract_parcellated_scalar_map(pscalar, map_name):
+    map_names = extract_parcellated_scalar_map_names(pscalar)
+    return pscalar.dataobj[map_names.index(map_name)]
+
+
+def extract_parcellated_scalar_parcel_names(pscalar, parcel_index=1):
+    parcel_names = list()
+    for index in pscalar.header.get_index_map(parcel_index):
+        try:
+            parcel_names.append(index.name)
+        except AttributeError:
+            continue
+    if not pscalar.shape[parcel_index] == len(parcel_names):
+        raise RuntimeError("Number of parcel names, {}, does not match pscalar shape, {}.".format(len(parcel_names),
+                                                                                                  pscalar.shape))
+    return parcel_names

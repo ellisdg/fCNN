@@ -8,26 +8,27 @@ from .utils.sequences import SubjectPredictionSequence
 
 def predict_subject(model, feature_filename, surface_filenames, surface_names, metric_names, output_filenames,
                     batch_size=50, window=(64, 64, 64), flip=False, spacing=(1, 1, 1), use_multiprocessing=False,
-                    workers=1, max_queue_size=10):
+                    workers=1, max_queue_size=10, overwrite=False):
     for surface_filename, surface_name, output_filename in zip(surface_filenames, surface_names, output_filenames):
-        generator = SubjectPredictionSequence(feature_filename=feature_filename, surface_filename=surface_filename,
-                                              surface_name=surface_name, batch_size=batch_size, window=window,
-                                              flip=flip, spacing=spacing)
-        prediction = model.predict_generator(generator, use_multiprocessing=use_multiprocessing, workers=workers,
-                                             max_queue_size=max_queue_size, verbose=1)
-        gifti_image = nib.gifti.GiftiImage()
-        image_metadata = {'AnatomicalStructurePrimary': surface_name}
-        gifti_image.meta.from_dict(image_metadata)
-        for col, metric_name in enumerate(metric_names):
-            metadata = {'Name': metric_name}
-            darray = nib.gifti.GiftiDataArray(data=prediction[:, col], meta=metadata)
-            gifti_image.add_gifti_data_array(darray)
-        gifti_image.to_filename(output_filename)
+        if overwrite or not os.path.exists(output_filename):
+            generator = SubjectPredictionSequence(feature_filename=feature_filename, surface_filename=surface_filename,
+                                                  surface_name=surface_name, batch_size=batch_size, window=window,
+                                                  flip=flip, spacing=spacing)
+            prediction = model.predict_generator(generator, use_multiprocessing=use_multiprocessing, workers=workers,
+                                                 max_queue_size=max_queue_size, verbose=1)
+            gifti_image = nib.gifti.GiftiImage()
+            image_metadata = {'AnatomicalStructurePrimary': surface_name}
+            gifti_image.meta.from_dict(image_metadata)
+            for col, metric_name in enumerate(metric_names):
+                metadata = {'Name': metric_name}
+                darray = nib.gifti.GiftiDataArray(data=prediction[:, col], meta=metadata)
+                gifti_image.add_gifti_data_array(darray)
+            gifti_image.to_filename(output_filename)
 
 
 def make_predictions(config_filename, model_filename, output_directory='./', n_subjects=None, shuffle=False,
                      key='validation_filenames', use_multiprocessing=False, n_workers=1, max_queue_size=5,
-                     batch_size=50, output_replacements=('.func.gii', '.prediction.func.gii')):
+                     batch_size=50, output_replacements=('.func.gii', '.prediction.func.gii'), overwrite=False):
     output_directory = os.path.abspath(output_directory)
     config = load_json(config_filename)
     filenames = config[key]
@@ -43,7 +44,7 @@ def make_predictions(config_filename, model_filename, output_directory='./', n_s
         subject_metric_names = [metric_name.format(subject_id) for metric_name in config['metric_names']]
         predict_subject(model, feature_filename, surface_filenames, config['surface_names'], subject_metric_names,
                         output_filenames, batch_size=batch_size, window=np.asarray(config['window']),
-                        spacing=np.asarray(config['spacing']), flip=False,
+                        spacing=np.asarray(config['spacing']), flip=False, overwrite=overwrite,
                         use_multiprocessing=use_multiprocessing, workers=n_workers, max_queue_size=max_queue_size)
 
 

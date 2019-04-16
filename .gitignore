@@ -21,3 +21,4 @@ fcnn/utils/utils.pyc
 trials/trial_3a/
 trials/models
 *.pyc
+*.png

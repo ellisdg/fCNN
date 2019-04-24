@@ -3,6 +3,7 @@ import os
 import json
 sys.path.append(os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
 from fcnn.predict import make_predictions
+import subprocess
 
 
 if __name__ == '__main__':
@@ -19,8 +20,11 @@ if __name__ == '__main__':
     print("MP Config: ", multiprocessing_config_filename)
     output_directory = os.path.abspath(sys.argv[5])
     print("Output Directory:", output_directory)
-    batch_size = int(sys.argv[6])
-    print("Batch Size:", batch_size)
+    nvidia_smi_output = subprocess.check_output(['nvidia-smi']).decode('utf-8')
+    if 'P100' in nvidia_smi_output or 'k40' in nvidia_smi_output:
+        batch_size = 50
+    if 'k20' in nvidia_smi_output:
+        batch_size = 5
     model_basename = os.path.basename(model_filename)
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)

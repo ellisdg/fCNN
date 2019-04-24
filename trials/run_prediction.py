@@ -19,10 +19,12 @@ if __name__ == '__main__':
     print("MP Config: ", multiprocessing_config_filename)
     output_directory = os.path.abspath(sys.argv[5])
     print("Output Directory:", output_directory)
+    batch_size = int(sys.argv[6])
+    print("Batch Size:", batch_size)
     model_basename = os.path.basename(model_filename)
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
-    make_predictions(config_filename, model_filename, n_subjects=None, single_subject=subject,
+    make_predictions(config_filename, model_filename, n_subjects=None, single_subject=subject, batch_size=batch_size,
                      output_directory=output_directory, overwrite=overwrite,
                      output_replacements=('.func.gii',
                                           '.{}_prediction.func.gii'.format(model_basename.replace(".h5", ''))),

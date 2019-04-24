@@ -11,6 +11,7 @@ module load cuda
 module load anaconda
 source activate fcnn-1.12
 
+BATCH_SIZE=10
 CONFIG=/home/aizenberg/dgellis/fCNN/data/trial_34_LS_LM_config.json
 HCC_CONFIG=/home/aizenberg/dgellis/fCNN/data/hcc_predict_config.json
 MODEL=/work/aizenberg/dgellis/fCNN/model_trial_lowq_32_LS_LM.h5
@@ -20,4 +21,4 @@ export PYTHONPATH=/home/aizenberg/dgellis/3DUnetCNN:$PYTHONPATH
 export KERAS_BACKEND=tensorflow
 export CUDA_VISIBLE_DEVICES=1
 
-/home/aizenberg/dgellis/.conda/envs/fcnn-1.12/bin/python /home/aizenberg/dgellis/fCNN/trials/run_prediction.py ${CONFIG} ${MODEL} ${1} ${HCC_CONFIG} ${OUTPUT_DIR}
+/home/aizenberg/dgellis/.conda/envs/fcnn-1.12/bin/python /home/aizenberg/dgellis/fCNN/trials/run_prediction.py ${CONFIG} ${MODEL} ${1} ${HCC_CONFIG} ${OUTPUT_DIR} ${BATCH_SIZE}

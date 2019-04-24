@@ -22,8 +22,10 @@ if __name__ == '__main__':
     print("Output Directory:", output_directory)
     nvidia_smi_output = subprocess.check_output(['nvidia-smi']).decode('utf-8')
     print(nvidia_smi_output)
-    if 'P100' in nvidia_smi_output or 'K40' in nvidia_smi_output:
+    if 'P100' in nvidia_smi_output:
         batch_size = 50
+    elif 'K40' in nvidia_smi_output:
+        batch_size = 10
     elif 'K20' in nvidia_smi_output:
         batch_size = 2
     model_basename = os.path.basename(model_filename)

@@ -13,6 +13,10 @@ if __name__ == '__main__':
     print("Model: ", model_filename)
     n_subjects = sys.argv[3]
     print("Subjects: ", n_subjects)
+    try:
+        output_directory = os.path.abspath(sys.argv[4])
+    except IndexError:
+        output_directory = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'trials', 'predictions')
     if n_subjects == 'all':
         n_subjects = None
     else:
@@ -26,7 +30,6 @@ if __name__ == '__main__':
         multiprocessing_config = dict()
 
     model_basename = os.path.basename(model_filename)
-    output_directory = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'trials', 'predictions')
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
     make_predictions(config_filename, model_filename, n_subjects=n_subjects,

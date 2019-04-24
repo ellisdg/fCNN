@@ -18,5 +18,6 @@ OUTPUT_DIR=/work/aizenberg/dgellis/fCNN/predictions
 
 export PYTHONPATH=/home/aizenberg/dgellis/3DUnetCNN:$PYTHONPATH
 export KERAS_BACKEND=tensorflow
+export CUDA_VISIBLE_DEVICES=0,1,2,3,4
 
 /home/aizenberg/dgellis/.conda/envs/fcnn-1.12/bin/python /home/aizenberg/dgellis/fCNN/trials/run_prediction.py ${CONFIG} ${MODEL} ${1} ${HCC_CONFIG} ${OUTPUT_DIR}

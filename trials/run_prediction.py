@@ -21,6 +21,7 @@ if __name__ == '__main__':
     output_directory = os.path.abspath(sys.argv[5])
     print("Output Directory:", output_directory)
     nvidia_smi_output = subprocess.check_output(['nvidia-smi']).decode('utf-8')
+    print(nvidia_smi_output)
     if 'P100' in nvidia_smi_output or 'k40' in nvidia_smi_output:
         batch_size = 50
     if 'k20' in nvidia_smi_output:

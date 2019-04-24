@@ -30,12 +30,12 @@ def extract_gifti_array_names(gifti_object, key='Name'):
     return [array.metadata[key] for array in gifti_object.darrays]
 
 
-def extract_parcellated_scalar_map_names(pscalar, map_index=0):
+def extract_scalar_map_names(pscalar, map_index=0):
     return [index.map_name for index in pscalar.header.get_index_map(map_index)]
 
 
-def extract_parcellated_scalar_map(pscalar, map_name):
-    map_names = extract_parcellated_scalar_map_names(pscalar)
+def extract_scalar_map(pscalar, map_name):
+    map_names = extract_scalar_map_names(pscalar)
     return pscalar.dataobj[map_names.index(map_name)]
 
 

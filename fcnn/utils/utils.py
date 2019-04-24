@@ -7,6 +7,11 @@ def load_json(filename):
         return json.load(opened_file)
 
 
+def dump_json(dataobj, filename):
+    with open(filename, 'w') as opened_file:
+        json.dump(dataobj, filename)
+
+
 def logical_and(array_list):
     array = array_list[0]
     for other_array in array_list[1:]:

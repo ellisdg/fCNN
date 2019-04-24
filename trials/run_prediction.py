@@ -25,7 +25,7 @@ if __name__ == '__main__':
     if 'P100' in nvidia_smi_output:
         batch_size = 50
     elif 'K40' in nvidia_smi_output:
-        batch_size = 10
+        batch_size = 1
     elif 'K20' in nvidia_smi_output:
         batch_size = 1
     model_basename = os.path.basename(model_filename)

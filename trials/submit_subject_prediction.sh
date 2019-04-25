@@ -2,6 +2,7 @@
 #SBATCH --time=168:00:00          # Run time in hh:mm:ss
 #SBATCH --job-name=predict
 #SBATCH --partition=gpu
+#SBATCH --gres=gpu
 #SBATCH --ntasks-per-node=8
 #SBATCH --mem-per-cpu=4000       # Maximum memory required per CPU (in megabytes)
 #SBATCH --error=/work/aizenberg/dgellis/fCNN/logs/job.%J.err
@@ -18,6 +19,5 @@ OUTPUT_DIR=/work/aizenberg/dgellis/fCNN/predictions
 
 export PYTHONPATH=/home/aizenberg/dgellis/3DUnetCNN:$PYTHONPATH
 export KERAS_BACKEND=tensorflow
-export CUDA_VISIBLE_DEVICES=0,1,2,3,4
 
 /home/aizenberg/dgellis/.conda/envs/fcnn-1.12/bin/python /home/aizenberg/dgellis/fCNN/trials/run_prediction.py ${CONFIG} ${MODEL} ${1} ${HCC_CONFIG} ${OUTPUT_DIR}

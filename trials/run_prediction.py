@@ -28,6 +28,8 @@ if __name__ == '__main__':
         batch_size = 5
     elif 'K20' in nvidia_smi_output:
         batch_size = 1
+    else:
+        batch_size = 1
     model_basename = os.path.basename(model_filename)
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)

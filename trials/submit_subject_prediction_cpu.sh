@@ -6,9 +6,8 @@
 #SBATCH --error=/work/aizenberg/dgellis/fCNN/logs/job.%J.err
 #SBATCH --output=/work/aizenberg/dgellis/fCNN/logs/job.%J.out
 
-module load cuda
 module load anaconda
-source activate fcnn-1.12
+source activate fcnn-cpu-1.7
 
 HCC_CONFIG=/home/aizenberg/dgellis/fCNN/data/hcc_predict_config_cpu.json
 OUTPUT_DIR=/work/aizenberg/dgellis/fCNN/predictions

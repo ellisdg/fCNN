@@ -20,15 +20,18 @@ if __name__ == '__main__':
     print("MP Config: ", multiprocessing_config_filename)
     output_directory = os.path.abspath(sys.argv[5])
     print("Output Directory:", output_directory)
-    nvidia_smi_output = subprocess.check_output(['nvidia-smi']).decode('utf-8')
-    print(nvidia_smi_output)
-    if 'P100' in nvidia_smi_output:
-        batch_size = 50
-    elif 'K40' in nvidia_smi_output:
-        batch_size = 5
-    elif 'K20' in nvidia_smi_output:
-        batch_size = 1
-    else:
+    try:
+        nvidia_smi_output = subprocess.check_output(['nvidia-smi']).decode('utf-8')
+        print(nvidia_smi_output)
+        if 'P100' in nvidia_smi_output:
+            batch_size = 50
+        elif 'K40' in nvidia_smi_output:
+            batch_size = 5
+        elif 'K20' in nvidia_smi_output:
+            batch_size = 1
+        else:
+            batch_size = 1
+    except subprocess.CalledProcessError:
         batch_size = 1
     model_basename = os.path.basename(model_filename)
     if not os.path.exists(output_directory):

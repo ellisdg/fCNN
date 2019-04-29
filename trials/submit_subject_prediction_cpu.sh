@@ -7,7 +7,10 @@
 #SBATCH --output=/work/aizenberg/dgellis/fCNN/logs/job.%J.out
 
 module load anaconda
-source activate fcnn-cpu-1.7
+
+CONDA_ENVIRONMENT=fcnn-cpu-1.7
+
+source activate ${CONDA_ENVIRONMENT}
 
 HCC_CONFIG=/home/aizenberg/dgellis/fCNN/data/hcc_predict_config_cpu.json
 OUTPUT_DIR=/work/aizenberg/dgellis/fCNN/predictions
@@ -18,4 +21,4 @@ CONFIG=${3}
 export PYTHONPATH=/home/aizenberg/dgellis/3DUnetCNN:$PYTHONPATH
 export KERAS_BACKEND=tensorflow
 
-/home/aizenberg/dgellis/.conda/envs/fcnn-1.12/bin/python /home/aizenberg/dgellis/fCNN/trials/run_prediction.py ${CONFIG} ${MODEL} ${SUBJECT_ID} ${HCC_CONFIG} ${OUTPUT_DIR}
+/home/aizenberg/dgellis/.conda/envs/${CONDA_ENVIRONMENT}/bin/python /home/aizenberg/dgellis/fCNN/trials/run_prediction.py ${CONFIG} ${MODEL} ${SUBJECT_ID} ${HCC_CONFIG} ${OUTPUT_DIR}

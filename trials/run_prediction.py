@@ -31,7 +31,7 @@ if __name__ == '__main__':
             batch_size = 1
         else:
             batch_size = 1
-    except subprocess.CalledProcessError:
+    except subprocess.CalledProcessError or FileNotFoundError:
         batch_size = 1
     model_basename = os.path.basename(model_filename)
     if not os.path.exists(output_directory):

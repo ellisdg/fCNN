@@ -31,7 +31,7 @@ def run_training(config_filename, model_filename, training_log_filename, verbose
     if 'model_name' in config:
         model_name = config['model_name']
 
-    # 2. Create model
+    # 2. Create model_filename
     if os.path.exists(model_filename):
         model = load_model(model_filename)
     else:

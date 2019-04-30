@@ -34,9 +34,14 @@ def extract_scalar_map_names(pscalar, map_index=0):
     return [index.map_name for index in pscalar.header.get_index_map(map_index)]
 
 
-def extract_scalar_map(pscalar, map_name):
+def extract_scalar_map(pscalar, map_name, brain_structure_name=None, brain_model_axis_index=1):
     map_names = extract_scalar_map_names(pscalar)
-    return pscalar.dataobj[map_names.index(map_name)]
+    data = pscalar.dataobj[map_names.index(map_name)]
+    if brain_structure_name is not None:
+        brain_model_axis = pscalar.header.get_axis(brain_model_axis_index)
+        brain_structure_mask = brain_model_axis.name == brain_model_axis.to_cifti_brain_structure_name(brain_structure_name)
+        data = data[brain_structure_mask]
+    return data
 
 
 def extract_parcellated_scalar_parcel_names(pscalar, parcel_index=1):

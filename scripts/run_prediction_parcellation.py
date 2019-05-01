@@ -7,6 +7,9 @@ if __name__ == '__main__':
     label_filename = "/home/aizenberg/dgellis/Q1-Q6_RelatedValidation210.CorticalAreas_dil_Final_Final_Areas_Group_Colors.32k_fs_LR.dlabel.nii"
     for gifti_left_filename in glob.glob("/work/aizenberg/dgellis/fCNN/predictions/*.L.*.func.gii"):
         gifti_right_filename = gifti_left_filename.replace(".L.", ".R.")
+        if not os.path.exists(gifti_right_filename):
+            print("Does not exist:", gifti_right_filename)
+            continue
         cifti_filename = gifti_left_filename.replace(".L.", ".").replace(".func.gii", ".dscalar.nii")
 
         if not os.path.exists(cifti_filename):

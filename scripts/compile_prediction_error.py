@@ -39,12 +39,12 @@ def main():
 
     data = list()
     for subject_id in lang_config['validation']:
-        print(subject_id)
         pred_dscalar_filename = prediction_filename.format(subject_id=subject_id)
-        pred_dscalar = nib.load(pred_dscalar_filename)
         if not os.path.exists(pred_dscalar):
             print("Does not exists:", pred_dscalar)
             continue
+        print(subject_id)
+        pred_dscalar = nib.load(pred_dscalar_filename)
         fmri_dscalar_filename = task_filename.format(subject_id=subject_id,
                                                      task_name=task_name,
                                                      smoothing_level=smoothing_level)

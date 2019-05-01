@@ -40,8 +40,8 @@ def main():
     data = list()
     for subject_id in lang_config['validation']:
         pred_dscalar_filename = prediction_filename.format(subject_id=subject_id)
-        if not os.path.exists(pred_dscalar):
-            print("Does not exists:", pred_dscalar)
+        if not os.path.exists(pred_dscalar_filename):
+            print("Does not exists:", pred_dscalar_filename)
             continue
         print(subject_id)
         pred_dscalar = nib.load(pred_dscalar_filename)

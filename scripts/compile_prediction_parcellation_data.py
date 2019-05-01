@@ -25,11 +25,11 @@ def main():
 
     data = dict(subject_id=list())
     for subject_id in lang_config['validation']:
-        data["subject_id"].append(subject_id)
         parcellated_filename = prediction_filename.format(subject_id=subject_id)
         if not os.path.exists(parcellated_filename):
             print("Does not exist:", parcellated_filename)
             continue
+        data["subject_id"].append(subject_id)
         pscalar = nib.load(parcellated_filename)
 
         parcel_names = extract_parcellated_scalar_parcel_names(pscalar)

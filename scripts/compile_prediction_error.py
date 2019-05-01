@@ -31,36 +31,51 @@ def main():
                              "tfMRI_LANGUAGE_hp200_s4_level2_validation_female_MSMAll.dscalar.nii",
                              "tfMRI_LANGUAGE_hp200_s4_level2_validation_male_MSMAll.dscalar.nii")
     average_map_filenames = (os.path.join(hcp_dir, basename) for basename in average_map_basenames)
-    average_maps = (nib.load(filename) for filename in average_map_filenames)
+    average_maps = [nib.load(filename) for filename in average_map_filenames]
     header = [bn.split('.')[0] for bn in average_map_basenames]
     header.append(model_name)
     header.insert(0, 'subject_id')
+    average_subject_ids = ('198855', '173940', '198855')
 
     data = list()
     for subject_id in lang_config['validation']:
+        print(subject_id)
         pred_dscalar_filename = prediction_filename.format(subject_id=subject_id)
         pred_dscalar = nib.load(pred_dscalar_filename)
         fmri_dscalar_filename = task_filename.format(subject_id=subject_id,
                                                      task_name=task_name,
                                                      smoothing_level=smoothing_level)
         fmri_dscalar = nib.load(fmri_dscalar_filename)
+        fmri_bmaxis = fmri_dscalar.header.get_axis(1)
+        pred_bmaxis = pred_dscalar.header.get_axis(1)
         subject_mae = list()
         for metric_name in lang_config['metric_names']:
+            print(metric_name)
+            subject_metric_name = metric_name.format(subject_id)
             metric_mae = list()
             for i in range(len(header) - 1):
                 metric_mae.append(list())
             for brain_structure in brain_structures:
-                pred_metric_data = extract_scalar_map(pred_dscalar, metric_name, brain_structure_name=brain_structure)
-                fmri_metric_data = extract_scalar_map(fmri_dscalar, metric_name, brain_structure_name=brain_structure)
-                all_metric_data = [extract_scalar_map(average_map,
-                                                      metric_name,
+                print(brain_structure)
+                pred_metric_data = extract_scalar_map(pred_dscalar, subject_metric_name,
                                                       brain_structure_name=brain_structure)
-                                   for average_map in average_maps] + [pred_metric_data]
-                structure_mae = [fmri_metric_data - metric_data for metric_data in all_metric_data]
+                fmri_metric_data = extract_scalar_map(fmri_dscalar, subject_metric_name, 
+                                                      brain_structure_name=brain_structure)
+                pred_mask = np.in1d(pred_bmaxis.vertex[pred_bmaxis.name == pred_bmaxis.to_cifti_brain_structure_name(brain_structure)], 
+                                    fmri_bmaxis.vertex[fmri_bmaxis.name == fmri_bmaxis.to_cifti_brain_structure_name(brain_structure)])
+
+                all_metric_data = [extract_scalar_map(average_map,
+                                                      metric_name.format(key),
+                                                      brain_structure_name=brain_structure)
+                                   for average_map, key in zip(average_maps, average_subject_ids)] + [pred_metric_data[pred_mask]]
+                structure_mae = [np.abs(fmri_metric_data - metric_data) for metric_data in all_metric_data]
                 for i, mae in enumerate(structure_mae):
-                    metric_mae[i].extend(mae)
-                metric_mae.append(structure_mae)
+                    print(np.asarray(mae).shape)
+                    metric_mae[i].extend(list(mae))
+                print(np.asarray(metric_mae).shape)
+            print(np.asarray(metric_mae).shape)
             subject_mae.append(metric_mae)
+        print(np.asarray(subject_mae).shape)
         data.append([subject_id] + list(np.mean(subject_mae, axis=(0, 2))))
     pd.DataFrame(data, columns=header).set_index("subject_id").to_csv(output_fn)
 

@@ -8,12 +8,12 @@ import numpy as np
 
 
 def main():
-    output_fn = sys.argv[1]
+    model_name = sys.argv[1]
 
     prediction_dir = "/work/aizenberg/dgellis/fCNN/predictions"
+    output_fn = os.path.join(prediction_dir, model_name + "_prediction_error.csv")
     smoothing_level = 4
     smoothing_name = "_s{}_".format(smoothing_level)
-    model_name = "trial_lowq_32_LS_LM"
     task_name = "LANGUAGE"
     basename = "{subject_id}_tfMRI_{task_name}_level2_hp200_s{smoothing}_MSMAll.model_{model_name}_prediction.dscalar.nii"
     basename = basename.format(task_name=task_name, smoothing=smoothing_level, model_name=model_name,

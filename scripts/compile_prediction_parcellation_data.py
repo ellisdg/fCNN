@@ -8,24 +8,28 @@ from fcnn.utils.hcp import extract_scalar_map
 
 
 def main():
-    output_fn = sys.argv[1]
+    model_name = sys.argv[1]
 
     prediction_dir = "/work/aizenberg/dgellis/fCNN/predictions"
     smoothing_level = 4
     smoothing_name = "_s{}_".format(smoothing_level)
-    model_name = "trial_lowq_32_LS_LM"
     task_name = "LANGUAGE"
     basename = "{subject_id}_tfMRI_{task_name}_level2_hp200_s{smoothing}_MSMAll.model_{model_name}_prediction.pscalar.nii"
-    basename = basename.format(task_name=task_name, smoothing=smoothing_level, model_name=model_name, subject_id="{subject_id}")
+    basename = basename.format(task_name=task_name, smoothing=smoothing_level, model_name=model_name,
+                               subject_id="{subject_id}")
     prediction_filename = os.path.join(prediction_dir, basename)
     data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
-    lang_config_fn = os.path.join(data_dir, "trial_lowq_32_LS_LM_config.json")
+    lang_config_fn = os.path.join(data_dir, "{}_config.json".format(model_name))
     lang_config = load_json(lang_config_fn)
+    output_fn = os.path.join(prediction_dir, "{}_parcellation_data.csv".format(model_name))
 
     data = dict(subject_id=list())
     for subject_id in lang_config['validation']:
-        data["subject_id"].append(subject_id)
         parcellated_filename = prediction_filename.format(subject_id=subject_id)
+        if not os.path.exists(parcellated_filename):
+            print("Does not exist:", parcellated_filename)
+            continue
+        data["subject_id"].append(subject_id)
         pscalar = nib.load(parcellated_filename)
 
         parcel_names = extract_parcellated_scalar_parcel_names(pscalar)

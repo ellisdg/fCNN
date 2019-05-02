@@ -2,7 +2,7 @@ import nibabel as nib
 
 
 def nib_load_files(filenames):
-    return (nib.load(filename) for filename in filenames)
+    return [nib.load(filename) for filename in filenames]
 
 
 def extract_gifti_surface_vertices(surface, index=0, geometric_type="Anatomical", **kwargs):

@@ -9,7 +9,7 @@ def load_json(filename):
 
 def dump_json(dataobj, filename):
     with open(filename, 'w') as opened_file:
-        json.dump(dataobj, filename)
+        json.dump(dataobj, opened_file)
 
 
 def logical_and(array_list):

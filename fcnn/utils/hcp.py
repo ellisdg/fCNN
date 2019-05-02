@@ -38,9 +38,9 @@ def extract_scalar_map(pscalar, map_name, brain_structure_name=None, brain_model
     map_names = extract_scalar_map_names(pscalar)
     data = pscalar.dataobj[map_names.index(map_name)]
     if brain_structure_name is not None:
-        brain_model_axis = pscalar.header.get_axis(brain_model_axis_index)
-        brain_structure_mask = brain_model_axis.name == brain_model_axis.to_cifti_brain_structure_name(brain_structure_name)
-        data = data[brain_structure_mask]
+        data = data[get_mask_from_scalar(pscalar,
+                                         brain_structure_name=brain_structure_name,
+                                         axis_index=brain_model_axis_index)]
     return data
 
 
@@ -55,3 +55,20 @@ def extract_parcellated_scalar_parcel_names(pscalar, parcel_index=1):
         raise RuntimeError("Number of parcel names, {}, does not match pscalar shape, {}.".format(len(parcel_names),
                                                                                                   pscalar.shape))
     return parcel_names
+
+
+def get_vertices_from_scalar(scalar, brain_structure_name, axis_index=1):
+    brain_model_axis = get_axis(scalar, axis_index)
+    return brain_model_axis.vertex[get_mask_from_axis(brain_model_axis, brain_structure_name)]
+
+
+def get_mask_from_scalar(scalar, brain_structure_name, axis_index=1):
+    return get_mask_from_axis(scalar.header.get_axis(axis_index), brain_structure_name)
+
+
+def get_mask_from_axis(brain_model_axis, brain_structure_name):
+    return brain_model_axis.name == brain_model_axis.to_cifti_brain_structure_name(brain_structure_name)
+
+
+def get_axis(scalar, axis_index):
+    return scalar.header.get_axis(axis_index)

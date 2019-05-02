@@ -4,7 +4,7 @@ from keras.utils import Sequence
 
 from .radiomic_utils import binary_classification, multilabel_classification, fetch_data, pick_random_list_elements, \
     load_image, fetch_data_for_point
-from .hcp import nib_load_files, extract_gifti_array, extract_gifti_surface_vertices
+from .hcp import nib_load_files, extract_gifti_array, extract_gifti_surface_vertices, get_axis, get_vertices_from_scalar, extract_scalar_map
 from .utils import read_polydata, extract_polydata_vertices
 
 
@@ -100,34 +100,30 @@ class HCPRegressionSequence(SingleSiteSequence):
         batch_x = list()
         batch_y = list()
         for feature_filename, surface_filenames, metric_filenames, subject_id in batch_filenames:
+            metrics = nib_load_files(metric_filenames)
+            all_metric_data = list()
+            for metric, metric_names in zip(metrics, self.metric_names):
+                for metric_name in metric_names:
+                    metric_data = list()
+                    for surface_name in self.surface_names:
+                        metric_data.extend(extract_scalar_map(metric, metric_name.format(subject_id),
+                                                              brain_structure_name=surface_name))
+                    all_metric_data.append(metric_data)
+            all_metric_data = np.stack(all_metric_data, axis=1)
+
             # extract the vertices
             surfaces = nib_load_files(surface_filenames)
-            # vertices should be shape (n_vertices, 3)
-            # enforce correct left/right ordering of vertex data
-            vertices = np.concatenate([extract_gifti_surface_vertices(surface,
-                                                                      primary_anatomical_structure=surface_name)
-                                       for surface, surface_name in zip(surfaces, self.surface_names)],
-                                      axis=0)
-
-            # extract the target values corresponding to the vertices
-            target_data = list()
-            metrics = nib_load_files(metric_filenames)
-            for surface_name, metric in zip(self.surface_names, metrics):
-                # enforce correct left/right ordering of metric data
-                assert metric.meta.metadata['AnatomicalStructurePrimary'] == surface_name
-                hemisphere_metric_data = list()
-                for metric_name in self.metric_names:
-                    subject_metric_name = metric_name.format(subject_id)
-                    array = extract_gifti_array(gifti_object=metric, index=subject_metric_name)
-                    hemisphere_metric_data.append(array)
-                hemisphere_metric_data = np.stack(hemisphere_metric_data, axis=1)
-                target_data.append(hemisphere_metric_data)
-            target_data = np.concatenate(target_data, axis=0)  # should be shape (n_vertices, n_metrics)
+            vertices = list()
+            for surface, surface_name in zip(surfaces, self.surface_names):
+                vertices_index = get_vertices_from_scalar(metrics[0], brain_structure_name=surface_name)
+                surface_vertices = extract_gifti_surface_vertices(surface, primary_anatomical_structure=surface_name)
+                vertices.extend(surface_vertices[vertices_index])
+            vertices = np.asarray(vertices)
 
             # randomly select the target vertices and corresponding values
             indices = np.random.choice(np.arange(vertices.shape[0]), size=self.points_per_subject, replace=False)
             random_vertices = vertices[indices]
-            random_target_values = target_data[indices]
+            random_target_values = all_metric_data[indices]
 
             # load data
             feature_image = load_image(feature_filename, reorder=self.reorder)

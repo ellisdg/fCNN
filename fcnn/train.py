@@ -54,23 +54,27 @@ def run_training(config_filename, model_filename, training_log_filename, verbose
                                                points_per_subject=config['points_per_subject'],
                                                surface_names=config['surface_names'],
                                                metric_names=config['metric_names'])
-
-    validation_generator = HCPRegressionSequence(filenames=config['validation_filenames'],
-                                                 batch_size=config['validation_batch_size'],
-                                                 flip=False,
-                                                 reorder=config['reorder'],
-                                                 window=window,
-                                                 spacing=spacing,
-                                                 points_per_subject=config['validation_points_per_subject'],
-                                                 surface_names=config['surface_names'],
-                                                 metric_names=config['metric_names'])
+    if 'skip_validation' in config and config['skip_validation']:
+        monitor = 'loss'
+        validation_generator = None
+    else:
+        validation_generator = HCPRegressionSequence(filenames=config['validation_filenames'],
+                                                     batch_size=config['validation_batch_size'],
+                                                     flip=False,
+                                                     reorder=config['reorder'],
+                                                     window=window,
+                                                     spacing=spacing,
+                                                     points_per_subject=config['validation_points_per_subject'],
+                                                     surface_names=config['surface_names'],
+                                                     metric_names=config['metric_names'])
+        monitor = 'val_loss'
 
     # 5. Run Training
 
     checkpointer = ModelCheckpoint(filepath=model_filename,
                                    verbose=verbose,
                                    save_best_only=config['save_best_only'])
-    reduce_lr = ReduceLROnPlateau(monitor='val_loss',
+    reduce_lr = ReduceLROnPlateau(monitor=monitor,
                                   factor=config['decay_factor'],
                                   patience=config['decay_patience'],
                                   min_lr=config['min_learning_rate'])

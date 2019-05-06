@@ -33,6 +33,7 @@ def make_predictions(config_filename, model_filename, output_directory='./', n_s
     output_directory = os.path.abspath(output_directory)
     config = load_json(config_filename)
     filenames = config[key]
+    model_basename = os.path.basename(model_filename).replace(".h5", "")
     if single_subject is None:
         model = load_model(model_filename)
     else:
@@ -45,10 +46,16 @@ def make_predictions(config_filename, model_filename, output_directory='./', n_s
         if single_subject is None or subject_id == single_subject:
             if model is None:
                 model = load_model(model_filename)
-            output_filenames = [os.path.join(output_directory,
-                                             os.path.basename(filename).replace(*output_replacements))
-                                for filename in metric_filenames]
-            subject_metric_names = [metric_name.format(subject_id) for metric_name in config['metric_names']]
+            output_filenames = list()
+            task = os.path.basename(metric_filenames[0]).split(".")[0]
+            for hemisphere in config['hemispheres']:
+
+                output_basename = "{task}.{hemi}.{model}_prediction.func.gii".format(hemi=hemisphere,
+                                                                                      model=model_basename,
+                                                                                      task=task)
+                output_filenames.append(os.path.join(output_directory, output_basename))
+            subject_metric_names = [metric_name.format(subject_id)
+                                    for metric_name in np.squeeze(config['metric_names'])]
             predict_subject(model, feature_filename, surface_filenames, config['surface_names'], subject_metric_names,
                             output_filenames, batch_size=batch_size, window=np.asarray(config['window']),
                             spacing=np.asarray(config['spacing']), flip=False, overwrite=overwrite,

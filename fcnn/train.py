@@ -43,6 +43,10 @@ def run_training(config_filename, model_filename, training_log_filename, verbose
 
     if "initial_learning_rate" in config:
         keras.backend.set_value(model.optimizer.lr, config['initial_learning_rate'])
+    if "iterations_per_epoch" in config:
+        iterations_per_epoch = config["iterations_per_epoch"]
+    else:
+        iterations_per_epoch = 1
 
     # 4. Create Generators
     training_generator = HCPRegressionSequence(filenames=config['training_filenames'],
@@ -53,7 +57,8 @@ def run_training(config_filename, model_filename, training_log_filename, verbose
                                                spacing=spacing,
                                                points_per_subject=config['points_per_subject'],
                                                surface_names=config['surface_names'],
-                                               metric_names=config['metric_names'])
+                                               metric_names=config['metric_names'],
+                                               iterations_per_epoch=iterations_per_epoch)
     if 'skip_validation' in config and config['skip_validation']:
         monitor = 'loss'
         validation_generator = None

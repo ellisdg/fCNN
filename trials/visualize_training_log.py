@@ -30,9 +30,10 @@ if __name__ == '__main__':
         subplots[i + 1].plot(training_log.index[n_running_average-1:],
                              running_mean(np.asarray(training_log[cat]), n_running_average),
                              label='Training')
-        subplots[i + 1].plot(training_log.index[n_running_average-1:],
-                             running_mean(np.asarray(training_log['val_' + cat]), n_running_average),
-                             label='Validation')
+        if 'val_' + cat in training_log.columns:
+            subplots[i + 1].plot(training_log.index[n_running_average-1:],
+                                 running_mean(np.asarray(training_log['val_' + cat]), n_running_average),
+                                 label='Validation')
         subplots[i + 1].set_title(cat.capitalize())
         subplots[i + 1].legend()
         subplots[i + 1].set_ylim(1, 1.5)

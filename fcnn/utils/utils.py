@@ -41,3 +41,7 @@ def read_polydata(filename):
 
 def extract_polydata_vertices(polydata):
     return np.asarray([polydata.GetPoint(index) for index in range(polydata.GetNumberOfPoints())])
+
+
+def normalize_image_data(data, axis=(0, 1, 2)):
+    return np.divide(data - data.mean(axis=axis), data.std(axis=axis))

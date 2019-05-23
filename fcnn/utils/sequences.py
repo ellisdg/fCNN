@@ -8,7 +8,7 @@ from nilearn.image import reorder_img
 from .radiomic_utils import binary_classification, multilabel_classification, fetch_data, pick_random_list_elements, \
     load_image, fetch_data_for_point
 from .hcp import nib_load_files, extract_gifti_array, extract_gifti_surface_vertices, get_axis, get_vertices_from_scalar, extract_scalar_map
-from .utils import read_polydata, extract_polydata_vertices
+from .utils import read_polydata, extract_polydata_vertices, normalize_image_data
 
 
 class SingleSiteSequence(Sequence):
@@ -191,7 +191,7 @@ class WholeBrainRegressionSequence(SingleSiteSequence):
             feature_image = reorder_img(feature_image, resample=self.resample)
         cropped = crop_img(feature_image, pad=False)
         input_img = resize(cropped, self.window)
-        return input_img.get_data()
+        return normalize_image_data(input_img.get_data())
 
 
 def get_metric_data(metrics, metric_names, surface_names, subject_id, stack_axis=1):

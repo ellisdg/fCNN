@@ -6,7 +6,7 @@ from fcnn.predict import make_predictions
 
 
 if __name__ == '__main__':
-    overwrite = False
+    overwrite = True
     config_filename = sys.argv[1]
     print("Config: ", config_filename)
     model_filename = sys.argv[2]

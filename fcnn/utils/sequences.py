@@ -14,7 +14,7 @@ from .utils import read_polydata, extract_polydata_vertices
 class SingleSiteSequence(Sequence):
     def __init__(self, filenames, batch_size,
                  target_labels, window, spacing, classification='binary',
-                 points_per_subject=1, flip=False, reorder=False):
+                 points_per_subject=1, flip=False, reorder=False, iterations_per_epoch=1):
         self.batch_size = batch_size
         self.filenames = filenames
         self.target_labels = target_labels
@@ -23,6 +23,7 @@ class SingleSiteSequence(Sequence):
         self.flip = flip
         self.reorder = reorder
         self.spacing = spacing
+        self.iterations_per_epoch = iterations_per_epoch
         self.subjects_per_batch = int(np.floor(self.batch_size / self.points_per_subject))
         assert self.subjects_per_batch > 0
         if classification == 'binary':
@@ -34,11 +35,17 @@ class SingleSiteSequence(Sequence):
         self.generate_epoch_filenames()
 
     def get_number_of_subjects_per_epoch(self):
+        return self.get_number_of_subjects() * self.iterations_per_epoch
+
+    def get_number_of_subjects(self):
         return len(self.filenames)
 
     def generate_epoch_filenames(self):
-        epoch_filenames = list(self.filenames)
-        np.random.shuffle(epoch_filenames)
+        _filenames = list(self.filenames)
+        epoch_filenames = list()
+        for i in range(self.iterations_per_epoch):
+            np.random.shuffle(_filenames)
+            epoch_filenames.extend(_filenames)
         self.epoch_filenames = list(epoch_filenames)
 
     def __len__(self):
@@ -160,15 +167,9 @@ class SubjectPredictionSequence(Sequence):
         return np.asarray(batch)
 
 
-class WholeBrainRegressionSequence(Sequence):
-    def __init__(self, filenames, window, batch_size, metric_names, flip=False, points_per_subject=None,
-                 reorder=True, surface_names=('CortexLeft', 'CortexRight'), resample='linear'):
-        self.filenames = filenames
-        self.image_size = window
-        self.batch_size = batch_size
-        self.metric_names = metric_names
-        self.surface_names = surface_names
-        self.reorder = reorder
+class WholeBrainRegressionSequence(SingleSiteSequence):
+    def __init__(self, resample='linear', **kwargs):
+        super().__init__(target_labels=None, classification="None", points_per_subject=1, **kwargs)
         self.resample = resample
 
     def __len__(self):
@@ -189,7 +190,7 @@ class WholeBrainRegressionSequence(Sequence):
         if self.reorder:
             feature_image = reorder_img(feature_image, resample=self.resample)
         cropped = crop_img(feature_image, pad=False)
-        input_img = resize(cropped, self.image_size)
+        input_img = resize(cropped, self.window)
         return input_img.get_data()
 
 

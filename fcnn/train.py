@@ -37,7 +37,12 @@ def run_training(config_filename, model_filename, training_log_filename, verbose
         model = load_model(model_filename)
     else:
         input_shape = tuple(window.tolist() + [config['n_features']])
-        model = getattr(ResnetBuilder, 'build_' + model_name)(input_shape, len(np.concatenate(config['metric_names'])),
+        if "n_outputs" in config:
+            n_outputs = config['n_outputs']
+        else:
+            n_outputs = len(np.concatenate(config['metric_names']))
+        model = getattr(ResnetBuilder, 'build_' + model_name)(input_shape,
+                                                              n_outputs,
                                                               activation=config['activation'])
     if not hasattr(model, 'optimizer') or model.optimizer is None:
         model.compile(optimizer=config['optimizer'], loss=config['loss'])

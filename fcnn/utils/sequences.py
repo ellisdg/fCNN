@@ -182,7 +182,7 @@ class WholeBrainRegressionSequence(SingleSiteSequence):
         for feature_filename, metric_filenames, subject_id in batch_filenames:
             metrics = nib_load_files(metric_filenames)
             x.append(self.resample_input(feature_filename))
-            y.append(get_metric_data(metrics, self.metric_names, self.surface_names, subject_id))
+            y.append(get_metric_data(metrics, self.metric_names, self.surface_names, subject_id).T.ravel())
         return np.asarray(x), np.asarray(y)
 
     def resample_input(self, feature_filename):
@@ -194,7 +194,7 @@ class WholeBrainRegressionSequence(SingleSiteSequence):
         return input_img.get_data()
 
 
-def get_metric_data(metrics, metric_names, surface_names, subject_id):
+def get_metric_data(metrics, metric_names, surface_names, subject_id, stack_axis=1):
     all_metric_data = list()
     for metric, metric_names in zip(metrics, metric_names):
         for metric_name in metric_names:
@@ -203,5 +203,5 @@ def get_metric_data(metrics, metric_names, surface_names, subject_id):
                 metric_data.extend(extract_scalar_map(metric, metric_name.format(subject_id),
                                                       brain_structure_name=surface_name))
             all_metric_data.append(metric_data)
-    return np.stack(all_metric_data, axis=1)
+    return np.stack(all_metric_data, axis=stack_axis)
 

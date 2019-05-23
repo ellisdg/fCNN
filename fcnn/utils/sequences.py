@@ -1,6 +1,9 @@
 import numpy as np
 import nibabel as nib
 from keras.utils import Sequence
+from unet3d.utils.nilearn_custom_utils.nilearn_utils import crop_img
+from unet3d.utils.utils import resize
+from nilearn.image import reorder_img
 
 from .radiomic_utils import binary_classification, multilabel_classification, fetch_data, pick_random_list_elements, \
     load_image, fetch_data_for_point
@@ -108,15 +111,7 @@ class HCPRegressionSequence(SingleSiteSequence):
         batch_y = list()
         for feature_filename, surface_filenames, metric_filenames, subject_id in batch_filenames:
             metrics = nib_load_files(metric_filenames)
-            all_metric_data = list()
-            for metric, metric_names in zip(metrics, self.metric_names):
-                for metric_name in metric_names:
-                    metric_data = list()
-                    for surface_name in self.surface_names:
-                        metric_data.extend(extract_scalar_map(metric, metric_name.format(subject_id),
-                                                              brain_structure_name=surface_name))
-                    all_metric_data.append(metric_data)
-            all_metric_data = np.stack(all_metric_data, axis=1)
+            all_metric_data = get_metric_data(metrics, self.metric_names, self.surface_names, subject_id)
 
             # extract the vertices
             surfaces = nib_load_files(surface_filenames)
@@ -170,3 +165,43 @@ class SubjectPredictionSequence(Sequence):
                                       flip=self.flip,
                                       spacing=self.spacing) for vertex in batch_vertices]
         return np.asarray(batch)
+
+
+class WholeBrainRegressionSequence(SingleSiteSequence):
+    def __init__(self, resample='linear', **kwargs):
+        super().__init__(target_labels=None, classification="None", points_per_subject=1, **kwargs)
+        self.resample = resample
+
+    def __len__(self):
+        return int(np.ceil(np.divide(len(self.filenames), self.batch_size)))
+
+    def __getitem__(self, idx):
+        x = list()
+        y = list()
+        batch_filenames = self.filenames[idx * self.batch_size:(idx + 1) * self.batch_size]
+        for feature_filename, metric_filenames, subject_id in batch_filenames:
+            metrics = nib_load_files(metric_filenames)
+            x.append(self.resample_input(feature_filename))
+            y.append(get_metric_data(metrics, self.metric_names, self.surface_names, subject_id))
+        return np.asarray(x), np.asarray(y)
+
+    def resample_input(self, feature_filename):
+        feature_image = nib.load(feature_filename)
+        if self.reorder:
+            feature_image = reorder_img(feature_image, resample=self.resample)
+        cropped = crop_img(feature_image, pad=False)
+        input_img = resize(cropped, self.window)
+        return input_img.get_data()
+
+
+def get_metric_data(metrics, metric_names, surface_names, subject_id):
+    all_metric_data = list()
+    for metric, metric_names in zip(metrics, metric_names):
+        for metric_name in metric_names:
+            metric_data = list()
+            for surface_name in surface_names:
+                metric_data.extend(extract_scalar_map(metric, metric_name.format(subject_id),
+                                                      brain_structure_name=surface_name))
+            all_metric_data.append(metric_data)
+    return np.stack(all_metric_data, axis=1)
+

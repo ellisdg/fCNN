@@ -8,8 +8,9 @@ from .utils.sequences import HCPRegressionSequence
 
 
 def run_training(config_filename, model_filename, training_log_filename, verbose=1, use_multiprocessing=False,
-                 n_workers=1, max_queue_size=5, model_name='resnet_34'):
+                 n_workers=1, max_queue_size=5, model_name='resnet_34', sequence_class=HCPRegressionSequence):
     """
+    :param sequence_class: class to use for the generator sequence
     :param model_name:
     :param verbose:
     :param use_multiprocessing:
@@ -45,25 +46,25 @@ def run_training(config_filename, model_filename, training_log_filename, verbose
         keras.backend.set_value(model.optimizer.lr, config['initial_learning_rate'])
 
     # 4. Create Generators
-    training_generator = HCPRegressionSequence(filenames=config['training_filenames'],
-                                               batch_size=config['batch_size'],
-                                               flip=config['flip'],
-                                               reorder=config['reorder'],
-                                               window=window,
-                                               spacing=spacing,
-                                               points_per_subject=config['points_per_subject'],
-                                               surface_names=config['surface_names'],
-                                               metric_names=config['metric_names'])
+    training_generator = sequence_class(filenames=config['training_filenames'],
+                                        batch_size=config['batch_size'],
+                                        flip=config['flip'],
+                                        reorder=config['reorder'],
+                                        window=window,
+                                        spacing=spacing,
+                                        points_per_subject=config['points_per_subject'],
+                                        surface_names=config['surface_names'],
+                                        metric_names=config['metric_names'])
 
-    validation_generator = HCPRegressionSequence(filenames=config['validation_filenames'],
-                                                 batch_size=config['validation_batch_size'],
-                                                 flip=False,
-                                                 reorder=config['reorder'],
-                                                 window=window,
-                                                 spacing=spacing,
-                                                 points_per_subject=config['validation_points_per_subject'],
-                                                 surface_names=config['surface_names'],
-                                                 metric_names=config['metric_names'])
+    validation_generator = sequence_class(filenames=config['validation_filenames'],
+                                          batch_size=config['validation_batch_size'],
+                                          flip=False,
+                                          reorder=config['reorder'],
+                                          window=window,
+                                          spacing=spacing,
+                                          points_per_subject=config['validation_points_per_subject'],
+                                          surface_names=config['surface_names'],
+                                          metric_names=config['metric_names'])
 
     # 5. Run Training
 

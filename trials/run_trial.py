@@ -3,6 +3,7 @@ import os
 import json
 sys.path.append(os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
 from fcnn.train import run_training
+from fcnn.utils.sequences import WholeBrainRegressionSequence, HCPRegressionSequence
 
 
 if __name__ == '__main__':
@@ -20,4 +21,10 @@ if __name__ == '__main__':
     except IndexError:
         multiprocessing_config = dict()
 
-    run_training(config_filename, model_filename, training_log_filename, **multiprocessing_config)
+    if os.path.basename(config_filename).split("_")[1] == "wb":
+        sequence_class = WholeBrainRegressionSequence
+    else:
+        sequence_class = HCPRegressionSequence
+
+    run_training(config_filename, model_filename, training_log_filename, sequence_class=sequence_class,
+                 **multiprocessing_config)

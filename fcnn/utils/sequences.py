@@ -168,19 +168,19 @@ class SubjectPredictionSequence(Sequence):
         return np.asarray(batch)
 
 
-class WholeBrainRegressionSequence(SingleSiteSequence):
+class WholeBrainRegressionSequence(HCPRegressionSequence):
     def __init__(self, resample='linear', **kwargs):
-        super().__init__(target_labels=None, classification="None", points_per_subject=1, **kwargs)
+        super().__init__(**kwargs)
         self.resample = resample
 
     def __len__(self):
-        return int(np.ceil(np.divide(len(self.filenames), self.batch_size)))
+        return int(np.ceil(np.divide(len(self.filenames) * self.iterations_per_epoch, self.batch_size)))
 
     def __getitem__(self, idx):
         x = list()
         y = list()
         batch_filenames = self.filenames[idx * self.batch_size:(idx + 1) * self.batch_size]
-        for feature_filename, metric_filenames, subject_id in batch_filenames:
+        for feature_filename, surface_filenames, metric_filenames, subject_id in batch_filenames:
             metrics = nib_load_files(metric_filenames)
             x.append(self.resample_input(feature_filename))
             y.append(get_metric_data(metrics, self.metric_names, self.surface_names, subject_id).T.ravel())

@@ -193,7 +193,7 @@ class WholeBrainRegressionSequence(HCPRegressionSequence):
         affine = feature_image.affine.copy()
         shape = feature_image.shape
         if self.reorder:
-            affine = reorder_affine(affine)
+            affine = reorder_affine(affine, shape)
         if self.crop:
             affine, shape = crop_img(feature_image, return_affine=True, pad=True)
         if self.augment_scale_std:

@@ -1,8 +1,9 @@
 import numpy as np
 import nibabel as nib
 from keras.utils import Sequence
-from unet3d.utils.nilearn_custom_utils.nilearn_utils import crop_img
-from unet3d.utils.utils import resize
+from unet3d.utils.nilearn_custom_utils.nilearn_utils import crop_img, reorder_affine
+from unet3d.utils.utils import resize, resize_affine, resample
+from unet3d.augment import scale_affine
 from nilearn.image import reorder_img
 
 from .radiomic_utils import binary_classification, multilabel_classification, fetch_data, pick_random_list_elements, \
@@ -187,10 +188,17 @@ class WholeBrainRegressionSequence(SingleSiteSequence):
 
     def resample_input(self, feature_filename):
         feature_image = nib.load(feature_filename)
+        affine = feature_image.affine.copy()
+        shape = feature_image.shape
         if self.reorder:
-            feature_image = reorder_img(feature_image, resample=self.resample)
-        cropped = crop_img(feature_image, pad=False)
-        input_img = resize(cropped, self.window)
+            affine = reorder_affine(affine)
+        if self.crop:
+            affine, shape = crop_img(feature_image, return_affine=True, pad=True)
+        if self.augment_scale_std:
+            scale = np.random.normal(1, self.augment_scale_std, 3)
+            affine = scale_affine(affine, shape, scale)
+        affine = resize_affine(affine, shape, self.window)
+        input_img = resample(feature_image, affine, self.window, interpolation=self.resample)
         return normalize_image_data(input_img.get_data())
 
 

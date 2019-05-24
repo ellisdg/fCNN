@@ -169,9 +169,11 @@ class SubjectPredictionSequence(Sequence):
 
 
 class WholeBrainRegressionSequence(HCPRegressionSequence):
-    def __init__(self, resample='linear', **kwargs):
+    def __init__(self, resample='linear', crop=True, augment_scale_std=0, **kwargs):
         super().__init__(**kwargs)
         self.resample = resample
+        self.crop = crop
+        self.augment_scale_std = augment_scale_std
 
     def __len__(self):
         return int(np.ceil(np.divide(len(self.filenames) * self.iterations_per_epoch, self.batch_size)))

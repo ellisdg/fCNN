@@ -10787,5 +10787,6 @@
     [
       "{}_tfMRI_LANGUAGE_level2_STORY_hp200_s4_MSMAll"
     ]
-  ]
+  ],
+  "additional_generator_args": {"augment_scale_std": 0.05, "crop": true, "resample": "linear"}
 }

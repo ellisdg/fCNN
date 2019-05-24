@@ -53,6 +53,10 @@ def run_training(config_filename, model_filename, training_log_filename, verbose
         iterations_per_epoch = config["iterations_per_epoch"]
     else:
         iterations_per_epoch = 1
+    if "additional_training_args" in config:
+        train_kwargs = config["additional_training_args"]
+    else:
+        train_kwargs = dict()
 
     # 4. Create Generators
     training_generator = sequence_class(filenames=config['training_filenames'],
@@ -64,7 +68,8 @@ def run_training(config_filename, model_filename, training_log_filename, verbose
                                         points_per_subject=config['points_per_subject'],
                                         surface_names=config['surface_names'],
                                         metric_names=config['metric_names'],
-                                        iterations_per_epoch=iterations_per_epoch)
+                                        iterations_per_epoch=iterations_per_epoch,
+                                        **train_kwargs)
 
     if 'skip_validation' in config and config['skip_validation']:
         monitor = 'loss'

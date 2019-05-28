@@ -3,7 +3,7 @@ import nibabel as nib
 from keras.utils import Sequence
 from unet3d.utils.nilearn_custom_utils.nilearn_utils import crop_img, reorder_affine
 from unet3d.utils.utils import resize, resize_affine, resample
-from unet3d.augment import scale_affine
+from unet3d.augment import scale_affine, add_noise
 from nilearn.image import reorder_img
 
 from .radiomic_utils import binary_classification, multilabel_classification, fetch_data, pick_random_list_elements, \
@@ -169,11 +169,12 @@ class SubjectPredictionSequence(Sequence):
 
 
 class WholeBrainRegressionSequence(HCPRegressionSequence):
-    def __init__(self, resample='linear', crop=True, augment_scale_std=0, **kwargs):
+    def __init__(self, resample='linear', crop=True, augment_scale_std=0, additive_noise_std=0, **kwargs):
         super().__init__(**kwargs)
         self.resample = resample
         self.crop = crop
         self.augment_scale_std = augment_scale_std
+        self.additive_noise_std = additive_noise_std
 
     def __len__(self):
         return int(np.ceil(np.divide(len(self.filenames) * self.iterations_per_epoch, self.batch_size)))
@@ -199,6 +200,8 @@ class WholeBrainRegressionSequence(HCPRegressionSequence):
         if self.augment_scale_std:
             scale = np.random.normal(1, self.augment_scale_std, 3)
             affine = scale_affine(affine, shape, scale)
+        if self.additive_noise_std:
+            feature_image.get_data()[:] = add_noise(feature_image.get_data(), sigma_factor=self.additive_noise_std)
         affine = resize_affine(affine, shape, self.window)
         input_img = resample(feature_image, affine, self.window, interpolation=self.resample)
         return normalize_image_data(input_img.get_data())

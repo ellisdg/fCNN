@@ -15,7 +15,6 @@ def combine_images(images, axis=0, resample_unequal_affines=False, interpolation
     data = list()
     max_dim = len(base_image.shape)
     for image in images:
-        print(image.shape)
         try:
             np.testing.assert_array_equal(image.affine, base_image.affine)
         except AssertionError as error:
@@ -23,7 +22,6 @@ def combine_images(images, axis=0, resample_unequal_affines=False, interpolation
                 image = resample_to_img(image, base_image, interpolation=interpolation)
             else:
                 raise error
-        print(image.shape)
         image_data = image.get_data()
         dim = len(image.shape)
         if dim < max_dim:
@@ -53,6 +51,7 @@ def main():
         if not os.path.exists(output_filename):
             feature_filenames = [os.path.join(subject_dir, fbn) for fbn in config["feature_basenames"]]
             image = combine_images([nib.load(fn) for fn in feature_filenames],
+                                   axis=3,
                                    resample_unequal_affines=True,
                                    interpolation="continuous")
             image = reorder_img(image, resample="continuous")

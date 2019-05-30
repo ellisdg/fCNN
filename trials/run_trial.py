@@ -40,11 +40,11 @@ if __name__ == '__main__':
         key = name + "_filenames"
         if key not in config:
             config[key] = generate_hcp_filenames(system_config['directory'],
-                                                 system_config['surface_basename_template'],
-                                                 system_config['target_basenames'],
-                                                 system_config['feature_basenames'],
-                                                 system_config[name],
-                                                 system_config['hemispheres'])
+                                                 config['surface_basename_template'],
+                                                 config['target_basenames'],
+                                                 config['feature_basenames'],
+                                                 config[name],
+                                                 config['hemispheres'])
     if "directory" in system_config:
         system_config.pop("directory")
 

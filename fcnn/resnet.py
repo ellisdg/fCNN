@@ -191,7 +191,8 @@ def _get_block(identifier):
 
 class ResnetBuilder(object):
     @staticmethod
-    def build(input_shape, num_outputs, block_fn, repetitions, activation="softmax", kernel_initializer='he_normal'):
+    def build(input_shape, num_outputs, block_fn, repetitions, activation="softmax", kernel_initializer='he_normal',
+              n_dense_layers=1):
         """Builds a custom ResNet like architecture.
 
         Args:
@@ -229,9 +230,17 @@ class ResnetBuilder(object):
         pool2 = AveragePooling3D(pool_size=(block_shape[1], block_shape[2], block_shape[3]),
                                  strides=(1, 1, 1))(block)
         flatten1 = Flatten()(pool2)
-        dense = Dense(units=num_outputs, kernel_initializer=kernel_initializer, activation=activation)(flatten1)
+        dense_input = flatten1
+        for i in range(n_dense_layers):
+            if (i + 1) < n_dense_layers:
+                layer_activation = None
+            else:
+                layer_activation = activation
+            dense_input = Dense(units=num_outputs,
+                                kernel_initializer=kernel_initializer,
+                                activation=layer_activation)(dense_input)
 
-        model = Model(inputs=input, outputs=dense)
+        model = Model(inputs=input, outputs=dense_input)
         return model
 
     @staticmethod

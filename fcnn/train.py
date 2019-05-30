@@ -43,9 +43,14 @@ def run_training(config, model_filename, training_log_filename, verbose=1, use_m
             n_outputs = config['n_outputs']
         else:
             n_outputs = len(np.concatenate(config['metric_names']))
+        if "n_dense_layers" in config:
+            n_dense_layers = config["n_dense_layers"]
+        else:
+            n_dense_layers = 1
         model = getattr(ResnetBuilder, 'build_' + model_name)(input_shape,
                                                               n_outputs,
-                                                              activation=config['activation'])
+                                                              activation=config['activation'],
+                                                              n_dense_layers=n_dense_layers)
     if not hasattr(model, 'optimizer') or model.optimizer is None:
         model.compile(optimizer=config['optimizer'], loss=config['loss'])
 

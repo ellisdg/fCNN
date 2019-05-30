@@ -52,7 +52,7 @@ def main():
         output_filename = os.path.join(subject_dir, "T1w", "struct6_1.25_normalized.nii.gz")
         print(output_filename)
         if not os.path.exists(output_filename):
-            mask_filename = os.path.join(subject_dir, "T1w", "fs_brainmask.nii.gz")
+            mask_filename = os.path.join(subject_dir, "T1w", "brainmask_fs.nii.gz")
             mask_image = nib.load(mask_filename)
             feature_filenames = [os.path.join(subject_dir, fbn) for fbn in config["feature_basenames"]]
             feature_images = [nib.load(fn) for fn in feature_filenames][::-1]

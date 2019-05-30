@@ -4,12 +4,25 @@ from keras.utils import Sequence
 from unet3d.utils.nilearn_custom_utils.nilearn_utils import crop_img, reorder_affine
 from unet3d.utils.utils import resize, resize_affine, resample
 from unet3d.augment import scale_affine, add_noise
-from nilearn.image import reorder_img
+from unet3d.data import combine_images
 
 from .radiomic_utils import binary_classification, multilabel_classification, fetch_data, pick_random_list_elements, \
     load_image, fetch_data_for_point
-from .hcp import nib_load_files, extract_gifti_array, extract_gifti_surface_vertices, get_axis, get_vertices_from_scalar, extract_scalar_map
+from .hcp import nib_load_files, extract_gifti_surface_vertices, get_vertices_from_scalar, extract_scalar_map
 from .utils import read_polydata, extract_polydata_vertices, normalize_image_data
+
+
+def load_image(filename, feature_axis=3):
+    """
+
+    :param feature_axis: axis along which to combine the images, if necessary.
+    :param filename: can be either string path to the file or a list of paths.
+    :return: image containing either the 1 image in the filename or a combined image based on multiple filenames.
+    """
+    if type(filename) == str:
+        return nib.load(filename)
+    else:
+        return combine_images(nib_load_files(filename), axis=feature_axis)
 
 
 class SingleSiteSequence(Sequence):
@@ -141,7 +154,7 @@ class HCPRegressionSequence(SingleSiteSequence):
 class SubjectPredictionSequence(Sequence):
     def __init__(self, feature_filename, surface_filename, surface_name, batch_size=50, window=(64, 64, 64), flip=False,
                  spacing=(1, 1, 1)):
-        self.feature_image = nib.load(feature_filename)
+        self.feature_image = load_image(feature_filename)
         if ".gii" in surface_filename:
             surface = nib.load(surface_filename)
             self.vertices = extract_gifti_surface_vertices(surface, primary_anatomical_structure=surface_name)
@@ -190,7 +203,7 @@ class WholeBrainRegressionSequence(HCPRegressionSequence):
         return np.asarray(x), np.asarray(y)
 
     def resample_input(self, feature_filename):
-        feature_image = nib.load(feature_filename)
+        feature_image = load_image(feature_filename)
         affine = feature_image.affine.copy()
         shape = feature_image.shape
         if self.reorder:

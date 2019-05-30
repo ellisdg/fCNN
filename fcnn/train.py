@@ -1,22 +1,25 @@
 import os
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, CSVLogger
 import keras
+import nibabel as nib
 from .resnet import load_model, ResnetBuilder
 import numpy as np
-from .utils.utils import load_json
 from .utils.sequences import HCPRegressionSequence
 
 
-def run_training(config_filename, model_filename, training_log_filename, verbose=1, use_multiprocessing=False,
-                 n_workers=1, max_queue_size=5, model_name='resnet_34', sequence_class=HCPRegressionSequence):
+def run_training(config, model_filename, training_log_filename, verbose=1, use_multiprocessing=False,
+                 n_workers=1, max_queue_size=5, model_name='resnet_34', sequence_class=HCPRegressionSequence,
+                 test_input=1):
     """
+    :param test_input: integer with the number of inputs from the generator to write to file. 0, False, or None will
+    write no inputs to file.
     :param sequence_class: class to use for the generator sequence
     :param model_name:
     :param verbose:
     :param use_multiprocessing:
     :param n_workers:
     :param max_queue_size:
-    :param config_filename:
+    :param config:
     :param model_filename:
     :param training_log_filename:
     :return:
@@ -25,7 +28,6 @@ def run_training(config_filename, model_filename, training_log_filename, verbose
     multiprocessing optimization should be arguments to this function, as these arguments affect the computation time,
     but the results should not vary based on whether multiprocessing is used or not.
     """
-    config = load_json(config_filename)
     window = np.asarray(config['window'])
     spacing = np.asarray(config['spacing'])
 
@@ -70,6 +72,12 @@ def run_training(config_filename, model_filename, training_log_filename, verbose
                                         metric_names=config['metric_names'],
                                         iterations_per_epoch=iterations_per_epoch,
                                         **train_kwargs)
+
+    if test_input:
+        for i in range(test_input):
+            x, y = training_generator[i]
+            x_image = nib.Nifti1Image(x, affine=np.diag(np.ones(4)))
+            x_image.to_filename(model_filename.replace(".h5", "_input_test_{}.nii.gz".format(i)))
 
     if 'skip_validation' in config and config['skip_validation']:
         monitor = 'loss'

@@ -1,1 +1,5 @@
-{"use_multiprocessing": true, "n_workers": 8, "max_queue_size": 15}
+{"use_multiprocessing": true,
+  "n_workers": 8,
+  "max_queue_size": 15,
+  "directory": "/work/aizenberg/dgellis/HCP/HCP_1200"
+}

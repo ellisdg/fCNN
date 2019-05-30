@@ -15,6 +15,7 @@ def combine_images(images, axis=0, resample_unequal_affines=False, interpolation
     data = list()
     max_dim = len(base_image.shape)
     for image in images:
+        print(image.shape)
         try:
             np.testing.assert_array_equal(image.affine, base_image.affine)
         except AssertionError as error:
@@ -22,6 +23,7 @@ def combine_images(images, axis=0, resample_unequal_affines=False, interpolation
                 image = resample_to_img(image, base_image, interpolation=interpolation)
             else:
                 raise error
+        print(image.shape)
         image_data = image.get_data()
         dim = len(image.shape)
         if dim < max_dim:

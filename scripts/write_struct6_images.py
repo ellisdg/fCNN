@@ -1,7 +1,39 @@
 import os
-from fcnn.utils.utils import load_json
-from fcnn.utils.sequences import load_image
-from unet3d.utils.nilearn_custom_utils.nilearn_utils import crop_img
+import json
+import numpy as np
+from nilearn.image import crop_img, reorder_img, resample_to_img
+
+
+def load_json(filename):
+    with open(filename, 'r') as opened_file:
+        return json.load(opened_file)
+
+
+def combine_images(images, axis=0, resample_unequal_affines=False, interpolation="linear"):
+    base_image = images[0]
+    data = list()
+    max_dim = len(base_image.shape)
+    for image in images:
+        try:
+            np.testing.assert_array_equal(image.affine, base_image.affine)
+        except AssertionError as error:
+            if resample_unequal_affines:
+                image = resample_to_img(image, base_image, interpolation=interpolation)
+            else:
+                raise error
+        image_data = image.get_data()
+        dim = len(image.shape)
+        if dim < max_dim:
+            image_data = np.expand_dims(image_data, axis=axis)
+        elif dim > max_dim:
+            max_dim = max(max_dim, dim)
+            data = [np.expand_dims(x, axis=axis) for x in data]
+        data.append(image_data)
+    if len(data[0].shape) > 3:
+        array = np.concatenate(data, axis=axis)
+    else:
+        array = np.stack(data, axis=axis)
+    return base_image.__class__(array, base_image.affine)
 
 
 def main():
@@ -16,8 +48,9 @@ def main():
         output_filename = os.path.join(subject_dir, "T1w", "struct6.nii.gz")
         if not os.path.exists(output_filename):
             feature_filenames = [os.path.join(subject_dir, fbn) for fbn in config["feature_basenames"]]
-            image = load_image(feature_filenames, interpolation="continuous")
-            image = crop_img(image, pad=True)
+            image = combine_images(feature_filenames, interpolation="continuous")
+            image = reorder_img(image, resample="continuous")
+            image = crop_img(image)
             image.to_filename(output_filename)
 
 

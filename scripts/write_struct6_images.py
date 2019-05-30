@@ -47,9 +47,12 @@ def main():
     for subject_id in config['validation'] + config["training"]:
         subject_dir = os.path.join(system_config['directory'], subject_id)
         output_filename = os.path.join(subject_dir, "T1w", "struct6.nii.gz")
+        print(output_filename)
         if not os.path.exists(output_filename):
             feature_filenames = [os.path.join(subject_dir, fbn) for fbn in config["feature_basenames"]]
-            image = combine_images([nib.load(fn) for fn in feature_filenames], interpolation="continuous")
+            image = combine_images([nib.load(fn) for fn in feature_filenames],
+                                   resample_unequal_affines=True,
+                                   interpolation="continuous")
             image = reorder_img(image, resample="continuous")
             image = crop_img(image)
             image.to_filename(output_filename)

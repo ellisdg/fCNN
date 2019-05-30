@@ -19,11 +19,11 @@ def load_image(filename, feature_axis=3, resample_unequal_affines=True, interpol
     :param filename: can be either string path to the file or a list of paths.
     :return: image containing either the 1 image in the filename or a combined image based on multiple filenames.
     """
-    if type(filename) == str:
-        return nib.load(filename)
-    else:
+    if type(filename) == list:
         return combine_images(nib_load_files(filename), axis=feature_axis,
                               resample_unequal_affines=resample_unequal_affines, interpolation=interpolation)
+    else:
+        return nib.load(filename)
 
 
 class SingleSiteSequence(Sequence):

@@ -922,7 +922,7 @@
   "optimizer": "Adam",
   "loss": "mean_absolute_error",
   "points_per_subject": 1,
-  "reorder": true,
+  "reorder": false,
   "validation_points_per_subject": 1,
   "save_best_only": false,
   "n_epochs": 2000,
@@ -943,5 +943,5 @@
       "{}_tfMRI_LANGUAGE_level2_STORY_hp200_s4_MSMAll"
     ]
   ],
-  "additional_generator_args": {"augment_scale_std": 0, "crop": true, "resample": "linear"}
+  "additional_generator_args": {"augment_scale_std": 0, "crop": false, "resample": "linear"}
 }

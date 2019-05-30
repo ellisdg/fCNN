@@ -4,7 +4,7 @@ import numpy as np
 import nibabel as nib
 from nilearn.image import resample_to_img
 from fcnn.utils.utils import normalize_image_data
-from unet3d.utils.nilearn_utils import crop_img, reorder_affine
+from unet3d.utils.nilearn_custom_utils.nilearn_utils import crop_img, reorder_affine
 from unet3d.utils.utils import resample
 
 

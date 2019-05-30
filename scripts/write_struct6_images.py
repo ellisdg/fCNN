@@ -1,6 +1,7 @@
 import os
 from fcnn.utils.utils import load_json
 from fcnn.utils.sequences import load_image
+from unet3d.utils.nilearn_custom_utils.nilearn_utils import crop_img
 
 
 def main():
@@ -15,7 +16,8 @@ def main():
         output_filename = os.path.join(subject_dir, "T1w", "struct6.nii.gz")
         if not os.path.exists(output_filename):
             feature_filenames = [os.path.join(subject_dir, fbn) for fbn in config["feature_basenames"]]
-            image = load_image(feature_filenames)
+            image = load_image(feature_filenames, interpolation="continuous")
+            image = crop_img(image, pad=True)
             image.to_filename(output_filename)
 
 

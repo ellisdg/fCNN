@@ -12,7 +12,7 @@ from .hcp import nib_load_files, extract_gifti_surface_vertices, get_vertices_fr
 from .utils import read_polydata, extract_polydata_vertices, normalize_image_data
 
 
-def load_image(filename, feature_axis=3):
+def load_image(filename, feature_axis=3, resample_unequal_affines=True, interpolation="linear"):
     """
 
     :param feature_axis: axis along which to combine the images, if necessary.
@@ -22,7 +22,8 @@ def load_image(filename, feature_axis=3):
     if type(filename) == str:
         return nib.load(filename)
     else:
-        return combine_images(nib_load_files(filename), axis=feature_axis)
+        return combine_images(nib_load_files(filename), axis=feature_axis,
+                              resample_unequal_affines=resample_unequal_affines, interpolation=interpolation)
 
 
 class SingleSiteSequence(Sequence):

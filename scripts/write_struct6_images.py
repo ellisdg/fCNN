@@ -1,6 +1,7 @@
 import os
 import json
 import numpy as np
+import nibabel as nib
 from nilearn.image import crop_img, reorder_img, resample_to_img
 
 
@@ -48,7 +49,7 @@ def main():
         output_filename = os.path.join(subject_dir, "T1w", "struct6.nii.gz")
         if not os.path.exists(output_filename):
             feature_filenames = [os.path.join(subject_dir, fbn) for fbn in config["feature_basenames"]]
-            image = combine_images(feature_filenames, interpolation="continuous")
+            image = combine_images([nib.load(fn) for fn in feature_filenames], interpolation="continuous")
             image = reorder_img(image, resample="continuous")
             image = crop_img(image)
             image.to_filename(output_filename)

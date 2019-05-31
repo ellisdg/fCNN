@@ -903,7 +903,7 @@
     "CortexRight"
   ],
   "surface_basename_template": "{subject_id}.{hemi}.pial.32k_fs_LR.surf.gii",
-  "feature_basenames": "T1w/Diffusion/dti.nii.gz",
+  "feature_basenames": "T1w/Diffusion/dti_12.nii.gz",
   "target_basenames": [
     "MNINonLinear/Results/tfMRI_LANGUAGE/tfMRI_LANGUAGE_hp200_s4_level2_MSMAll.feat/{}_tfMRI_LANGUAGE_level2_hp200_s4_MSMAll.dscalar.nii"
   ],
@@ -917,7 +917,7 @@
     128
   ],
   "spacing": null,
-  "n_features": 6,
+  "n_features": 12,
   "activation": null,
   "optimizer": "Adam",
   "loss": "mean_absolute_error",
@@ -930,7 +930,7 @@
   "decay_patience": 20,
   "decay_factor": 0.5,
   "flip": false,
-  "batch_size": 15,
+  "batch_size": 5,
   "validation_batch_size": 5,
   "initial_learning_rate": 1e-04,
   "model_name": "resnet_18",
@@ -938,11 +938,12 @@
   "iterations_per_epoch": 1,
   "n_outputs": 59412,
   "sequence": "whole_brain",
-  "n_dense_layers": 2,
+  "n_dense_layers": 1,
+  "freeze_bias": true,
   "metric_names": [
     [
       "{}_tfMRI_LANGUAGE_level2_STORY_hp200_s4_MSMAll"
     ]
   ],
-  "additional_generator_args": {"augment_scale_std": 0, "crop": false, "resample": "linear"}
+  "additional_generator_args": {"augment_scale_std": 0, "crop": true, "resample": "linear"}
 }

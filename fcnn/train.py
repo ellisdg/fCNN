@@ -51,6 +51,11 @@ def run_training(config, model_filename, training_log_filename, verbose=1, use_m
                                                               n_outputs,
                                                               activation=config['activation'],
                                                               n_dense_layers=n_dense_layers)
+    if "freeze_bias" in config and config["freeze_bias"]:
+        bias = model.trainable_weights.pop(-1)
+        assert "bias" in bias.name
+        model.non_trainable_weights.append(bias)
+        model.optimizer = None
     if not hasattr(model, 'optimizer') or model.optimizer is None:
         model.compile(optimizer=config['optimizer'], loss=config['loss'])
 
@@ -79,10 +84,17 @@ def run_training(config, model_filename, training_log_filename, verbose=1, use_m
                                         **train_kwargs)
 
     if test_input:
-        for i in range(test_input):
-            x, y = training_generator[i]
-            x_image = nib.Nifti1Image(x, affine=np.diag(np.ones(4)))
-            x_image.to_filename(model_filename.replace(".h5", "_input_test_{}.nii.gz".format(i)))
+        n_test_batches = int(np.ceil(test_input/float(config['batch_size'])))
+        for batch_index in range(n_test_batches):
+            x, y = training_generator[batch_index]
+            for within_batch_index in range(min([config['batch_size'],
+                                                 test_input - (batch_index * config['batch_size'])])):
+                x_image = nib.Nifti1Image(x[within_batch_index], affine=np.diag(np.ones(4)))
+                x_image.to_filename(model_filename.replace(".h5",
+                                                           "_input_test_{}.nii.gz".format(
+                                                               within_batch_index
+                                                               + config['batch_size']
+                                                               * batch_index)))
 
     if 'skip_validation' in config and config['skip_validation']:
         monitor = 'loss'

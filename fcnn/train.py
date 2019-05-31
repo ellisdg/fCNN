@@ -52,10 +52,11 @@ def run_training(config, model_filename, training_log_filename, verbose=1, use_m
                                                               activation=config['activation'],
                                                               n_dense_layers=n_dense_layers)
     if "freeze_bias" in config and config["freeze_bias"]:
-        bias = model.trainable_weights.pop(-1)
-        assert "bias" in bias.name
-        model.non_trainable_weights.append(bias)
+        dense = model.layers[-1]
+        bias = dense.trainable_weights.pop(dense.trainable_weights.index(dense.bias))
+        dense.non_trainable_weights.append(bias)
         model.optimizer = None
+        model.compile(optimizer="Adam", loss="mean_absolute_error")
     if not hasattr(model, 'optimizer') or model.optimizer is None:
         model.compile(optimizer=config['optimizer'], loss=config['loss'])
 

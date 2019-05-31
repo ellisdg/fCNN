@@ -21,7 +21,7 @@ def main(args):
         cmd = ["wb_command", "-cifti-average", output_filename]
         for subject_id in subject_ids:
             cmd.append("-cifti")
-            cmd.append(os.path.join(directory, subject_id, target_basename))
+            cmd.append(os.path.join(directory, subject_id, target_basename.format(subject_id)))
         print(" ".join(cmd))
         subprocess.call(cmd)
 

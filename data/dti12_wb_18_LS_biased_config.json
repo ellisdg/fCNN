@@ -939,7 +939,7 @@
   "n_outputs": 59412,
   "sequence": "whole_brain",
   "n_dense_layers": 1,
-  "freeze_bias": false,
+  "freeze_bias": true,
   "metric_names": [
     [
       "{}_tfMRI_LANGUAGE_level2_STORY_hp200_s4_MSMAll"

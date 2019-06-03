@@ -13,7 +13,7 @@ def main(args):
     config = load_json(args[1])
     directory = os.path.abspath(args[2])
     output_directory = os.path.abspath(args[3])
-    subset = "training"
+    subset = str(args[4])
     subject_ids = config[subset]
     for target_basename in config["target_basenames"]:
         output_filename = os.path.join(output_directory,

@@ -14,7 +14,10 @@ def main(args):
         subject_id = 100206
         model = load_model(model_filename)
         config = load_json(config_filename)
-        metrics = nib_load_files([metric_filenames])
+        if type(metric_filenames) == str:
+            metrics = nib_load_files([metric_filenames])
+        else:
+            metrics = nib_load_files(metric_filenames)
         metric_data = get_metric_data(metrics, config["metric_names"], config["surface_names"],
                                       subject_id).T.ravel()
         weights = model.get_weights()

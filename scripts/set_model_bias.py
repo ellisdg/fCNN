@@ -18,8 +18,16 @@ def main(args):
         metric_data = get_metric_data(metrics, config["metric_names"], config["surface_names"],
                                       subject_id).T.ravel()
         weights = model.get_weights()
-        weights[-1] = metric_data
-        weights[-2][:] = 0
+        if weights[-1].shape == metric_data.shape:
+            bias_index = -1
+            edge_index = -2
+        elif weights[-2].shape == metric_data.shape:
+            bias_index = -2
+            edge_index = -1
+        else:
+            raise ValueError("Could not find bias weights with shape {}".format(metric_data.shape))
+        weights[bias_index][:] = metric_data
+        weights[edge_index][:] = 0
         model.set_weights(weights)
         model.save(output_filename)
 

@@ -13,7 +13,7 @@ module load cuda
 module load anaconda
 source activate fcnn-1.12
 
-TRIAL=dti4_wb_18_LS_2mm_biased_augmented
+TRIAL=dti4_wb_18_LS_2mm_biased_augmented025
 CONFIG=/home/aizenberg/dgellis/fCNN/data/${TRIAL}_config.json
 HCC_CONFIG=/home/aizenberg/dgellis/fCNN/data/hcc_p100_config.json
 MODEL=/work/aizenberg/dgellis/fCNN/model_${TRIAL}.h5

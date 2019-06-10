@@ -51,8 +51,10 @@ if __name__ == '__main__':
         group_average_filenames = str(sys.argv[5])
         group_average = get_metric_data_from_config(group_average_filenames, config_filename)
         model_metrics = [wrapped_partial(compare_scores, comparison=group_average)]
+        metric_to_monitor = "compare_scores"
     except IndexError:
         model_metrics = []
+        metric_to_monitor = "loss"
 
     for name in ("training", "validation"):
         key = name + "_filenames"
@@ -72,4 +74,4 @@ if __name__ == '__main__':
         sequence_class = HCPRegressionSequence
 
     run_training(config, model_filename, training_log_filename, sequence_class=sequence_class,
-                 model_metrics=model_metrics, **system_config)
+                 model_metrics=model_metrics, metric_to_monitor=metric_to_monitor, **system_config)

@@ -117,6 +117,8 @@ def run_training(config, model_filename, training_log_filename, verbose=1, use_m
 
     checkpointer = ModelCheckpoint(filepath=model_filename,
                                    verbose=verbose,
+                                   monitor=metric_to_monitor,
+                                   mode="min",
                                    save_best_only=config['save_best_only'])
     reduce_lr = ReduceLROnPlateau(monitor=metric_to_monitor,
                                   factor=config['decay_factor'],

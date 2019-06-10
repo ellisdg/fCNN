@@ -1,12 +1,18 @@
 import sys
 import os
-from functools import partial
+from functools import partial, update_wrapper
 sys.path.append(os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
 from fcnn.train import run_training
 from fcnn.utils.sequences import WholeBrainRegressionSequence, HCPRegressionSequence
 from fcnn.utils.utils import load_json
 from fcnn.utils.custom import get_metric_data_from_config
 from fcnn.resnet import compare_scores
+
+
+def wrapped_partial(func, *args, **kwargs):
+    partial_func = partial(func, *args, **kwargs)
+    update_wrapper(partial_func, func)
+    return partial_func
 
 
 def generate_hcp_filenames(directory, surface_basename_template, target_basenames, feature_basenames, subject_ids,
@@ -44,7 +50,7 @@ if __name__ == '__main__':
     try:
         group_average_filenames = str(sys.argv[5])
         group_average = get_metric_data_from_config(group_average_filenames, config_filename)
-        model_metrics = [partial(compare_scores, comparison=group_average)]
+        model_metrics = [wrapped_partial(compare_scores, comparison=group_average)]
     except IndexError:
         model_metrics = []
 

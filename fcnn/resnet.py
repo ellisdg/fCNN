@@ -40,7 +40,7 @@ def j_stat(y_true, y_pred):
 
 def compare_scores(y_true, y_pred, comparison=0, metric=mean_absolute_error):
     keras_comparison = keras.backend.variable(comparison)
-    return metric(y_true, keras_comparison) - metric(y_true, y_pred)
+    return metric(y_true, y_pred) - metric(y_true, keras_comparison)
 
 
 def load_model(filename, custom_objects={'sensitivity': sensitivity, 'specificity': specificity, 'j_stat': j_stat,
@@ -194,13 +194,6 @@ def _get_block(identifier):
             raise ValueError('Invalid {}'.format(identifier))
         return res
     return identifier
-
-
-class GroupAverageMetric(object):
-    def __init__(self, group_average):
-        self.group_avg = keras.backend.variable(group_average)
-
-
 
 
 class ResnetBuilder(object):

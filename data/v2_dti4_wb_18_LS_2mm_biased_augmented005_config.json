@@ -949,6 +949,6 @@
     "augment_scale_std": 0,
     "crop": true,
     "resample": "linear",
-    "additive_noise_std": 0.25
+    "additive_noise_std": 0.05
   }
 }

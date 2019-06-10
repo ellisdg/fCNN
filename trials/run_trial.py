@@ -1,10 +1,12 @@
 import sys
 import os
-import json
+from functools import partial
 sys.path.append(os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
 from fcnn.train import run_training
 from fcnn.utils.sequences import WholeBrainRegressionSequence, HCPRegressionSequence
 from fcnn.utils.utils import load_json
+from fcnn.utils.custom import get_metric_data_from_config
+from fcnn.resnet import compare_scores
 
 
 def generate_hcp_filenames(directory, surface_basename_template, target_basenames, feature_basenames, subject_ids,
@@ -39,6 +41,13 @@ if __name__ == '__main__':
     print("MP Config: ", system_config_filename)
     system_config = load_json(system_config_filename)
 
+    try:
+        group_average_filenames = str(sys.argv[5])
+        group_average = get_metric_data_from_config(group_average_filenames, config_filename)
+        model_metrics = [partial(compare_scores, comparison=group_average)]
+    except IndexError:
+        model_metrics = []
+
     for name in ("training", "validation"):
         key = name + "_filenames"
         if key not in config:
@@ -57,4 +66,4 @@ if __name__ == '__main__':
         sequence_class = HCPRegressionSequence
 
     run_training(config, model_filename, training_log_filename, sequence_class=sequence_class,
-                 **system_config)
+                 model_metrics=model_metrics, **system_config)

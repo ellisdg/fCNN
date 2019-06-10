@@ -2,13 +2,13 @@ import numpy as np
 import nibabel as nib
 from keras.utils import Sequence
 from unet3d.utils.nilearn_custom_utils.nilearn_utils import crop_img, reorder_affine
-from unet3d.utils.utils import resize, resize_affine, resample
+from unet3d.utils.utils import resize_affine, resample
 from unet3d.augment import scale_affine, add_noise
 from unet3d.data import combine_images
 
 from .radiomic_utils import binary_classification, multilabel_classification, fetch_data, pick_random_list_elements, \
     load_image, fetch_data_for_point
-from .hcp import nib_load_files, extract_gifti_surface_vertices, get_vertices_from_scalar, extract_scalar_map
+from .hcp import nib_load_files, extract_gifti_surface_vertices, get_vertices_from_scalar, get_metric_data
 from .utils import read_polydata, extract_polydata_vertices, normalize_image_data
 
 
@@ -219,16 +219,3 @@ class WholeBrainRegressionSequence(HCPRegressionSequence):
         affine = resize_affine(affine, shape, self.window)
         input_img = resample(feature_image, affine, self.window, interpolation=self.resample)
         return normalize_image_data(input_img.get_data())
-
-
-def get_metric_data(metrics, metric_names, surface_names, subject_id, stack_axis=1):
-    all_metric_data = list()
-    for metric, metric_names in zip(metrics, metric_names):
-        for metric_name in metric_names:
-            metric_data = list()
-            for surface_name in surface_names:
-                metric_data.extend(extract_scalar_map(metric, metric_name.format(subject_id),
-                                                      brain_structure_name=surface_name))
-            all_metric_data.append(metric_data)
-    return np.stack(all_metric_data, axis=stack_axis)
-

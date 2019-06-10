@@ -1,4 +1,5 @@
 import nibabel as nib
+import numpy as np
 
 
 def nib_load_files(filenames):
@@ -72,3 +73,15 @@ def get_mask_from_axis(brain_model_axis, brain_structure_name):
 
 def get_axis(scalar, axis_index):
     return scalar.header.get_axis(axis_index)
+
+
+def get_metric_data(metrics, metric_names, surface_names, subject_id, stack_axis=1):
+    all_metric_data = list()
+    for metric, metric_names in zip(metrics, metric_names):
+        for metric_name in metric_names:
+            metric_data = list()
+            for surface_name in surface_names:
+                metric_data.extend(extract_scalar_map(metric, metric_name.format(subject_id),
+                                                      brain_structure_name=surface_name))
+            all_metric_data.append(metric_data)
+    return np.stack(all_metric_data, axis=stack_axis)

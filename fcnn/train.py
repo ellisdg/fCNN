@@ -9,7 +9,7 @@ from .utils.sequences import HCPRegressionSequence
 
 def run_training(config, model_filename, training_log_filename, verbose=1, use_multiprocessing=False,
                  n_workers=1, max_queue_size=5, model_name='resnet_34', sequence_class=HCPRegressionSequence,
-                 test_input=1):
+                 test_input=1, metric_to_monitor="loss", model_metrics=()):
     """
     :param test_input: integer with the number of inputs from the generator to write to file. 0, False, or None will
     write no inputs to file.
@@ -22,6 +22,8 @@ def run_training(config, model_filename, training_log_filename, verbose=1, use_m
     :param config:
     :param model_filename:
     :param training_log_filename:
+    :param metric_to_monitor:
+    :param model_metrics:
     :return:
 
     Anything that directly affects the training results should go into the config file. Other specifications such as
@@ -56,9 +58,9 @@ def run_training(config, model_filename, training_log_filename, verbose=1, use_m
         bias = dense.trainable_weights.pop(dense.trainable_weights.index(dense.bias))
         dense.non_trainable_weights.append(bias)
         model.optimizer = None
-        model.compile(optimizer="Adam", loss="mean_absolute_error")
+
     if not hasattr(model, 'optimizer') or model.optimizer is None:
-        model.compile(optimizer=config['optimizer'], loss=config['loss'])
+        model.compile(optimizer=config['optimizer'], loss=config['loss'], metrics=model_metrics)
 
     if "initial_learning_rate" in config:
         keras.backend.set_value(model.optimizer.lr, config['initial_learning_rate'])
@@ -98,7 +100,6 @@ def run_training(config, model_filename, training_log_filename, verbose=1, use_m
                                                                * batch_index)))
 
     if 'skip_validation' in config and config['skip_validation']:
-        monitor = 'loss'
         validation_generator = None
     else:
         validation_generator = sequence_class(filenames=config['validation_filenames'],
@@ -110,14 +111,14 @@ def run_training(config, model_filename, training_log_filename, verbose=1, use_m
                                               points_per_subject=config['validation_points_per_subject'],
                                               surface_names=config['surface_names'],
                                               metric_names=config['metric_names'])
-        monitor = 'val_loss'
+        metric_to_monitor = 'val_' + metric_to_monitor
 
     # 5. Run Training
 
     checkpointer = ModelCheckpoint(filepath=model_filename,
                                    verbose=verbose,
                                    save_best_only=config['save_best_only'])
-    reduce_lr = ReduceLROnPlateau(monitor=monitor,
+    reduce_lr = ReduceLROnPlateau(monitor=metric_to_monitor,
                                   factor=config['decay_factor'],
                                   patience=config['decay_patience'],
                                   min_lr=config['min_learning_rate'])

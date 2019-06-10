@@ -18,6 +18,7 @@ from keras.layers.normalization import BatchNormalization
 from keras.regularizers import l2
 from keras import backend as K
 from keras.models import load_model as keras_load_model
+from keras.metrics import mean_absolute_error
 import keras
 
 
@@ -37,7 +38,13 @@ def j_stat(y_true, y_pred):
     return sensitivity(y_true, y_pred) + specificity(y_true, y_pred) - 1
 
 
-def load_model(filename, custom_objects={'sensitivity': sensitivity, 'specificity': specificity, 'j_stat': j_stat}):
+def compare_scores(y_true, y_pred, comparison=0, metric=mean_absolute_error):
+    keras_comparison = keras.backend.variable(comparison)
+    return metric(y_true, keras_comparison) - metric(y_true, y_pred)
+
+
+def load_model(filename, custom_objects={'sensitivity': sensitivity, 'specificity': specificity, 'j_stat': j_stat,
+                                         'compare_scores': compare_scores}):
     return keras_load_model(filename, custom_objects=custom_objects)
 
 
@@ -187,6 +194,13 @@ def _get_block(identifier):
             raise ValueError('Invalid {}'.format(identifier))
         return res
     return identifier
+
+
+class GroupAverageMetric(object):
+    def __init__(self, group_average):
+        self.group_avg = keras.backend.variable(group_average)
+
+
 
 
 class ResnetBuilder(object):

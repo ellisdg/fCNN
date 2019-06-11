@@ -932,7 +932,7 @@
   "flip": false,
   "batch_size": 15,
   "validation_batch_size": 5,
-  "initial_learning_rate": 0.0001,
+  "initial_learning_rate": 1e-4,
   "model_name": "resnet_18",
   "skip_validation": false,
   "iterations_per_epoch": 1,

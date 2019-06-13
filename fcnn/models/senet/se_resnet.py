@@ -39,7 +39,8 @@ def SEResNet(input_shape=None,
              include_top=True,
              weights=None,
              input_tensor=None,
-             pooling=None):
+             pooling=None,
+             **kwargs):
     """ Instantiate the Squeeze and Excite ResNet architecture. Note that ,
         when using TensorFlow for best performance you should set
         `image_data_format="channels_last"` in your Keras config
@@ -111,7 +112,7 @@ def SEResNet(input_shape=None,
             img_input = input_tensor
 
     x = _create_se_resnet(num_outputs, img_input, include_top, initial_conv_filters,
-                          filters, depth, width, bottleneck, weight_decay, pooling)
+                          filters, depth, width, bottleneck, weight_decay, pooling, **kwargs)
 
     # Ensure that the model takes into account
     # any potential predecessors of `input_tensor`.

@@ -397,20 +397,20 @@ def _create_se_resnet(num_outputs, img_input, include_top, initial_conv_filters,
 class SEResnetBuilder(object):
     @staticmethod
     def build_se_resnet_18(*args, **kwargs):
-        SEResNet18(*args, **kwargs)
+        return SEResNet18(*args, **kwargs)
 
     @staticmethod
     def build_se_resnet_34(*args, **kwargs):
-        SEResNet34(*args, **kwargs)
+        return SEResNet34(*args, **kwargs)
 
     @staticmethod
     def build_se_resnet_50(*args, **kwargs):
-        SEResNet50(*args, **kwargs)
+        return SEResNet50(*args, **kwargs)
 
     @staticmethod
     def build_se_resnet_101(*args, **kwargs):
-        SEResNet101(*args, **kwargs)
+        return SEResNet101(*args, **kwargs)
 
     @staticmethod
     def build_se_resnet_154(*args, **kwargs):
-        SEResNet154(*args, **kwargs)
+        return SEResNet154(*args, **kwargs)

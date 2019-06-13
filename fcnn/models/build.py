@@ -9,3 +9,5 @@ def build_model(model_name, *args, **kwargs):
         else:
             builder = ResnetBuilder
         return getattr(builder, 'build_' + model_name.lower())(*args, **kwargs)
+    else:
+        raise ValueError(model_name + " is not a valid model name")

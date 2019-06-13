@@ -17,7 +17,6 @@ from keras.layers.merge import add
 from keras.layers.normalization import BatchNormalization
 from keras.regularizers import l2
 from keras import backend as K
-from keras.models import load_model as keras_load_model
 from keras.metrics import mean_absolute_error
 import keras
 
@@ -41,11 +40,6 @@ def j_stat(y_true, y_pred):
 def compare_scores(y_true, y_pred, comparison=0, metric=mean_absolute_error):
     keras_comparison = keras.backend.variable(comparison)
     return metric(y_true, y_pred) - metric(y_true, keras_comparison)
-
-
-def load_model(filename, custom_objects={'sensitivity': sensitivity, 'specificity': specificity, 'j_stat': j_stat,
-                                         'compare_scores': compare_scores}):
-    return keras_load_model(filename, custom_objects=custom_objects)
 
 
 def _bn_relu(input):

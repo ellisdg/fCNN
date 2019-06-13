@@ -6,7 +6,7 @@ from fcnn.train import run_training
 from fcnn.utils.sequences import WholeBrainRegressionSequence, HCPRegressionSequence
 from fcnn.utils.utils import load_json
 from fcnn.utils.custom import get_metric_data_from_config
-from fcnn.resnet import compare_scores
+from fcnn.models.resnet import compare_scores
 
 
 def wrapped_partial(func, *args, **kwargs):

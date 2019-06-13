@@ -1,4 +1,4 @@
-from fcnn.resnet import load_model
+from fcnn.models.resnet import load_model
 from fcnn.utils.custom import get_metric_data_from_config
 import sys
 import os

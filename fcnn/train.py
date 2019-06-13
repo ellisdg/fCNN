@@ -2,7 +2,8 @@ import os
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, CSVLogger
 import keras
 import nibabel as nib
-from .resnet import load_model, ResnetBuilder
+from fcnn.models.resnet import load_model
+from fcnn.models.build import build_model
 import numpy as np
 from .utils.sequences import HCPRegressionSequence
 
@@ -42,17 +43,11 @@ def run_training(config, model_filename, training_log_filename, verbose=1, use_m
     else:
         input_shape = tuple(window.tolist() + [config['n_features']])
         if "n_outputs" in config:
-            n_outputs = config['n_outputs']
+            num_outputs = config['n_outputs']
         else:
-            n_outputs = len(np.concatenate(config['metric_names']))
-        if "n_dense_layers" in config:
-            n_dense_layers = config["n_dense_layers"]
-        else:
-            n_dense_layers = 1
-        model = getattr(ResnetBuilder, 'build_' + model_name)(input_shape,
-                                                              n_outputs,
-                                                              activation=config['activation'],
-                                                              n_dense_layers=n_dense_layers)
+            num_outputs = len(np.concatenate(config['metric_names']))
+        model = build_model(model_name, input_shape=input_shape, num_outputs=num_outputs,
+                            activation=config['activation'])
     if "freeze_bias" in config and config["freeze_bias"]:
         dense = model.layers[-1]
         bias = dense.trainable_weights.pop(dense.trainable_weights.index(dense.bias))

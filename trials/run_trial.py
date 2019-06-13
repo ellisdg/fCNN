@@ -68,7 +68,7 @@ if __name__ == '__main__':
     if "directory" in system_config:
         system_config.pop("directory")
 
-    if os.path.basename(config_filename).split("_")[1] == "wb":
+    if "_wb_" in os.path.basename(config_filename):
         sequence_class = WholeBrainRegressionSequence
     else:
         sequence_class = HCPRegressionSequence

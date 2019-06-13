@@ -188,7 +188,7 @@ def senet_init_block(x,
         in_channels=mid_channels,
         out_channels=out_channels,
         name=name + "/conv3")
-    x = nn.MaxPool2D(
+    x = nn.MaxPool3D(
         pool_size=3,
         strides=2,
         padding='same',
@@ -223,8 +223,8 @@ def senet(channels,
     classes : int, default 1000
         Number of classification classes.
     """
-    input_shape = (in_channels, in_size[0], in_size[1]) if is_channels_first() else\
-        (in_size[0], in_size[1], in_channels)
+    input_shape = (in_channels, in_size[0], in_size[1], in_size[2]) if is_channels_first() else\
+        (in_size[0], in_size[1], in_size[2], in_channels)
     input = nn.Input(shape=input_shape)
 
     x = senet_init_block(
@@ -247,7 +247,7 @@ def senet(channels,
                 identity_conv3x3=identity_conv3x3,
                 name="features/stage{}/unit{}".format(i + 1, j + 1))
             in_channels = out_channels
-    x = nn.AvgPool2D(
+    x = nn.AvgPool3D(
         pool_size=7,
         strides=1,
         name="features/final_pool")(x)

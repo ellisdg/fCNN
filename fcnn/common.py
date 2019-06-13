@@ -2,8 +2,8 @@
     Common routines for models in Keras.
 """
 
-__all__ = ['is_channels_first', 'get_channel_axis', 'update_keras_shape', 'flatten', 'batchnorm', 'maxpool2d',
-           'avgpool2d', 'conv2d', 'conv1x1', 'conv3x3', 'depthwise_conv3x3', 'conv_block', 'conv1x1_block',
+__all__ = ['is_channels_first', 'get_channel_axis', 'update_keras_shape', 'flatten', 'batchnorm', 'maxpool3d',
+           'avgpool3d', 'conv3d', 'conv1x1', 'conv3x3', 'depthwise_conv3x3', 'conv_block', 'conv1x1_block',
            'conv3x3_block', 'conv7x7_block', 'dwconv3x3_block', 'pre_conv_block', 'pre_conv1x1_block',
            'pre_conv3x3_block', 'channel_shuffle_lambda', 'se_block']
 
@@ -71,7 +71,7 @@ def flatten(x,
     """
     if not is_channels_first():
         def channels_last_flatten(z):
-            z = K.permute_dimensions(z, pattern=(0, 3, 1, 2))
+            z = K.permute_dimensions(z, pattern=(0, 4, 1, 2, 3))
             z = K.reshape(z, shape=(-1, np.prod(K.int_shape(z)[1:])))
             update_keras_shape(z)
             return z
@@ -121,7 +121,7 @@ def batchnorm(x,
     return x
 
 
-def maxpool2d(x,
+def maxpool3d(x,
               pool_size,
               strides,
               padding=0,
@@ -151,14 +151,15 @@ def maxpool2d(x,
         Resulted tensor/variable/symbol.
     """
     if isinstance(pool_size, int):
-        pool_size = (pool_size, pool_size)
+        pool_size = (pool_size, pool_size, pool_size)
     if isinstance(strides, int):
-        strides = (strides, strides)
+        strides = (strides, strides, strides)
     if isinstance(padding, int):
-        padding = (padding, padding)
+        padding = (padding, padding, padding)
 
     assert (padding[0] == 0) or (padding[0] == (pool_size[0] - 1) // 2)
     assert (padding[1] == 0) or (padding[1] == (pool_size[1] - 1) // 2)
+    assert (padding[2] == 0) or (padding[2] == (pool_size[2] - 1) // 2)
 
     padding_ke = "valid" if padding[0] == 0 else "same"
 
@@ -170,6 +171,10 @@ def maxpool2d(x,
                 padding = (padding[0] + 1, padding[1])
             width = int(x.shape[3])
             out_width = float(width + 2 * padding[1] - pool_size[1]) / strides[1] + 1.0
+            if math.ceil(out_width) > math.floor(out_width):
+                padding = (padding[0], padding[1] + 1)
+            depth = int(x.shape[4])
+            out_depth = float(depth + 2 * padding[1] - pool_size[1]) / strides[1] + 1.0
             if math.ceil(out_width) > math.floor(out_width):
                 padding = (padding[0], padding[1] + 1)
 
@@ -189,7 +194,7 @@ def maxpool2d(x,
                 assert (strides[0] <= 3)
                 padding_ke = "same"
 
-    x = nn.MaxPool2D(
+    x = nn.MaxPool3D(
         pool_size=pool_size,
         strides=strides,
         padding=padding_ke,
@@ -197,7 +202,7 @@ def maxpool2d(x,
     return x
 
 
-def avgpool2d(x,
+def avgpool3d(x,
               pool_size,
               strides,
               padding=0,
@@ -256,21 +261,21 @@ def avgpool2d(x,
                 if is_channels_first() else
                 (lambda z: tf.pad(z, [[0, 0], list(padding), list(padding), [0, 0]], mode="REFLECT")))(x)
 
-        x = nn.AvgPool2D(
+        x = nn.AvgPool3D(
             pool_size=pool_size,
             strides=1,
             padding="valid",
             name=name + "/pool")(x)
 
         if (strides[0] > 1) or (strides[1] > 1):
-            x = nn.AvgPool2D(
+            x = nn.AvgPool3D(
                 pool_size=1,
                 strides=strides,
                 padding="valid",
                 name=name + "/stride")(x)
         return x
 
-    x = nn.AvgPool2D(
+    x = nn.AvgPool3D(
         pool_size=pool_size,
         strides=strides,
         padding=padding_ke,
@@ -278,7 +283,7 @@ def avgpool2d(x,
     return x
 
 
-def conv2d(x,
+def conv3d(x,
            in_channels,
            out_channels,
            kernel_size,
@@ -287,9 +292,9 @@ def conv2d(x,
            dilation=1,
            groups=1,
            use_bias=True,
-           name="conv2d"):
+           name="conv3d"):
     """
-    Convolution 2D layer wrapper.
+    Convolution 3d layer wrapper.
 
     Parameters:
     ----------
@@ -311,7 +316,7 @@ def conv2d(x,
         Number of groups.
     use_bias : bool, default False
         Whether the layer uses a bias vector.
-    name : str, default 'conv2d'
+    name : str, default 'conv3d'
         Layer name.
 
     Returns
@@ -346,7 +351,7 @@ def conv2d(x,
         elif (padding[0] == padding[1]) and (kernel_size[0] == kernel_size[1]) and (kernel_size[0] // 2 == padding[0]):
             padding_ke = "same"
         else:
-            x = nn.ZeroPadding2D(
+            x = nn.ZeroPadding3D(
                 padding=padding,
                 name=name + "/pad")(x)
             padding_ke = "valid"
@@ -355,7 +360,7 @@ def conv2d(x,
     if groups == 1:
         if extra_pad:
             name = name + "/conv"
-        x = nn.Conv2D(
+        x = nn.Conv3D(
             filters=out_channels,
             kernel_size=kernel_size,
             strides=strides,
@@ -367,7 +372,7 @@ def conv2d(x,
         assert (dilation[0] == 1) and (dilation[1] == 1)
         if extra_pad:
             name = name + "/conv"
-        x = nn.DepthwiseConv2D(
+        x = nn.DepthwiseConv3D(
             kernel_size=kernel_size,
             strides=strides,
             padding=padding_ke,
@@ -385,7 +390,7 @@ def conv2d(x,
                 (lambda z: z[:, gi * in_group_channels:(gi + 1) * in_group_channels, :, :])
                 if is_channels_first() else
                 (lambda z: z[:, :, :, gi * in_group_channels:(gi + 1) * in_group_channels]))(x)
-            xi = nn.Conv2D(
+            xi = nn.Conv3D(
                 filters=out_group_channels,
                 kernel_size=kernel_size,
                 strides=strides,
@@ -433,7 +438,7 @@ def conv1x1(x,
     keras.backend tensor/variable/symbol
         Resulted tensor/variable/symbol.
     """
-    return conv2d(
+    return conv3d(
         x=x,
         in_channels=in_channels,
         out_channels=out_channels,
@@ -476,7 +481,7 @@ def conv3x3(x,
     keras.backend tensor/variable/symbol
         Resulted tensor/variable/symbol.
     """
-    return conv2d(
+    return conv3d(
         x=x,
         in_channels=in_channels,
         out_channels=out_channels,
@@ -511,7 +516,7 @@ def depthwise_conv3x3(x,
     keras.backend tensor/variable/symbol
         Resulted tensor/variable/symbol.
     """
-    return conv2d(
+    return conv3d(
         x=x,
         in_channels=channels,
         out_channels=channels,
@@ -570,7 +575,7 @@ def conv_block(x,
     keras.backend tensor/variable/symbol
         Resulted tensor/variable/symbol.
     """
-    x = conv2d(
+    x = conv3d(
         x=x,
         in_channels=in_channels,
         out_channels=out_channels,
@@ -858,7 +863,7 @@ def pre_conv_block(x,
     x = nn.Activation("relu", name=name + "/activ")(x)
     if return_preact:
         x_pre_activ = x
-    x = conv2d(
+    x = conv3d(
         x=x,
         in_channels=in_channels,
         out_channels=out_channels,
@@ -1043,7 +1048,7 @@ def se_block(x,
     mid_cannels = channels // reduction
     pool_size = x._keras_shape[2:4] if is_channels_first() else x._keras_shape[1:3]
 
-    w = nn.AvgPool2D(
+    w = nn.AvgPool3D(
         pool_size=pool_size,
         name=name + "/pool")(x)
     w = conv1x1(

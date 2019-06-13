@@ -242,7 +242,7 @@ def SEResNet154(input_shape=None,
                     **kwargs)
 
 
-def _resnet_block(input, filters, k=1, strides=(1, 1)):
+def _resnet_block(input, filters, k=1, strides=(1, 1, 1)):
     ''' Adds a pre-activation resnet block without bottleneck layers
 
     Args:
@@ -260,7 +260,7 @@ def _resnet_block(input, filters, k=1, strides=(1, 1)):
     x = Activation('relu')(x)
 
     if strides != (1, 1, 1) or init._keras_shape[channel_axis] != filters * k:
-        init = Conv3D(filters * k, (1, 1), padding='same', kernel_initializer='he_normal',
+        init = Conv3D(filters * k, (1, 1, 1), padding='same', kernel_initializer='he_normal',
                       use_bias=False, strides=strides)(x)
 
     x = Conv3D(filters * k, (3, 3, 3), padding='same', kernel_initializer='he_normal',

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-TRIAL=dti4_wb_18_LS_2mm_biased_augmented
+TRIAL=v2_dti4_wb_18_LS_4mm_biased_augmented005
 CONFIG=/home/neuro-user/PycharmProjects/fCNN/data/${TRIAL}_config.json
 HCC_CONFIG=/home/neuro-user/PycharmProjects/fCNN/data/local_config.json
 MODEL=/home/neuro-user/PycharmProjects/fCNN/trials/models/model_${TRIAL}.h5

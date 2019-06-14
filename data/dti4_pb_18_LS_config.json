@@ -948,7 +948,8 @@
   "sequence_kwargs": {
     "parcellation_name":  "{}_aparc",
     "parcellation_template": "MNINonLinear/fsaverage_LR32k/{subject_id}.aparc.32k_fs_LR.dlabel.nii",
-    "target_parcels": [[ 1, 36],
+    "target_parcels": [
+       [ 1, 36],
        [ 2, 37],
        [ 3, 38],
        [ 5, 40],

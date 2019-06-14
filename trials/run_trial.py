@@ -66,14 +66,16 @@ if __name__ == '__main__':
                                                  config[name],
                                                  config['hemispheres'])
     if "directory" in system_config:
-        system_config.pop("directory")
+        directory = system_config.pop("directory")
+    else:
+        directory = "."
 
     if "_wb_" in os.path.basename(config_filename):
         sequence_class = WholeBrainRegressionSequence
     elif "_pb_" in os.path.basename(config_filename):
         sequence_class = ParcelBasedSequence
         config["sequence_kwargs"]["parcellation_template"] = os.path.join(
-            system_config["directory"], config["sequence_kwargs"]["parcellation_template"])
+            directory, config["sequence_kwargs"]["parcellation_template"])
     else:
         sequence_class = HCPRegressionSequence
 
@@ -83,7 +85,7 @@ if __name__ == '__main__':
             config["sequence_kwargs"]["target_parcel"] = target_parcel
             print("Training on parcel: {}".format(target_parcel))
             if type(target_parcel) == list:
-                parcel_id = "-".join(target_parcel)
+                parcel_id = "-".join([str(i) for i in target_parcel])
             else:
                 parcel_id = str(target_parcel)
             run_training(config,

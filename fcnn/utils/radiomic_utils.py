@@ -136,10 +136,10 @@ def get_label_indices(image):
 
 def load_subject_image(subject_directory, basename, resample=None, reorder=True):
     image_filename = os.path.join(subject_directory, basename)
-    return load_image(image_filename, resample=resample, reorder=reorder)
+    return load_single_image(image_filename, resample=resample, reorder=reorder)
     
     
-def load_image(filename, resample=None, reorder=True):
+def load_single_image(filename, resample=None, reorder=True):
     image = nib.load(filename)
     if reorder:
         return reorder_img(image, resample=resample)
@@ -217,8 +217,8 @@ def predict_from_queue(model, queue, n_iterations, batch_size):
 def read_data_into_queue(args, queue, window, reorder=False, flip=False,
                          interpolation='linear', spacing=(1, 1, 1)):
     feature_filename, target_filename, indices, target_labels = args
-    feature_image = load_image(feature_filename, reorder=reorder)
-    target_image = load_image(target_filename, reorder=reorder)
+    feature_image = load_single_image(feature_filename, reorder=reorder)
+    target_image = load_single_image(target_filename, reorder=reorder)
     target_image_data = target_image.get_data()
     for i, index in enumerate(indices):
         label = target_image_data[index[0], index[1], index[2]]
@@ -331,8 +331,8 @@ def fetch_data(feature_filename, target_filename, target_labels, input_window,
                flip=False, interpolation='linear', n_points=1, spacing=(1, 1, 1),
                reorder=True, resample='continuous', skip_blank=True,
                classify=binary_classification):
-    image = load_image(feature_filename, reorder=reorder, resample=resample)
-    target_image = load_image(target_filename, reorder=reorder, resample=resample)
+    image = load_single_image(feature_filename, reorder=reorder, resample=resample)
+    target_image = load_single_image(target_filename, reorder=reorder, resample=resample)
     indices = get_label_indices(target_image)
     _candidates = np.copy(indices)
     np.random.shuffle(_candidates)

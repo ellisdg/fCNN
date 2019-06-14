@@ -7,14 +7,14 @@ from unet3d.augment import scale_affine, add_noise
 from unet3d.data import combine_images
 
 from .radiomic_utils import binary_classification, multilabel_classification, fetch_data, pick_random_list_elements, \
-    load_image, fetch_data_for_point
+    fetch_data_for_point
+from .radiomic_utils import load_single_image
 from .hcp import nib_load_files, extract_gifti_surface_vertices, get_vertices_from_scalar, get_metric_data
 from .utils import read_polydata, extract_polydata_vertices, normalize_image_data
 
 
 def load_image(filename, feature_axis=3, resample_unequal_affines=True, interpolation="linear"):
     """
-
     :param feature_axis: axis along which to combine the images, if necessary.
     :param filename: can be either string path to the file or a list of paths.
     :return: image containing either the 1 image in the filename or a combined image based on multiple filenames.
@@ -121,35 +121,80 @@ class HCPRegressionSequence(SingleSiteSequence):
         self.surface_names = surface_names
 
     def __getitem__(self, idx):
+        return self.fetch_hcp_regression_batch(idx)
+
+    def fetch_hcp_regression_batch(self, idx):
         batch_filenames = self.epoch_filenames[idx * self.subjects_per_batch:(idx + 1) * self.subjects_per_batch]
         batch_x = list()
         batch_y = list()
-        for feature_filename, surface_filenames, metric_filenames, subject_id in batch_filenames:
-            metrics = nib_load_files(metric_filenames)
-            all_metric_data = get_metric_data(metrics, self.metric_names, self.surface_names, subject_id)
-
-            # extract the vertices
-            surfaces = nib_load_files(surface_filenames)
-            vertices = list()
-            for surface, surface_name in zip(surfaces, self.surface_names):
-                vertices_index = get_vertices_from_scalar(metrics[0], brain_structure_name=surface_name)
-                surface_vertices = extract_gifti_surface_vertices(surface, primary_anatomical_structure=surface_name)
-                vertices.extend(surface_vertices[vertices_index])
-            vertices = np.asarray(vertices)
-
-            # randomly select the target vertices and corresponding values
-            indices = np.random.choice(np.arange(vertices.shape[0]), size=self.points_per_subject, replace=False)
-            random_vertices = vertices[indices]
-            random_target_values = all_metric_data[indices]
-
-            # load data
-            feature_image = load_image(feature_filename, reorder=self.reorder)
-            for vertex, y in zip(random_vertices, random_target_values):
-                x = fetch_data_for_point(vertex, feature_image, window=self.window, flip=self.flip,
-                                         spacing=self.spacing)
-                batch_x.append(x)
-                batch_y.append(y)
+        for args in batch_filenames:
+            _x, _y = self.fetch_hcp_subject_batch(*args)
+            batch_x.extend(_x)
+            batch_y.extend(_y)
         return np.asarray(batch_x), np.asarray(batch_y)
+
+    def fetch_hcp_subject_batch(self, feature_filename, surface_filenames, metric_filenames, subject_id):
+        metrics, all_metric_data = self.load_metric_data(metric_filenames, subject_id)
+        vertices = self.extract_vertices(surface_filenames, metrics)
+        random_vertices, random_target_values = self.select_random_vertices_and_targets(vertices, all_metric_data)
+        return self.load_feature_data(feature_filename, random_vertices, random_target_values)
+
+    def load_metric_data(self, metric_filenames, subject_id):
+        metrics = nib_load_files(metric_filenames)
+        all_metric_data = get_metric_data(metrics, self.metric_names, self.surface_names, subject_id)
+        return metrics, all_metric_data
+
+    def load_feature_data(self, feature_filename, random_vertices, random_target_values):
+        batch_x = list()
+        batch_y = list()
+        feature_image = load_single_image(feature_filename, reorder=self.reorder)
+        for vertex, y in zip(random_vertices, random_target_values):
+            x = fetch_data_for_point(vertex, feature_image, window=self.window, flip=self.flip, spacing=self.spacing)
+            batch_x.append(x)
+            batch_y.append(y)
+        return batch_x, batch_y
+
+    def select_random_vertices_and_targets(self, vertices, all_metric_data):
+        # randomly select the target vertices and corresponding values
+        indices = np.random.choice(np.arange(vertices.shape[0]), size=self.points_per_subject, replace=False)
+        random_vertices = vertices[indices]
+        random_target_values = all_metric_data[indices]
+        return random_vertices, random_target_values
+
+    def extract_vertices(self, surface_filenames, metrics):
+        # extract the vertices
+        surfaces = nib_load_files(surface_filenames)
+        vertices = list()
+        for surface, surface_name in zip(surfaces, self.surface_names):
+            vertices_index = get_vertices_from_scalar(metrics[0], brain_structure_name=surface_name)
+            surface_vertices = extract_gifti_surface_vertices(surface, primary_anatomical_structure=surface_name)
+            vertices.extend(surface_vertices[vertices_index])
+        return np.asarray(vertices)
+
+
+class ParcelBasedSequence(HCPRegressionSequence):
+    def __init__(self, *args, target_parcel, parcellation_template, parcellation_name, **kwargs):
+        self.target_parcel = target_parcel
+        self.parcellation_template = parcellation_template
+        self.parcellation_name = parcellation_name
+        super().__init__(*args, **kwargs)
+
+    def fetch_hcp_subject_batch(self, feature_filename, surface_filenames, metric_filenames, subject_id):
+        metrics, all_metric_data = self.load_metric_data(metric_filenames, subject_id)
+        vertices = self.extract_vertices(surface_filenames, metrics)
+        parcellation = self.load_parcellation(subject_id)
+        parcellation_mask = np.in1d(parcellation, self.target_parcel)
+        random_vertices, random_target_values = self.select_random_vertices_and_targets(
+            vertices[parcellation_mask], all_metric_data[parcellation_mask])
+        return self.load_feature_data(feature_filename, random_vertices, random_target_values)
+
+    def load_parcellation(self, subject_id):
+        parcellation_filename = self.parcellation_template.format(subject_id)
+        parcellation = np.squeeze(get_metric_data(metrics=nib_load_files([parcellation_filename]),
+                                                  metric_names=[[self.parcellation_name]],
+                                                  surface_names=self.surface_names,
+                                                  subject_id=subject_id))
+        return parcellation
 
 
 class SubjectPredictionSequence(Sequence):

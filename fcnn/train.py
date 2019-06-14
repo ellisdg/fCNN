@@ -68,6 +68,11 @@ def run_training(config, model_filename, training_log_filename, verbose=1, use_m
     else:
         train_kwargs = dict()
 
+    if "sequence_kwargs" in config:
+        sequence_kwargs = config["sequence_kwargs"]
+    else:
+        sequence_kwargs = dict()
+
     # 4. Create Generators
     training_generator = sequence_class(filenames=config['training_filenames'],
                                         batch_size=config['batch_size'],
@@ -79,7 +84,8 @@ def run_training(config, model_filename, training_log_filename, verbose=1, use_m
                                         surface_names=config['surface_names'],
                                         metric_names=config['metric_names'],
                                         iterations_per_epoch=iterations_per_epoch,
-                                        **train_kwargs)
+                                        **train_kwargs,
+                                        **sequence_kwargs)
 
     if test_input:
         n_test_batches = int(np.ceil(test_input/float(config['batch_size'])))
@@ -105,7 +111,8 @@ def run_training(config, model_filename, training_log_filename, verbose=1, use_m
                                               spacing=spacing,
                                               points_per_subject=config['validation_points_per_subject'],
                                               surface_names=config['surface_names'],
-                                              metric_names=config['metric_names'])
+                                              metric_names=config['metric_names'],
+                                              **sequence_kwargs)
         metric_to_monitor = 'val_' + metric_to_monitor
 
     # 5. Run Training

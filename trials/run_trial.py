@@ -3,7 +3,7 @@ import os
 from functools import partial, update_wrapper
 sys.path.append(os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
 from fcnn.train import run_training
-from fcnn.utils.sequences import WholeBrainRegressionSequence, HCPRegressionSequence
+from fcnn.utils.sequences import WholeBrainRegressionSequence, HCPRegressionSequence, ParcelBasedSequence
 from fcnn.utils.utils import load_json
 from fcnn.utils.custom import get_metric_data_from_config
 from fcnn.models.resnet.resnet import compare_scores
@@ -70,8 +70,30 @@ if __name__ == '__main__':
 
     if "_wb_" in os.path.basename(config_filename):
         sequence_class = WholeBrainRegressionSequence
+    elif "_pb_" in os.path.basename(config_filename):
+        sequence_class = ParcelBasedSequence
+        config["sequence_kwargs"]["parcellation_template"] = os.path.join(
+            system_config["directory"], config["sequence_kwargs"]["parcellation_template"])
     else:
         sequence_class = HCPRegressionSequence
 
-    run_training(config, model_filename, training_log_filename, sequence_class=sequence_class,
-                 model_metrics=model_metrics, metric_to_monitor=metric_to_monitor, **system_config)
+    if sequence_class == ParcelBasedSequence:
+        target_parcels = config["sequence_kwargs"].pop("target_parcels")
+        for target_parcel in target_parcels:
+            config["sequence_kwargs"]["target_parcel"] = target_parcel
+            print("Training on parcel: {}".format(target_parcel))
+            if type(target_parcel) == list:
+                parcel_id = "-".join(target_parcel)
+            else:
+                parcel_id = str(target_parcel)
+            run_training(config,
+                         model_filename.replace(".h5", "_{}.h5".format(parcel_id)),
+                         training_log_filename.replace(".csv", "_{}.csv".format(parcel_id)),
+                         sequence_class=sequence_class,
+                         model_metrics=model_metrics,
+                         metric_to_monitor=metric_to_monitor,
+                         **system_config)
+
+    else:
+        run_training(config, model_filename, training_log_filename, sequence_class=sequence_class,
+                     model_metrics=model_metrics, metric_to_monitor=metric_to_monitor, **system_config)

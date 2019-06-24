@@ -923,7 +923,7 @@
   "loss": "mean_absolute_error",
   "points_per_subject": 10,
   "reorder": false,
-  "validation_points_per_subject": 80,
+  "validation_points_per_subject": 100,
   "save_best_only": true,
   "n_epochs": 100,
   "early_stopping_patience": 20,

@@ -127,10 +127,16 @@ def run_training(config, model_filename, training_log_filename, verbose=1, use_m
                                   patience=config['decay_patience'],
                                   min_lr=config['min_learning_rate'])
     csv_logger = CSVLogger(training_log_filename, append=True)
+    callbacks = [checkpointer, reduce_lr, csv_logger]
+    if "early_stopping_patience" in config and config["early_stopping_patience"]:
+        from keras.callbacks import EarlyStopping
+        early_stopping = EarlyStopping(monitor=metric_to_monitor,
+                                       patience=config["early_stopping_patience"])
+        callbacks.append(early_stopping)
     history = model.fit_generator(generator=training_generator,
                                   epochs=config['n_epochs'],
                                   use_multiprocessing=use_multiprocessing,
                                   workers=n_workers,
                                   max_queue_size=max_queue_size,
-                                  callbacks=[checkpointer, reduce_lr, csv_logger],
+                                  callbacks=callbacks,
                                   validation_data=validation_generator)

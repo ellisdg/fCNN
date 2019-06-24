@@ -902,7 +902,7 @@
     "CortexLeft",
     "CortexRight"
   ],
-  "surface_basename_template": "{subject_id}.{hemi}.midthickness.32k_fs_LR.surf.gii",
+  "surface_basename_template": "T1w/fsaverage_LR32k/{subject_id}.{hemi}.midthickness.32k_fs_LR.surf.gii",
   "feature_basenames": "T1w/Diffusion/dti.nii.gz",
   "target_basenames": [
     "MNINonLinear/Results/tfMRI_LANGUAGE/tfMRI_LANGUAGE_hp200_s2_level2.feat/{}_tfMRI_LANGUAGE_level2_hp200_s2.dscalar.nii"
@@ -912,11 +912,11 @@
     "R"
   ],
   "window": [
-    128,
-    128,
-    128
+    64,
+    64,
+    64
   ],
-  "spacing": null,
+  "spacing": [1, 1, 1],
   "n_features": 4,
   "activation": null,
   "optimizer": "Adam",
@@ -936,7 +936,7 @@
   "model_name": "resnet_18",
   "skip_validation": false,
   "iterations_per_epoch": 5,
-  "n_outputs": 59412,
+  "n_outputs": 1,
   "sequence": "whole_brain",
   "n_dense_layers": 1,
   "freeze_bias": false,
@@ -947,7 +947,7 @@
   ],
   "sequence_kwargs": {
     "parcellation_name":  "{}_aparc",
-    "parcellation_template": "MNINonLinear/fsaverage_LR32k/{subject_id}.aparc.32k_fs_LR.dlabel.nii",
+    "parcellation_template": "{0}/MNINonLinear/fsaverage_LR32k/{0}.aparc.32k_fs_LR.dlabel.nii",
     "target_parcels": [
        [ 1, 15, 36, 50],
        [ 2, 10, 23, 26, 37, 45, 58, 61],

@@ -902,7 +902,7 @@
     "CortexLeft",
     "CortexRight"
   ],
-  "surface_basename_template": "{subject_id}.{hemi}.pial.32k_fs_LR.surf.gii",
+  "surface_basename_template": "T1w/fsaverage_LR32k/{subject_id}.{hemi}.pial.32k_fs_LR.surf.gii",
   "feature_basenames": "T1w/Diffusion/dti.nii.gz",
   "target_basenames": [
     "MNINonLinear/Results/tfMRI_LANGUAGE/tfMRI_LANGUAGE_hp200_s2_level2.feat/{}_tfMRI_LANGUAGE_level2_hp200_s2.dscalar.nii"

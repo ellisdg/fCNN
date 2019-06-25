@@ -1,2 +1,2 @@
-{"use_multiprocessing": true, "n_workers": 12, "max_queue_size": 5,
+{"use_multiprocessing": true, "n_workers": 20, "max_queue_size": 8,
  "directory": "/media/neuro-user/Archive/Public/Connectome/HCP_1200"}

@@ -5,12 +5,12 @@ import nibabel as nib
 from fcnn.models.load import load_model
 from fcnn.models.build import build_model
 import numpy as np
-from .utils.sequences import HCPRegressionSequence
+from fcnn.utils.sequences import HCPRegressionSequence
 
 
-def run_training(config, model_filename, training_log_filename, verbose=1, use_multiprocessing=False,
-                 n_workers=1, max_queue_size=5, model_name='resnet_34', sequence_class=HCPRegressionSequence,
-                 test_input=1, metric_to_monitor="loss", model_metrics=()):
+def run_keras_training(config, model_filename, training_log_filename, verbose=1, use_multiprocessing=False,
+                       n_workers=1, max_queue_size=5, model_name='resnet_34', sequence_class=HCPRegressionSequence,
+                       test_input=1, metric_to_monitor="loss", model_metrics=()):
     """
     :param test_input: integer with the number of inputs from the generator to write to file. 0, False, or None will
     write no inputs to file.

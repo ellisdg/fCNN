@@ -1,6 +1,7 @@
 import sys
 import os
 from functools import partial, update_wrapper
+import pandas as pd
 sys.path.append(os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
 from fcnn.train import run_training
 from fcnn.utils.sequences import WholeBrainRegressionSequence, HCPRegressionSequence, ParcelBasedSequence
@@ -88,9 +89,15 @@ if __name__ == '__main__':
                 parcel_id = "-".join([str(i) for i in target_parcel])
             else:
                 parcel_id = str(target_parcel)
+            _training_log_filename = training_log_filename.replace(".csv", "_{}.csv".format(parcel_id))
+            _training_log = pd.read_csv(_training_log_filename)
+            if (os.path.exists(_training_log_filename)
+                    and _training_log[metric_to_monitor].values().argmin()
+                    <= len(_training_log) - config["early_stop_patience"]):
+                continue
             run_training(config,
                          model_filename.replace(".h5", "_{}.h5".format(parcel_id)),
-                         training_log_filename.replace(".csv", "_{}.csv".format(parcel_id)),
+                         _training_log_filename,
                          sequence_class=sequence_class,
                          model_metrics=model_metrics,
                          metric_to_monitor=metric_to_monitor,

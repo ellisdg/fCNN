@@ -53,6 +53,10 @@ def run_keras_training(config, model_filename, training_log_filename, verbose=1,
         bias = dense.trainable_weights.pop(dense.trainable_weights.index(dense.bias))
         dense.non_trainable_weights.append(bias)
         model.optimizer = None
+    if "n_gpus" in config and config["n_gpus"]:
+        from keras.utils import multi_gpu_model
+        model = multi_gpu_model(model, config["n_gpus"])
+        model.optimizer = None
 
     if not hasattr(model, 'optimizer') or model.optimizer is None:
         model.compile(optimizer=config['optimizer'], loss=config['loss'], metrics=model_metrics)
@@ -131,7 +135,8 @@ def run_keras_training(config, model_filename, training_log_filename, verbose=1,
     if "early_stopping_patience" in config and config["early_stopping_patience"]:
         from keras.callbacks import EarlyStopping
         early_stopping = EarlyStopping(monitor=metric_to_monitor,
-                                       patience=config["early_stopping_patience"])
+                                       patience=config["early_stopping_patience"],
+                                       verbose=verbose)
         callbacks.append(early_stopping)
     history = model.fit_generator(generator=training_generator,
                                   epochs=config['n_epochs'],

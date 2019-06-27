@@ -25,7 +25,7 @@ def build_optimizer(optimizer_name, model_parameters, learning_rate=1e-4):
 
 
 def run_pytorch_training(config, model_filename, training_log_filename, verbose=1, use_multiprocessing=False,
-                         n_workers=1, max_queue_size=5, model_name='resnet_34', dist_backend="nccl", n_gpus=1,
+                         n_workers=1, max_queue_size=5, model_name='resnet_34', n_gpus=1,
                          sequence_class=WholeBrainCIFTI2DenseScalarDataset,
                          test_input=1, metric_to_monitor="loss", model_metrics=(), **unused_args):
     """
@@ -59,15 +59,13 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
     else:
         n_outputs = len(np.concatenate(config['metric_names']))
 
-    if n_gpus > 1:
-        distributed.init_process_group(dist_backend)
     model = build_or_load_model(model_name, model_filename, config["n_features"], n_outputs)
     criterion = getattr(torch.nn, config['loss'])
     if n_gpus > 0:
         model.cuda()
         criterion.cuda()
         if n_gpus > 1:
-            model = torch.nn.parallel.DistributedDataParallel(model)
+            model = torch.nn.DataParallel(model)
 
     if "freeze_bias" in config and config["freeze_bias"]:
         # TODO

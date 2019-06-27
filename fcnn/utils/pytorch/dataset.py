@@ -16,4 +16,4 @@ class WholeBrainCIFTI2DenseScalarDataset(WholeBrainRegressionSequence, Dataset):
         metrics = nib_load_files(metric_filenames)
         x = self.resample_input(feature_filename)
         y = get_metric_data(metrics, self.metric_names, self.surface_names, subject_id).T.ravel()
-        return torch.from_numpy(x).permute(3, 0, 1, 2), torch.from_numpy(y)
+        return torch.from_numpy(x).float().permute(3, 0, 1, 2), torch.from_numpy(y).float()

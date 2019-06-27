@@ -64,6 +64,8 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
     if n_gpus > 0:
         if n_gpus > 1:
             model = torch.nn.DataParallel(model).cuda()
+        else:
+            model = model.cuda()
         criterion.cuda()
 
     if "freeze_bias" in config and config["freeze_bias"]:

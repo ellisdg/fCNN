@@ -5,6 +5,9 @@ from ..sequences import WholeBrainRegressionSequence, nib_load_files, get_metric
 
 
 class WholeBrainCIFTI2DenseScalarDataset(WholeBrainRegressionSequence, Dataset):
+    def __init__(self, *args, batch_size=1, **kwargs):
+        super().__init__(*args, batch_size=batch_size, **kwargs)
+
     def __len__(self):
         return len(self.filenames)
 

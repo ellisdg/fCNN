@@ -146,7 +146,7 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
 
 def train(model, optimizer, criterion, n_epochs, training_loader, validation_loader, training_log_filename,
           model_filename, iterations_per_epoch=1, metric_to_monitor="val_loss", early_stopping_patience=None,
-          learning_rate_decay_patience=None, save_best_only=False, gpu=None, verbose=True):
+          learning_rate_decay_patience=None, save_best_only=False, n_gpus=1, verbose=True):
     training_log = list()
     if os.path.exists(training_log_filename):
         training_log.extend(pd.read_csv(training_log_filename).values())
@@ -166,12 +166,12 @@ def train(model, optimizer, criterion, n_epochs, training_loader, validation_loa
         # train the model
         loss = 0
         for epoch_iteration in range(iterations_per_epoch):
-            loss += epoch_training(training_loader, model, criterion, optimizer=optimizer, epoch=epoch, gpu=gpu)
+            loss += epoch_training(training_loader, model, criterion, optimizer=optimizer, epoch=epoch, gpu=n_gpus)
         loss /= iterations_per_epoch
 
         # predict validation data
         if validation_loader:
-            val_loss = epoch_validatation(validation_loader, model, criterion, gpu=gpu)
+            val_loss = epoch_validatation(validation_loader, model, criterion, gpu=n_gpus)
         else:
             val_loss = None
 

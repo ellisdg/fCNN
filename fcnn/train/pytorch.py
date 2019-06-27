@@ -63,9 +63,7 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
     criterion = getattr(torch.nn, config['loss'])()
     if n_gpus > 0:
         if n_gpus > 1:
-            net = torch.nn.DataParallel(model)
-            model = net.module
-        model.cuda()
+            model = torch.nn.DataParallel(model).cuda()
         criterion.cuda()
 
     if "freeze_bias" in config and config["freeze_bias"]:

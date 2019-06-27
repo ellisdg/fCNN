@@ -77,10 +77,11 @@ def main():
         directory = "."
 
     if "_wb_" in os.path.basename(config_filename):
-        if config["package"] == "keras":
-            sequence_class = WholeBrainRegressionSequence
-        elif config["package"] == "pytorch":
+        if config["package"] == "pytorch":
             sequence_class = WholeBrainCIFTI2DenseScalarDataset
+        else:
+            sequence_class = WholeBrainRegressionSequence
+
     elif "_pb_" in os.path.basename(config_filename):
         sequence_class = ParcelBasedSequence
         config["sequence_kwargs"]["parcellation_template"] = os.path.join(

@@ -75,9 +75,9 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
     if "initial_learning_rate" in config:
         optimizer_kwargs["learning_rate"] = config["initial_learning_rate"]
 
-    optimzer = build_optimizer(optimizer_name=config["optimzer"],
-                               model_parameters=model.get_parameters(),
-                               **optimizer_kwargs)
+    optimizer = build_optimizer(optimizer_name=config["optimizer"],
+                                model_parameters=model.get_parameters(),
+                                **optimizer_kwargs)
 
     if "iterations_per_epoch" in config:
         iterations_per_epoch = config["iterations_per_epoch"]
@@ -136,7 +136,7 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
                                        shuffle=False,
                                        num_workers=n_workers)
 
-    train(model=model, optimizer=optimzer, criterion=criterion, n_epochs=config["n_epochs"], verbose=bool(verbose),
+    train(model=model, optimizer=optimizer, criterion=criterion, n_epochs=config["n_epochs"], verbose=bool(verbose),
           training_loader=training_loader, validation_loader=validation_loader, model_filename=model_filename,
           training_log_filename=training_log_filename, iterations_per_epoch=iterations_per_epoch,
           metric_to_monitor=metric_to_monitor, early_stopping_patience=config["early_stopping_patience"],

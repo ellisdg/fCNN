@@ -33,10 +33,14 @@ def generate_hcp_filenames(directory, surface_basename_template, target_basename
     return rows
 
 
-if __name__ == '__main__':
+def main():
     config_filename = sys.argv[1]
     print("Config: ", config_filename)
     config = load_json(config_filename)
+    if "package" in config:
+        package = config["package"]
+    else:
+        package = "keras"
 
     model_filename = sys.argv[2]
     print("Model: ", model_filename)
@@ -93,9 +97,10 @@ if __name__ == '__main__':
             _training_log = pd.read_csv(_training_log_filename)
             if (os.path.exists(_training_log_filename)
                     and _training_log[metric_to_monitor].values.argmin()
-                    <= len(_training_log) - config["early_stopping_patience"]):
+                    <= len(_training_log) - int(config["early_stopping_patience"])):
                 continue
-            run_training("keras", config,
+            run_training(package,
+                         config,
                          model_filename.replace(".h5", "_{}.h5".format(parcel_id)),
                          _training_log_filename,
                          sequence_class=sequence_class,
@@ -104,5 +109,9 @@ if __name__ == '__main__':
                          **system_config)
 
     else:
-        run_training(config, model_filename, training_log_filename, sequence_class=sequence_class,
+        run_training(package, config, model_filename, training_log_filename, sequence_class=sequence_class,
                      model_metrics=model_metrics, metric_to_monitor=metric_to_monitor, **system_config)
+
+
+if __name__ == '__main__':
+    main()

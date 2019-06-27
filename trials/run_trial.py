@@ -92,10 +92,10 @@ if __name__ == '__main__':
             _training_log_filename = training_log_filename.replace(".csv", "_{}.csv".format(parcel_id))
             _training_log = pd.read_csv(_training_log_filename)
             if (os.path.exists(_training_log_filename)
-                    and _training_log[metric_to_monitor].values().argmin()
-                    <= len(_training_log) - config["early_stop_patience"]):
+                    and _training_log[metric_to_monitor].values.argmin()
+                    <= len(_training_log) - config["early_stopping_patience"]):
                 continue
-            run_training(config,
+            run_training("keras", config,
                          model_filename.replace(".h5", "_{}.h5".format(parcel_id)),
                          _training_log_filename,
                          sequence_class=sequence_class,

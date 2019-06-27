@@ -25,9 +25,9 @@ def build_optimizer(optimizer_name, model_parameters, learning_rate=1e-4):
 
 
 def run_pytorch_training(config, model_filename, training_log_filename, verbose=1, use_multiprocessing=False,
-                         n_workers=1, max_queue_size=5, model_name='resnet_34', dist_backend="nccl", n_gpus=2,
+                         n_workers=1, max_queue_size=5, model_name='resnet_34', dist_backend="nccl", n_gpus=1,
                          sequence_class=WholeBrainCIFTI2DenseScalarDataset,
-                         test_input=1, metric_to_monitor="loss", model_metrics=()):
+                         test_input=1, metric_to_monitor="loss", model_metrics=(), **unused_args):
     """
     :param test_input: integer with the number of inputs from the generator to write to file. 0, False, or None will
     write no inputs to file.
@@ -141,12 +141,12 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
     train(model=model, optimizer=optimzer, criterion=criterion, n_epochs=config["n_epochs"], verbose=bool(verbose),
           training_loader=training_loader, validation_loader=validation_loader, model_filename=model_filename,
           training_log_filename=training_log_filename, iterations_per_epoch=iterations_per_epoch,
-          metric_to_monitor=metric_to_monitor, early_stop_patience=config["early_stop_patience"],
+          metric_to_monitor=metric_to_monitor, early_stopping_patience=config["early_stopping_patience"],
           save_best_only=config["save_best_only"])
 
 
 def train(model, optimizer, criterion, n_epochs, training_loader, validation_loader, training_log_filename,
-          model_filename, iterations_per_epoch=1, metric_to_monitor="val_loss", early_stop_patience=None,
+          model_filename, iterations_per_epoch=1, metric_to_monitor="val_loss", early_stopping_patience=None,
           learning_rate_decay_patience=None, save_best_only=False, gpu=None, verbose=True):
     training_log = list()
     if os.path.exists(training_log_filename):
@@ -158,10 +158,10 @@ def train(model, optimizer, criterion, n_epochs, training_loader, validation_loa
     for epoch in range(n_epochs):
 
         # early stopping
-        if (training_log and early_stop_patience
+        if (training_log and early_stopping_patience
             and np.asarray(training_log)[:, training_log_header.index(metric_to_monitor)].argmin()
-                <= len(training_log) - early_stop_patience):
-            print("Early stopping patience has been reached.")
+                <= len(training_log) - early_stopping_patience):
+            print("Early stopping patience {} has been reached.".format(early_stopping_patience))
             break
 
         # train the model
@@ -183,7 +183,10 @@ def train(model, optimizer, criterion, n_epochs, training_loader, validation_loa
 
         # check loss and decay
         if learning_rate_decay_patience:
-            scheduler.step(val_loss)
+            if validation_loader:
+                scheduler.step(val_loss)
+            else:
+                scheduler.step(loss)
 
         # save model
         if not save_best_only or min_epoch == len(training_log) - 1:

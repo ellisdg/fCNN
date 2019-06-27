@@ -5,6 +5,7 @@ import pandas as pd
 sys.path.append(os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
 from fcnn.train import run_training
 from fcnn.utils.sequences import WholeBrainRegressionSequence, HCPRegressionSequence, ParcelBasedSequence
+from fcnn.utils.pytorch.dataset import WholeBrainCIFTI2DenseScalarDataset
 from fcnn.utils.utils import load_json
 from fcnn.utils.custom import get_metric_data_from_config
 from fcnn.models.resnet.resnet import compare_scores
@@ -76,7 +77,10 @@ def main():
         directory = "."
 
     if "_wb_" in os.path.basename(config_filename):
-        sequence_class = WholeBrainRegressionSequence
+        if config["package"] == "keras":
+            sequence_class = WholeBrainRegressionSequence
+        elif config["package"] == "pytorch":
+            sequence_class = WholeBrainCIFTI2DenseScalarDataset
     elif "_pb_" in os.path.basename(config_filename):
         sequence_class = ParcelBasedSequence
         config["sequence_kwargs"]["parcellation_template"] = os.path.join(

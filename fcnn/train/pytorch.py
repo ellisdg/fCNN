@@ -62,8 +62,10 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
     if n_gpus > 1:
         distributed.init_process_group(dist_backend)
     model = build_or_load_model(model_name, model_filename, config["n_features"], n_outputs)
+    criterion = getattr(torch.nn, config['loss'])
     if n_gpus > 0:
         model.cuda()
+        criterion.cuda()
         if n_gpus > 1:
             model = torch.nn.parallel.DistributedDataParallel(model)
 
@@ -136,18 +138,23 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
                                        shuffle=False,
                                        num_workers=n_workers)
 
-    train(model, optimzer, criterion, config["n_epochs"], training_loader, validation_loader, training_loader,
-          iterations_per_epoch=iterations_per_epoch, metric_to_monitor=metric_to_monitor,
-          early_stop_patience=config["early_stop_patience"], save_best_only=config["save_best_only"])
+    train(model=model, optimizer=optimzer, criterion=criterion, n_epochs=config["n_epochs"], verbose=bool(verbose),
+          training_loader=training_loader, validation_loader=validation_loader, model_filename=model_filename,
+          training_log_filename=training_log_filename, iterations_per_epoch=iterations_per_epoch,
+          metric_to_monitor=metric_to_monitor, early_stop_patience=config["early_stop_patience"],
+          save_best_only=config["save_best_only"])
 
 
 def train(model, optimizer, criterion, n_epochs, training_loader, validation_loader, training_log_filename,
-          iterations_per_epoch=1, metric_to_monitor="val_loss", early_stop_patience=None,
-          learning_rate_decay_patience=None, save_best_only=False, gpu=None):
+          model_filename, iterations_per_epoch=1, metric_to_monitor="val_loss", early_stop_patience=None,
+          learning_rate_decay_patience=None, save_best_only=False, gpu=None, verbose=True):
     training_log = list()
     if os.path.exists(training_log_filename):
         training_log.extend(pd.read_csv(training_log_filename).values())
     training_log_header = ["epoch", "loss", "lr", "val_loss"]
+
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, verbose=verbose)
+
     for epoch in range(n_epochs):
 
         # early stopping
@@ -170,16 +177,19 @@ def train(model, optimizer, criterion, n_epochs, training_loader, validation_loa
             val_loss = None
 
         # update the training log
-        training_log.append([epoch, loss, lr, val_loss])
+        training_log.append([epoch, loss, get_lr(optimizer), val_loss])
         pd.DataFrame(training_log, columns=training_log_header).to_csv(training_log_filename)
         min_epoch = np.asarray(training_log)[:, training_log_header.index(metric_to_monitor)].argmin()
 
         # check loss and decay
-        if learning_rate_decay_patience and min_epoch <= len(training_log) - learning_rate_decay_patience:
-            # TODO: decay learning rate
-            pass
+        if learning_rate_decay_patience:
+            scheduler.step(val_loss)
 
         # save model
         if not save_best_only or min_epoch == len(training_log) - 1:
-            # TODO: save model
-            pass
+            torch.save(model.state_dict(), model_filename)
+
+
+def get_lr(optimizer):
+    lrs = [params['lr'] for params in optimizer.param_groups]
+    return np.squeeze(np.unique(lrs))

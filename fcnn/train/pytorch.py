@@ -77,7 +77,7 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
         optimizer_kwargs["learning_rate"] = config["initial_learning_rate"]
 
     optimizer = build_optimizer(optimizer_name=config["optimizer"],
-                                model_parameters=model.get_parameters(),
+                                model_parameters=model.parameters(),
                                 **optimizer_kwargs)
 
     if "iterations_per_epoch" in config:

@@ -109,9 +109,6 @@ def whole_brain_scalar_predictions(model_filename, subject_ids, hcp_dir, output_
                                                metric_names=metric_names,
                                                surface_names=surface_names,
                                                reference=reference)
-    elif package == "keras":
-        # TODO
-        pass
     else:
         raise ValueError("Predictions not yet implemented for {}".format(package))
 

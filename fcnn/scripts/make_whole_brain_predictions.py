@@ -46,7 +46,8 @@ def main():
                                           criterion_name=config["loss"],
                                           metric_names=config["metric_names"],
                                           surface_names=config["surface_names"],
-                                          reference=reference_array)
+                                          reference=reference_array,
+                                          package=config['package'])
 
 
 if __name__ == '__main__':

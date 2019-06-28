@@ -48,7 +48,7 @@ def main():
                                           surface_names=config["surface_names"],
                                           reference=reference_array,
                                           package=config['package'],
-                                          n_gpus=config['n_gpus'])
+                                          n_gpus=machine_config['n_gpus'])
 
 
 if __name__ == '__main__':

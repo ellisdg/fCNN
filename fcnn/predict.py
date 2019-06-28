@@ -92,7 +92,8 @@ def predict_local_subject(model, feature_filename, surface_filename, batch_size=
 
 def whole_brain_scalar_predictions(model_filename, subject_ids, hcp_dir, output_dir, hemispheres, feature_basenames,
                                    surface_basename_template, target_basenames, model_name, n_outputs, n_features,
-                                   window, criterion_name, metric_names, surface_names, reference, package="keras"):
+                                   window, criterion_name, metric_names, surface_names, reference, package="keras",
+                                   n_gpus=1):
     from .scripts.run_trial import generate_hcp_filenames
     filenames = generate_hcp_filenames(directory=hcp_dir, surface_basename_template=surface_basename_template,
                                        target_basenames=target_basenames, feature_basenames=feature_basenames,
@@ -108,7 +109,8 @@ def whole_brain_scalar_predictions(model_filename, subject_ids, hcp_dir, output_
                                                criterion_name=criterion_name,
                                                metric_names=metric_names,
                                                surface_names=surface_names,
-                                               reference=reference)
+                                               reference=reference,
+                                               n_gpus=n_gpus)
     else:
         raise ValueError("Predictions not yet implemented for {}".format(package))
 
@@ -122,7 +124,7 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
     import torch
 
     model = build_or_load_model(model_name=model_name, model_filename=model_filename, n_outputs=n_outputs,
-                                n_features=n_features)
+                                n_features=n_features, n_gpus=n_gpus)
     if n_gpus > 0:
         model = model.cuda()
     basename = os.path.basename(model_filename).split(".")[0]

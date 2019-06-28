@@ -1,8 +1,8 @@
 import sys
 import os
-from ..utils.utils import load_json
-from ..utils.hcp import get_metric_data, nib_load_files
-from ..predict import whole_brain_scalar_predictions
+from fcnn.utils.utils import load_json
+from fcnn.utils.hcp import get_metric_data, nib_load_files
+from fcnn.predict import whole_brain_scalar_predictions
 
 
 def main():

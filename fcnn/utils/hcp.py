@@ -85,3 +85,19 @@ def get_metric_data(metrics, metric_names, surface_names, subject_id, stack_axis
                                                       brain_structure_name=surface_name))
             all_metric_data.append(metric_data)
     return np.stack(all_metric_data, axis=stack_axis)
+
+
+def new_cifti_scalar_like(array, scalar_names, structure_names, reference_cifti, default_value=0):
+    scalar_axis = reference_cifti.header.get_axis(0)
+    new_scalar_axis = scalar_axis.__class__(scalar_names)
+    model_axis = reference_cifti.header.get_axis(1)
+    dataobj = np.ones((array.shape[0], model_axis.name.shape[0]), array.dtype) * default_value
+    i = 0
+    for structure_name in structure_names:
+        structure_mask = model_axis.name == model_axis.to_cifti_brain_structure_name(structure_name)
+        ii = np.sum(structure_mask) + i
+        dataobj[:, structure_mask] = array[:, i:ii]
+        i = ii
+    if default_value == 0:
+        assert np.sum(dataobj) == np.sum(array)
+    return reference_cifti.__class__(dataobj=dataobj, header=[new_scalar_axis, model_axis])

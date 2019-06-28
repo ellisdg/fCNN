@@ -141,7 +141,7 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
           training_loader=training_loader, validation_loader=validation_loader, model_filename=model_filename,
           training_log_filename=training_log_filename, iterations_per_epoch=iterations_per_epoch,
           metric_to_monitor=metric_to_monitor, early_stopping_patience=config["early_stopping_patience"],
-          save_best_only=config["save_best_only"])
+          save_best_only=config["save_best_only"], learning_rate_decay_patience=config["decay_patience"])
 
 
 def train(model, optimizer, criterion, n_epochs, training_loader, validation_loader, training_log_filename,

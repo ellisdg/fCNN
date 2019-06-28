@@ -35,6 +35,9 @@ def generate_hcp_filenames(directory, surface_basename_template, target_basename
 
 
 def main():
+    import nibabel as nib
+    nib.imageglobals.logger.level = 40
+
     config_filename = sys.argv[1]
     print("Config: ", config_filename)
     config = load_json(config_filename)

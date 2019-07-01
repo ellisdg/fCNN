@@ -14,13 +14,13 @@ from .pytorch_training_utils import epoch_training, epoch_validatation
 
 def build_or_load_model(model_name, model_filename, n_features, n_outputs, n_gpus=0):
     model = fetch_model_by_name(model_name, n_features=n_features, n_outputs=n_outputs)
-    if os.path.exists(model_filename):
-        model.load_state_dict(torch.load(model_filename))
-        model.eval()
     if n_gpus > 1:
         model = torch.nn.DataParallel(model).cuda()
     elif n_gpus > 0:
         model = model.cuda()
+    if os.path.exists(model_filename):
+        model.load_state_dict(torch.load(model_filename))
+        model.eval()
     return model
 
 

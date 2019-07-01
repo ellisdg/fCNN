@@ -99,5 +99,5 @@ def new_cifti_scalar_like(array, scalar_names, structure_names, reference_cifti,
         dataobj[:, structure_mask] = array[:, i:ii]
         i = ii
     if default_value == 0:
-        assert np.sum(dataobj) == np.sum(array)
+        np.testing.assert_almost_equal(np.sum(dataobj), np.sum(array))
     return reference_cifti.__class__(dataobj=dataobj, header=[new_scalar_axis, model_axis])

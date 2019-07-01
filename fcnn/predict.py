@@ -141,6 +141,11 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
     results = list()
     for args, idx in zip(dataset.filenames, range(len(dataset))):
         with torch.no_grad():
+            ref_filename = args[2][0]
+            ref_basename = os.path.basename(ref_filename)
+            output_filename = os.path.join(prediction_dir, ref_basename.replace(subject_id, _name))
+            if prediction_dir and os.path.exists(output_filename):
+                continue
             x, y = dataset[idx]
             subject_id = args[-1]
             prediction = model(x.unsqueeze(0))
@@ -154,16 +159,12 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
                 row.append(reference_error)
             results.append(row)
             if prediction_dir is not None:
-                ref_filename = args[2][0]
-                print(ref_filename)
-                ref_basename = os.path.basename(ref_filename)
                 ref_cifti = nib.load(ref_filename)
                 _name = "_".join((subject_id, basename, "prediction"))
                 _metric_names = [_metric_name.format(_name) for _metric_name in np.asarray(metric_names).ravel()]
                 prediction_array = prediction.numpy().reshape(len(_metric_names),
                                                               np.sum(ref_cifti.header.get_axis(1).surface_mask))
                 cifti_file = new_cifti_scalar_like(prediction_array, _metric_names, surface_names, ref_cifti)
-                output_filename = os.path.join(prediction_dir, ref_basename.replace(subject_id, _name))
                 cifti_file.to_filename(output_filename)
 
     if output_csv:

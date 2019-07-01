@@ -87,7 +87,8 @@ def get_metric_data(metrics, metric_names, surface_names, subject_id, stack_axis
     return np.stack(all_metric_data, axis=stack_axis)
 
 
-def new_cifti_scalar_like(array, scalar_names, structure_names, reference_cifti, default_value=0):
+def new_cifti_scalar_like(array, scalar_names, structure_names, reference_cifti, default_value=0,
+                          almost_equals_decimals=2):
     scalar_axis = reference_cifti.header.get_axis(0)
     new_scalar_axis = scalar_axis.__class__(scalar_names)
     model_axis = reference_cifti.header.get_axis(1)
@@ -99,5 +100,5 @@ def new_cifti_scalar_like(array, scalar_names, structure_names, reference_cifti,
         dataobj[:, structure_mask] = array[:, i:ii]
         i = ii
     if default_value == 0:
-        np.testing.assert_almost_equal(np.sum(dataobj), np.sum(array))
+        np.testing.assert_almost_equal(np.sum(dataobj), np.sum(array), almost_equals_decimals)
     return reference_cifti.__class__(dataobj=dataobj, header=[new_scalar_axis, model_axis])

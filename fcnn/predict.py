@@ -142,12 +142,12 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
     for args, idx in zip(dataset.filenames, range(len(dataset))):
         with torch.no_grad():
             ref_filename = args[2][0]
+            subject_id = args[-1]
             ref_basename = os.path.basename(ref_filename)
             output_filename = os.path.join(prediction_dir, ref_basename.replace(subject_id, _name))
             if prediction_dir and os.path.exists(output_filename):
                 continue
             x, y = dataset[idx]
-            subject_id = args[-1]
             prediction = model(x.unsqueeze(0))
             if n_gpus > 0:
                 prediction = prediction.cpu()

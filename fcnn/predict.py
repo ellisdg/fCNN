@@ -167,8 +167,8 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
                 cifti_file = new_cifti_scalar_like(prediction_array, _metric_names, surface_names, ref_cifti)
                 cifti_file.to_filename(output_filename)
 
-    if output_csv:
+    if output_csv is not Note:
         columns = ["subject_id", criterion_name]
-        if reference:
+        if reference is not None:
             columns.append("reference_" + criterion_name)
         pd.DataFrame(results, columns=columns).to_csv(output_csv)

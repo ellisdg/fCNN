@@ -147,11 +147,11 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
         y = y.unsqueeze(0)
         error = criterion(prediction, y)
         row = [subject_id, error]
-        if reference:
-            reference_error = criterion(torch.from_numpy(reference), y)
+        if reference is not None:
+            reference_error = criterion(torch.from_numpy(reference).unsqueeze(0), y)
             row.append(reference_error)
         results.append(row)
-        if prediction_dir:
+        if prediction_dir is not None:
             ref_filename = args[2][0][0]
             ref_basename = os.path.basename(ref_filename)
             ref_cifti = nib.load(ref_filename)

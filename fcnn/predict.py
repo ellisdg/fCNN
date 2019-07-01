@@ -125,6 +125,7 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
 
     model = build_or_load_model(model_name=model_name, model_filename=model_filename, n_outputs=n_outputs,
                                 n_features=n_features, n_gpus=n_gpus)
+    model.eval()
     if reference is not None:
         reference = torch.from_numpy(reference).unsqueeze(0)
     basename = os.path.basename(model_filename).split(".")[0]
@@ -139,30 +140,31 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
     criterion = getattr(torch.nn, criterion_name)()
     results = list()
     for args, idx in zip(dataset.filenames, range(len(dataset))):
-        x, y = dataset[idx]
-        subject_id = args[-1]
-        prediction = model(x.unsqueeze(0))
-        if n_gpus > 0:
-            prediction = prediction.cpu()
-        y = y.unsqueeze(0)
-        error = criterion(prediction, y)
-        row = [subject_id, error]
-        if reference is not None:
-            reference_error = criterion(reference, y)
-            row.append(reference_error)
-        results.append(row)
-        if prediction_dir is not None:
-            ref_filename = args[2][0]
-            print(ref_filename)
-            ref_basename = os.path.basename(ref_filename)
-            ref_cifti = nib.load(ref_filename)
-            _name = "_".join((subject_id, basename, "prediction"))
-            _metric_names = [_metric_name.format(_name) for _metric_name in np.asarray(metric_names).ravel()]
-            prediction_array = prediction.numpy().reshape(len(_metric_names),
-                                                          np.sum(ref_cifti.get_axis(1).surface_mask))
-            cifti_file = new_cifti_scalar_like(prediction_array, _metric_names, surface_names, ref_cifti)
-            output_filename = os.path.join(prediction_dir, ref_basename.replace(subject_id, _name))
-            cifti_file.to_filename(output_filename)
+        with torch.no_grad():
+            x, y = dataset[idx]
+            subject_id = args[-1]
+            prediction = model(x.unsqueeze(0))
+            if n_gpus > 0:
+                prediction = prediction.cpu()
+            y = y.unsqueeze(0)
+            error = criterion(prediction, y)
+            row = [subject_id, error]
+            if reference is not None:
+                reference_error = criterion(reference, y)
+                row.append(reference_error)
+            results.append(row)
+            if prediction_dir is not None:
+                ref_filename = args[2][0]
+                print(ref_filename)
+                ref_basename = os.path.basename(ref_filename)
+                ref_cifti = nib.load(ref_filename)
+                _name = "_".join((subject_id, basename, "prediction"))
+                _metric_names = [_metric_name.format(_name) for _metric_name in np.asarray(metric_names).ravel()]
+                prediction_array = prediction.numpy().reshape(len(_metric_names),
+                                                              np.sum(ref_cifti.get_axis(1).surface_mask))
+                cifti_file = new_cifti_scalar_like(prediction_array, _metric_names, surface_names, ref_cifti)
+                output_filename = os.path.join(prediction_dir, ref_basename.replace(subject_id, _name))
+                cifti_file.to_filename(output_filename)
 
     if output_csv:
         columns = ["subject_id", criterion_name]

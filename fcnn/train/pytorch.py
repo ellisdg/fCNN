@@ -19,7 +19,6 @@ def build_or_load_model(model_name, model_filename, n_features, n_outputs, n_gpu
         model = model.cuda()
     if os.path.exists(model_filename):
         model.load_state_dict(torch.load(model_filename))
-        model.eval()
     return model
 
 
@@ -63,6 +62,7 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
         n_outputs = len(np.concatenate(config['metric_names']))
 
     model = build_or_load_model(model_name, model_filename, config["n_features"], n_outputs)
+    model.train()
     criterion = getattr(torch.nn, config['loss'])()
     if n_gpus > 0:
         criterion.cuda()

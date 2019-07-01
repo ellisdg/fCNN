@@ -4,7 +4,6 @@ import nibabel as nib
 import pandas as pd
 import torch
 from torch.utils.data import DataLoader
-from torch import distributed
 import torch.nn
 
 from ..utils.pytorch import WholeBrainCIFTI2DenseScalarDataset

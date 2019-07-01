@@ -149,7 +149,9 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
             output_filename = os.path.join(prediction_dir, ref_basename.replace(subject_id, prediction_name))
             x, y = dataset[idx]
             if os.path.exists(output_filename):
-                prediction = torch.from_numpy(get_metric_data([nib.load(output_filename)], args[2], surface_names,
+                prediction = torch.from_numpy(get_metric_data([[nib.load(output_filename)]],
+                                                              [[prediction_name]],
+                                                              surface_names,
                                                               subject_id)).float().cpu()
             else:
                 prediction = model(x.unsqueeze(0))

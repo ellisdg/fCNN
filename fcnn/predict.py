@@ -125,8 +125,10 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
 
     model = build_or_load_model(model_name=model_name, model_filename=model_filename, n_outputs=n_outputs,
                                 n_features=n_features, n_gpus=n_gpus)
+    if reference is not None:
+        reference = torch.from_numpy(reference).unsqueeze(0)
     if n_gpus > 0:
-        model = model.cuda()
+        reference = reference.cuda()
     basename = os.path.basename(model_filename).split(".")[0]
     if prediction_dir and not output_csv:
         output_csv = os.path.join(prediction_dir, str(basename) + "_prediction_scores.csv")
@@ -148,7 +150,7 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
         error = criterion(prediction, y)
         row = [subject_id, error]
         if reference is not None:
-            reference_error = criterion(torch.from_numpy(reference).unsqueeze(0), y)
+            reference_error = criterion(reference, y)
             row.append(reference_error)
         results.append(row)
         if prediction_dir is not None:

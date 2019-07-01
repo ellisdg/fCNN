@@ -141,7 +141,7 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
     for args, idx in zip(dataset.filenames, range(len(dataset))):
         x, y = dataset[idx]
         subject_id = args[-1]
-        prediction = model(x)
+        prediction = model([x])
         error = criterion(prediction, y)
         row = [subject_id, error]
         if reference:

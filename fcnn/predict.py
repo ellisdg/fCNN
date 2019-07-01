@@ -152,7 +152,8 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
             row.append(reference_error)
         results.append(row)
         if prediction_dir is not None:
-            ref_filename = args[2][0][0]
+            ref_filename = args[2][0]
+            print(ref_filename)
             ref_basename = os.path.basename(ref_filename)
             ref_cifti = nib.load(ref_filename)
             _name = "_".join((subject_id, basename, "prediction"))

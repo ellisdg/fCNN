@@ -5,7 +5,7 @@ import pandas as pd
 from keras.models import load_model
 from .utils.utils import load_json
 from .utils.sequences import SubjectPredictionSequence
-from .utils.hcp import new_cifti_scalar_like
+from .utils.hcp import new_cifti_scalar_like, get_metric_data
 
 
 def predict_subject(model, feature_filename, surface_filenames, surface_names, metric_names, output_filenames,
@@ -145,11 +145,14 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
             subject_id = args[-1]
             ref_basename = os.path.basename(ref_filename)
             prediction_name = "_".join((subject_id, basename, "prediction"))
+            _metric_names = [_metric_name.format(prediction_name) for _metric_name in np.asarray(metric_names).ravel()]
             output_filename = os.path.join(prediction_dir, ref_basename.replace(subject_id, prediction_name))
-            if prediction_dir and os.path.exists(output_filename):
-                continue
             x, y = dataset[idx]
-            prediction = model(x.unsqueeze(0))
+            if os.path.exists(output_filename):
+                prediction = torch.from_numpy(get_metric_data([nib.load(output_filename)], args[2], surface_names,
+                                                              subject_id)).float().cpu()
+            else:
+                prediction = model(x.unsqueeze(0))
             if n_gpus > 0:
                 prediction = prediction.cpu()
             y = y.unsqueeze(0)
@@ -159,15 +162,14 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
                 reference_error = criterion(reference, y)
                 row.append(reference_error)
             results.append(row)
-            if prediction_dir is not None:
+            if prediction_dir is not None and not os.path.exists(output_filename):
                 ref_cifti = nib.load(ref_filename)
-                _metric_names = [_metric_name.format(prediction_name) for _metric_name in np.asarray(metric_names).ravel()]
                 prediction_array = prediction.numpy().reshape(len(_metric_names),
                                                               np.sum(ref_cifti.header.get_axis(1).surface_mask))
                 cifti_file = new_cifti_scalar_like(prediction_array, _metric_names, surface_names, ref_cifti)
                 cifti_file.to_filename(output_filename)
 
-    if output_csv is not Note:
+    if output_csv is not None:
         columns = ["subject_id", criterion_name]
         if reference is not None:
             columns.append("reference_" + criterion_name)

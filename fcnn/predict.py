@@ -161,7 +161,7 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
                 _name = "_".join((subject_id, basename, "prediction"))
                 _metric_names = [_metric_name.format(_name) for _metric_name in np.asarray(metric_names).ravel()]
                 prediction_array = prediction.numpy().reshape(len(_metric_names),
-                                                              np.sum(ref_cifti.get_axis(1).surface_mask))
+                                                              np.sum(ref_cifti.header.get_axis(1).surface_mask))
                 cifti_file = new_cifti_scalar_like(prediction_array, _metric_names, surface_names, ref_cifti)
                 output_filename = os.path.join(prediction_dir, ref_basename.replace(subject_id, _name))
                 cifti_file.to_filename(output_filename)

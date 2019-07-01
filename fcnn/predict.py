@@ -142,6 +142,8 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
         x, y = dataset[idx]
         subject_id = args[-1]
         prediction = model(x.unsqueeze(0))
+        if n_gpus > 0:
+            y = y.cuda()
         error = criterion(prediction, y.unsqueeze(0))
         row = [subject_id, error]
         if reference:

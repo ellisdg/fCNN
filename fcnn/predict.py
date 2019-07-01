@@ -135,7 +135,6 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
                                                  metric_names=metric_names,
                                                  surface_names=surface_names,
                                                  spacing=None,
-                                                 shuffle=False,
                                                  batch_size=1)
     criterion = getattr(torch.nn, criterion_name)
     results = list()

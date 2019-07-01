@@ -150,7 +150,7 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
             x, y = dataset[idx]
             if os.path.exists(output_filename):
                 prediction = torch.from_numpy(get_metric_data([nib.load(output_filename)],
-                                                              [[prediction_name]],
+                                                              [_metric_names],
                                                               surface_names,
                                                               subject_id)).float().cpu()
             else:

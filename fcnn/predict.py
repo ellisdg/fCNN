@@ -158,8 +158,8 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
             if n_gpus > 0:
                 prediction = prediction.cpu()
             y = y.unsqueeze(0)
-            error = criterion(prediction, y)
-            row = [subject_id, error]
+            score = np.squeeze(criterion(prediction, y).numpy())
+            row = [subject_id, score]
             if reference is not None:
                 reference_error = criterion(reference, y)
                 row.append(reference_error)

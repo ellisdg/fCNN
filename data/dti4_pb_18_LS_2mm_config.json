@@ -924,11 +924,11 @@
   "points_per_subject": 10,
   "reorder": false,
   "validation_points_per_subject": 100,
-  "save_best_only": true,
+  "save_best_only": false,
   "n_epochs": 100,
-  "early_stopping_patience": 20,
+  "early_stopping_patience": 10,
   "min_learning_rate": 1e-08,
-  "decay_patience": 5,
+  "decay_patience": 1,
   "decay_factor": 0.5,
   "flip": false,
   "batch_size": 50,
@@ -951,6 +951,7 @@
     "parcellation_name":  "{}_aparc",
     "parcellation_template": "{0}/MNINonLinear/fsaverage_LR32k/{0}.aparc.32k_fs_LR.dlabel.nii",
     "target_parcels": [
+       [ 1, 15, 36, 50],
        [ 2, 10, 23, 26, 37, 45, 58, 61],
        [ 3, 38],
        [ 5, 25, 40, 60],
@@ -969,7 +970,6 @@
        [29, 64],
        [30, 34, 65, 69],
        [31, 66],
-       [35, 70],
-       [ 1, 15, 36, 50]
+       [35, 70]
     ]}
 }

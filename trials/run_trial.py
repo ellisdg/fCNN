@@ -55,7 +55,10 @@ if __name__ == '__main__':
         metric_to_monitor = "compare_scores"
     except IndexError:
         model_metrics = []
-        metric_to_monitor = "loss"
+        if config['skip_validation']:
+            metric_to_monitor = "loss"
+        else:
+            metric_to_monitor = "val_loss"
 
     for name in ("training", "validation"):
         key = name + "_filenames"
@@ -90,11 +93,12 @@ if __name__ == '__main__':
             else:
                 parcel_id = str(target_parcel)
             _training_log_filename = training_log_filename.replace(".csv", "_{}.csv".format(parcel_id))
-            _training_log = pd.read_csv(_training_log_filename)
-            if (os.path.exists(_training_log_filename)
-                    and _training_log[metric_to_monitor].values.argmin()
-                    <= len(_training_log) - config["early_stopping_patience"]):
-                continue
+            if os.path.exists(_training_log_filename):
+                _training_log = pd.read_csv(_training_log_filename)
+                if (_training_log[metric_to_monitor].values.argmin()
+                        <= len(_training_log) - config["early_stopping_patience"]):
+                    print("Already trained")
+                    continue
             run_training("keras", config,
                          model_filename.replace(".h5", "_{}.h5".format(parcel_id)),
                          _training_log_filename,

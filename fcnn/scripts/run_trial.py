@@ -5,6 +5,7 @@ import pandas as pd
 sys.path.append(os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
 from fcnn.train import run_training
 from fcnn.utils.sequences import WholeBrainRegressionSequence, HCPRegressionSequence, ParcelBasedSequence
+from fcnn.utils.pytorch.dataset import WholeBrainCIFTI2DenseScalarDataset
 from fcnn.utils.utils import load_json
 from fcnn.utils.custom import get_metric_data_from_config
 from fcnn.models.resnet.resnet import compare_scores
@@ -33,10 +34,17 @@ def generate_hcp_filenames(directory, surface_basename_template, target_basename
     return rows
 
 
-if __name__ == '__main__':
+def main():
+    import nibabel as nib
+    nib.imageglobals.logger.level = 40
+
     config_filename = sys.argv[1]
     print("Config: ", config_filename)
     config = load_json(config_filename)
+    if "package" in config:
+        package = config["package"]
+    else:
+        package = "keras"
 
     model_filename = sys.argv[2]
     print("Model: ", model_filename)
@@ -75,7 +83,11 @@ if __name__ == '__main__':
         directory = "."
 
     if "_wb_" in os.path.basename(config_filename):
-        sequence_class = WholeBrainRegressionSequence
+        if config["package"] == "pytorch":
+            sequence_class = WholeBrainCIFTI2DenseScalarDataset
+        else:
+            sequence_class = WholeBrainRegressionSequence
+
     elif "_pb_" in os.path.basename(config_filename):
         sequence_class = ParcelBasedSequence
         config["sequence_kwargs"]["parcellation_template"] = os.path.join(
@@ -96,10 +108,11 @@ if __name__ == '__main__':
             if os.path.exists(_training_log_filename):
                 _training_log = pd.read_csv(_training_log_filename)
                 if (_training_log[metric_to_monitor].values.argmin()
-                        <= len(_training_log) - config["early_stopping_patience"]):
+                        <= len(_training_log) - int(config["early_stopping_patience"])):
                     print("Already trained")
                     continue
-            run_training("keras", config,
+            run_training(package,
+                         config,
                          model_filename.replace(".h5", "_{}.h5".format(parcel_id)),
                          _training_log_filename,
                          sequence_class=sequence_class,
@@ -108,5 +121,9 @@ if __name__ == '__main__':
                          **system_config)
 
     else:
-        run_training(config, model_filename, training_log_filename, sequence_class=sequence_class,
+        run_training(package, config, model_filename, training_log_filename, sequence_class=sequence_class,
                      model_metrics=model_metrics, metric_to_monitor=metric_to_monitor, **system_config)
+
+
+if __name__ == '__main__':
+    main()

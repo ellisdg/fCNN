@@ -10,7 +10,7 @@ from fcnn.utils.sequences import HCPRegressionSequence
 
 def run_keras_training(config, model_filename, training_log_filename, verbose=1, use_multiprocessing=False,
                        n_workers=1, max_queue_size=5, model_name='resnet_34', sequence_class=HCPRegressionSequence,
-                       test_input=1, metric_to_monitor="loss", model_metrics=()):
+                       test_input=1, metric_to_monitor="loss", model_metrics=(), n_gpus=1):
     """
     :param test_input: integer with the number of inputs from the generator to write to file. 0, False, or None will
     write no inputs to file.
@@ -53,9 +53,9 @@ def run_keras_training(config, model_filename, training_log_filename, verbose=1,
         bias = dense.trainable_weights.pop(dense.trainable_weights.index(dense.bias))
         dense.non_trainable_weights.append(bias)
         model.optimizer = None
-    if "n_gpus" in config and config["n_gpus"]:
+    if n_gpus > 1:
         from keras.utils import multi_gpu_model
-        model = multi_gpu_model(model, config["n_gpus"])
+        model = multi_gpu_model(model, n_gpus)
         model.optimizer = None
 
     if not hasattr(model, 'optimizer') or model.optimizer is None:

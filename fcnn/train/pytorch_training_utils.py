@@ -212,8 +212,8 @@ def epoch_training(train_loader, model, criterion, optimizer, epoch, gpu=None, p
         data_time.update(time.time() - end)
 
         if gpu is not None:
-            images = images.cuda(gpu, non_blocking=True)
-        target = target.cuda(gpu, non_blocking=True)
+            images = images.cuda()
+            target = target.cuda()
 
         # compute output
         output = model(images)
@@ -251,15 +251,14 @@ def epoch_validatation(val_loader, model, criterion, gpu, print_freq=1):
         end = time.time()
         for i, (images, target) in enumerate(val_loader):
             if gpu is not None:
-                images = images.cuda(gpu, non_blocking=True)
-            target = target.cuda(gpu, non_blocking=True)
+                images = images.cuda()
+                target = target.cuda()
 
             # compute output
             output = model(images)
             loss = criterion(output, target)
 
             # measure accuracy and record loss
-            acc1, acc5 = accuracy(output, target, topk=(1, 5))
             losses.update(loss.item(), images.size(0))
 
             # measure elapsed time

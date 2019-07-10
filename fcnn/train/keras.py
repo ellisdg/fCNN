@@ -117,23 +117,30 @@ def run_keras_training(config, model_filename, training_log_filename, verbose=1,
                                               surface_names=config['surface_names'],
                                               metric_names=config['metric_names'],
                                               **sequence_kwargs)
-        metric_to_monitor = 'val_' + metric_to_monitor
 
     # 5. Run Training
 
+    callbacks = []
     checkpointer = ModelCheckpoint(filepath=model_filename,
                                    verbose=verbose,
                                    monitor=metric_to_monitor,
                                    mode="min",
                                    save_best_only=config['save_best_only'])
-    reduce_lr = ReduceLROnPlateau(monitor=metric_to_monitor,
-                                  factor=config['decay_factor'],
-                                  patience=config['decay_patience'],
-                                  min_lr=config['min_learning_rate'])
+    callbacks.append(checkpointer)
+    if config["decay_patience"]:
+        reduce_lr = ReduceLROnPlateau(monitor=metric_to_monitor,
+                                      factor=config['decay_factor'],
+                                      patience=config['decay_patience'],
+                                      min_lr=config['min_learning_rate'])
+        print("Will reduce LR by a factor of {} after {} epochs.".format(config["decay_factor"],
+                                                                        config["decay_patience"]))
+        callbacks.append(reduce_lr)
     csv_logger = CSVLogger(training_log_filename, append=True)
-    callbacks = [checkpointer, reduce_lr, csv_logger]
+    callbacks.append(csv_logger)
     if "early_stopping_patience" in config and config["early_stopping_patience"]:
         from keras.callbacks import EarlyStopping
+        print("Will stop training after {} epochs without {} decrease.".format(config["early_stopping_patience"],
+                                                                               metric_to_monitor))
         early_stopping = EarlyStopping(monitor=metric_to_monitor,
                                        patience=config["early_stopping_patience"],
                                        verbose=verbose)

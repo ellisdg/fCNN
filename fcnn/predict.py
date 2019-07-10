@@ -137,7 +137,7 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
                                                  surface_names=surface_names,
                                                  spacing=None,
                                                  batch_size=1)
-    criterion = getattr(torch.nn, criterion_name)()
+    criterion = getattr(torch.nn, criterion_name)(reduction="mean")
     results = list()
     for args, idx in zip(dataset.filenames, range(len(dataset))):
         with torch.no_grad():

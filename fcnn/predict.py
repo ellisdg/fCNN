@@ -137,7 +137,7 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
                                                  surface_names=surface_names,
                                                  spacing=None,
                                                  batch_size=1)
-    criterion = getattr(torch.nn, criterion_name)(reduction="mean")
+    criterion = getattr(torch.nn, criterion_name)()
     results = list()
     for args, idx in zip(dataset.filenames, range(len(dataset))):
         with torch.no_grad():
@@ -160,7 +160,7 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
             y = y.unsqueeze(0)
             score = criterion(prediction, y).item()
             np_score = np.abs(prediction.numpy() - y.numpy()).mean()
-            print(criterion_name, score, np_score)
+            print(criterion_name, score, np_score, prediction.shape, y.shape)
             row = [subject_id, score]
             if reference is not None:
                 reference_score = criterion(reference, y).item()

@@ -53,7 +53,7 @@ def extract_parcellated_scalar_parcel_names(pscalar, parcel_index=1):
         except AttributeError:
             continue
     if not pscalar.shape[parcel_index] == len(parcel_names):
-        raise RuntimeError("Number of parcel names, {}, does not match pscalar shape, {}.".format(len(parcel_names),
+        raise RuntimeError("Number of parcel names, {}, does not match pscalar reduced_shape, {}.".format(len(parcel_names),
                                                                                                   pscalar.shape))
     return parcel_names
 

@@ -104,7 +104,7 @@ def _shortcut(input, residual):
     equal_channels = input_shape[4] == residual_shape[4]
 
     shortcut = input
-    # 1 X 1 conv if shape is different. Else identity.
+    # 1 X 1 conv if reduced_shape is different. Else identity.
     if stride_width > 1 or stride_height > 1 or not equal_channels:
         shortcut = Conv3D(filters=residual_shape[4],
                           kernel_size=(1, 1, 1),
@@ -197,7 +197,7 @@ class ResnetBuilder(object):
         """Builds a custom ResNet like architecture.
 
         Args:
-            input_shape: The input shape in the form (nb_rows, nb_cols, nb_z_cols, nb_channels)
+            input_shape: The input reduced_shape in the form (nb_rows, nb_cols, nb_z_cols, nb_channels)
             num_outputs: The number of outputs at final activation layer
             block_fn: The block function to use. This is either `basic_block` or `bottleneck`.
                 The original paper used basic_block for layers < 50

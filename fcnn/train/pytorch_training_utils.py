@@ -194,7 +194,7 @@ def main_worker(gpu, ngpus_per_node, args):
             }, is_best)
 
 
-def epoch_training(train_loader, model, criterion, optimizer, epoch, gpu=None, print_frequency=1):
+def epoch_training(train_loader, model, criterion, optimizer, epoch, gpu=None, print_frequency=1, regularized=False):
     batch_time = AverageMeter('Time', ':6.3f')
     data_time = AverageMeter('Data', ':6.3f')
     losses = AverageMeter('Loss', ':.4e')
@@ -217,7 +217,11 @@ def epoch_training(train_loader, model, criterion, optimizer, epoch, gpu=None, p
 
         # compute output
         output = model(images)
-        loss = criterion(output, target)
+        if regularized:
+            output, output_vae, mu, logvar = output
+            loss = criterion(output, output_vae, mu, logvar, images, target)
+        else:
+            loss = criterion(output, target)
 
         # measure accuracy and record loss
         losses.update(loss.item(), images.size(0))
@@ -236,7 +240,7 @@ def epoch_training(train_loader, model, criterion, optimizer, epoch, gpu=None, p
     return losses.avg
 
 
-def epoch_validatation(val_loader, model, criterion, gpu, print_freq=1):
+def epoch_validatation(val_loader, model, criterion, gpu, print_freq=1, regularized=False):
     batch_time = AverageMeter('Time', ':6.3f')
     losses = AverageMeter('Loss', ':.4e')
     progress = ProgressMeter(
@@ -256,7 +260,11 @@ def epoch_validatation(val_loader, model, criterion, gpu, print_freq=1):
 
             # compute output
             output = model(images)
-            loss = criterion(output, target)
+            if regularized:
+                output, output_vae, mu, logvar = output
+                loss = criterion(output, output_vae, mu, logvar, images, target)
+            else:
+                loss = criterion(output, target)
 
             # measure accuracy and record loss
             losses.update(loss.item(), images.size(0))

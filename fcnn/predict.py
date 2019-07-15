@@ -158,13 +158,11 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
             if n_gpus > 0:
                 prediction = prediction.cpu()
             y = y.unsqueeze(0)
-            np_score = np.abs(prediction.numpy() - y.numpy()).mean()
             score = criterion(prediction.reshape(y.shape), y).item()
             row = [subject_id, score]
             if reference is not None:
                 reference_score = criterion(reference.reshape(y.shape), y).item()
                 row.append(reference_score)
-                print(criterion_name, score, np_score, prediction.shape, y.shape, reference.shape, reference_score)
             results.append(row)
             if prediction_dir is not None and not os.path.exists(output_filename):
                 ref_cifti = nib.load(ref_filename)

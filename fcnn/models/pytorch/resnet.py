@@ -22,21 +22,23 @@ def conv1x1x1(in_planes, out_planes, stride=1):
 class BasicBlock(nn.Module):
     expansion = 1
 
-    def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1,
+    def __init__(self, in_planes, planes, stride=1, downsample=None, groups=1,
                  base_width=64, dilation=1, norm_layer=None):
         super(BasicBlock, self).__init__()
         if norm_layer is None:
-            norm_layer = nn.BatchNorm3d
+            self.norm_layer = nn.BatchNorm3d
+        else:
+            self.norm_layer = norm_layer
         if groups != 1 or base_width != 64:
             raise ValueError('BasicBlock only supports groups=1 and base_width=64')
         if dilation > 1:
             raise NotImplementedError("Dilation > 1 not supported in BasicBlock")
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
-        self.conv1 = conv3x3x3(inplanes, planes, stride)
-        self.bn1 = norm_layer(planes)
+        self.conv1 = conv3x3x3(in_planes, planes, stride)
+        self.bn1 = self.create_norm_layer(planes)
         self.relu = nn.ReLU(inplace=True)
         self.conv2 = conv3x3x3(planes, planes)
-        self.bn2 = norm_layer(planes)
+        self.bn2 = self.create_norm_layer(planes)
         self.downsample = downsample
         self.stride = stride
 
@@ -58,23 +60,28 @@ class BasicBlock(nn.Module):
 
         return out
 
+    def create_norm_layer(self, *args, **kwargs):
+        return self.norm_layer(*args, **kwargs)
+
 
 class Bottleneck(nn.Module):
     expansion = 4
 
-    def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1,
+    def __init__(self, in_planes, planes, stride=1, downsample=None, groups=1,
                  base_width=64, dilation=1, norm_layer=None):
         super(Bottleneck, self).__init__()
         if norm_layer is None:
-            norm_layer = nn.BatchNorm3d
+            self.norm_layer = nn.BatchNorm3d
+        else:
+            self.norm_layer = norm_layer
         width = int(planes * (base_width / 64.)) * groups
         # Both self.conv2 and self.downsample layers downsample the input when stride != 1
-        self.conv1 = conv1x1x1(inplanes, width)
-        self.bn1 = norm_layer(width)
+        self.conv1 = conv1x1x1(in_planes, width)
+        self.bn1 = self.create_norm_layer(width)
         self.conv2 = conv3x3x3(width, width, stride, groups, dilation)
-        self.bn2 = norm_layer(width)
+        self.bn2 = self.create_norm_layer(width)
         self.conv3 = conv1x1x1(width, planes * self.expansion)
-        self.bn3 = norm_layer(planes * self.expansion)
+        self.bn3 = self.create_norm_layer(planes * self.expansion)
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
         self.stride = stride
@@ -101,6 +108,9 @@ class Bottleneck(nn.Module):
 
         return out
 
+    def create_norm_layer(self, *args, **kwargs):
+        return self.norm_layer(*args, **kwargs)
+
 
 class ResNet(nn.Module):
 
@@ -112,7 +122,7 @@ class ResNet(nn.Module):
             norm_layer = nn.BatchNorm3d
         self._norm_layer = norm_layer
 
-        self.inplanes = 64
+        self.in_planes = 64
         self.dilation = 1
         if replace_stride_with_dilation is None:
             # each element in the tuple indicates if we should replace
@@ -123,9 +133,9 @@ class ResNet(nn.Module):
                              "or a 3-element tuple, got {}".format(replace_stride_with_dilation))
         self.groups = groups
         self.base_width = width_per_group
-        self.conv1 = nn.Conv3d(n_features, self.inplanes, kernel_size=7, stride=2, padding=3,
+        self.conv1 = nn.Conv3d(n_features, self.in_planes, kernel_size=7, stride=2, padding=3,
                                bias=False)
-        self.bn1 = norm_layer(self.inplanes)
+        self.bn1 = norm_layer(self.in_planes)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool3d(kernel_size=3, stride=2, padding=1)
         self.layer1 = self._make_layer(block, 64, layers[0])
@@ -162,18 +172,18 @@ class ResNet(nn.Module):
         if dilate:
             self.dilation *= stride
             stride = 1
-        if stride != 1 or self.inplanes != planes * block.expansion:
+        if stride != 1 or self.in_planes != planes * block.expansion:
             downsample = nn.Sequential(
-                conv1x1x1(self.inplanes, planes * block.expansion, stride),
+                conv1x1x1(self.in_planes, planes * block.expansion, stride),
                 norm_layer(planes * block.expansion),
             )
 
         layers = []
-        layers.append(block(self.inplanes, planes, stride, downsample, self.groups,
+        layers.append(block(self.in_planes, planes, stride, downsample, self.groups,
                             self.base_width, previous_dilation, norm_layer))
-        self.inplanes = planes * block.expansion
+        self.in_planes = planes * block.expansion
         for _ in range(1, blocks):
-            layers.append(block(self.inplanes, planes, groups=self.groups,
+            layers.append(block(self.in_planes, planes, groups=self.groups,
                                 base_width=self.base_width, dilation=self.dilation,
                                 norm_layer=norm_layer))
 

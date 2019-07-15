@@ -9,10 +9,11 @@ import torch.nn
 from ..utils.pytorch import WholeBrainCIFTI2DenseScalarDataset
 from ..models.pytorch import fetch_model_by_name
 from .pytorch_training_utils import epoch_training, epoch_validatation
+from ..utils.pytorch import functions
 
 
-def build_or_load_model(model_name, model_filename, n_features, n_outputs, n_gpus=0):
-    model = fetch_model_by_name(model_name, n_features=n_features, n_outputs=n_outputs)
+def build_or_load_model(model_name, model_filename, n_features, n_outputs, n_gpus=0, **kwargs):
+    model = fetch_model_by_name(model_name, n_features=n_features, n_outputs=n_outputs, **kwargs)
     if n_gpus > 1:
         model = torch.nn.DataParallel(model).cuda()
     elif n_gpus > 0:
@@ -28,7 +29,7 @@ def build_optimizer(optimizer_name, model_parameters, learning_rate=1e-4):
 
 def run_pytorch_training(config, model_filename, training_log_filename, verbose=1, use_multiprocessing=False,
                          n_workers=1, max_queue_size=5, model_name='resnet_34', n_gpus=1, regularized=False,
-                         sequence_class=WholeBrainCIFTI2DenseScalarDataset, criterion=None,
+                         sequence_class=WholeBrainCIFTI2DenseScalarDataset,
                          test_input=1, metric_to_monitor="loss", model_metrics=(), **unused_args):
     """
     :param test_input: integer with the number of inputs from the generator to write to file. 0, False, or None will
@@ -61,12 +62,23 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
     else:
         n_outputs = len(np.concatenate(config['metric_names']))
 
-    model = build_or_load_model(model_name, model_filename, config["n_features"], n_outputs)
+    if "model_kwargs" in config:
+        model_kwargs = config["model_kwargs"]
+    else:
+        model_kwargs = dict()
+
+    model = build_or_load_model(model_name, model_filename, n_features=config["n_features"],
+                                n_outputs=n_outputs, **model_kwargs)
     model.train()
-    if criterion is None:
+    if "custom_loss" in config and config["custom_loss"]:
+        criterion = getattr(functions, config['loss'])
+    else:
         criterion = getattr(torch.nn, config['loss'])()
         if n_gpus > 0:
             criterion.cuda()
+
+    if "regularized" in config:
+        regularized = config["regularized"]
 
     if "freeze_bias" in config and config["freeze_bias"]:
         # TODO

@@ -6,7 +6,7 @@ from .resnet import conv1x1x1
 
 
 class VariationalAutoEncoder(nn.Module):
-    def __init__(self, input_shape, input_feature_maps, base_width=32, encoder_blocks=None, decoder_blocks=None,
+    def __init__(self, input_shape, n_features, base_width=32, encoder_blocks=None, decoder_blocks=None,
                  feature_dilation=2, downsampling_stride=2, n_reduced_latent_feature_maps=16, vae_features=128,
                  interpolation_mode="trilinear"):
         super(VariationalAutoEncoder, self).__init__()
@@ -26,7 +26,7 @@ class VariationalAutoEncoder(nn.Module):
         self.decoder = MyronenkoDecoder(base_width=base_width, layer_blocks=decoder_blocks,
                                         upsampling_scale=downsampling_stride, feature_reduction_scale=feature_dilation,
                                         upsampling_mode=interpolation_mode)
-        self.final_convolution = conv1x1x1(in_planes=base_width, out_planes=input_feature_maps, stride=1)
+        self.final_convolution = conv1x1x1(in_planes=base_width, out_planes=n_features, stride=1)
 
     def forward(self, x):
         _x = x

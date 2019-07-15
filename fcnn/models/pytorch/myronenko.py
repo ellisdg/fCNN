@@ -8,6 +8,7 @@ from fcnn.models.pytorch.variational import VariationalBlock
 
 class MyronenkoBlock(ResNetBasicBlock):
     def __init__(self, *args, norm_groups=8, **kwargs):
+        self.norm_groups = norm_groups
         norm_layer = nn.GroupNorm
         if "norm_layer" in kwargs:
             raise RuntimeWarning(
@@ -15,7 +16,6 @@ class MyronenkoBlock(ResNetBasicBlock):
         kwargs["norm_layer"] = norm_layer
         kwargs["downsample"] = None
         super(MyronenkoBlock, self).__init__(*args, **kwargs)
-        self.norm_groups = norm_groups
 
     def forward(self, x):
         identity = x

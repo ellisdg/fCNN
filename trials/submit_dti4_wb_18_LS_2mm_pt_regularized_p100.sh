@@ -19,4 +19,4 @@ HCC_CONFIG=/home/aizenberg/dgellis/fCNN/data/hcc_p100_config.json
 MODEL=/work/aizenberg/dgellis/fCNN/model_${TRIAL}.h5
 LOG=/work/aizenberg/dgellis/fCNN/log_${TRIAL}.csv
 
-/home/aizenberg/dgellis/.conda/envs/fcnn-1.12/bin/python /home/aizenberg/dgellis/fCNN/trials/run_trial.py ${CONFIG} ${MODEL} ${LOG} ${HCC_CONFIG}
+/home/aizenberg/dgellis/.conda/envs/fcnn-1.12/bin/python /home/aizenberg/dgellis/fCNN/fcnn/scripts/run_trial.py ${CONFIG} ${MODEL} ${LOG} ${HCC_CONFIG}

@@ -40,7 +40,7 @@ class VariationalAutoEncoder(nn.Module):
 class RegularizedResNet(VariationalAutoEncoder):
     def __init__(self, n_outputs, *args, **kwargs):
         super(RegularizedResNet, self).__init__(*args, **kwargs)
-        self.dense = nn.Linear(self.var_layer.in_size, n_outputs)
+        self.dense = nn.Linear(self.vae_features, n_outputs)
 
     def forward(self, x):
         latent_tensor = self.encoder(x)
@@ -50,6 +50,6 @@ class RegularizedResNet(VariationalAutoEncoder):
         _x = self.var_layer.out_conv(_x)
         _x = self.var_layer.upsample(_x)
         vae_output = self.decoder(parameters)
-        output = self.dense(reduced_latent_vector)
+        output = self.dense(parameters)
         return output, vae_output, mu, logvar
 

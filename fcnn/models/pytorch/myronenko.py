@@ -43,13 +43,14 @@ class MyronenkoBlock(nn.Module):
 
 
 class MyronenkoLayer(nn.Module):
-    def __init__(self, n_blocks, block, *args, **kwargs):
+    def __init__(self, n_blocks, block, in_planes, planes, *args, **kwargs):
         super(MyronenkoLayer, self).__init__()
         self.block = block
         self.n_blocks = n_blocks
         self.blocks = list()
         for i in range(n_blocks):
-            self.blocks.append(block(*args, **kwargs))
+            self.blocks.append(block(in_planes, planes, *args, **kwargs))
+            in_planes = planes
         self.layer = nn.Sequential(*self.blocks)
 
     def forward(self, x):

@@ -89,7 +89,7 @@ class MyronenkoVariationalLayer(nn.Module):
 
     def forward(self, x):
         _x = x
-        _x = self.in_conv(_x).flatten()
+        _x = self.in_conv(_x).flatten(start_dim=1)
         _x, mu, logvar = self.var_block(_x)
         _x = self.relu(_x).reshape(self.reduced_shape)
         _x = self.out_conv(_x)

@@ -80,7 +80,7 @@ class MyronenkoVariationalLayer(nn.Module):
         super(MyronenkoVariationalLayer, self).__init__()
         self.in_conv = conv_block(in_planes=in_features, planes=reduced_features, stride=conv_stride)
         self.reduced_shape = np.asarray((reduced_features, *np.divide(input_shape, 2)), dtype=np.int)
-        self.in_size = np.prod(self.reduced_shape, dtype=np.int)
+        self.in_size = tuple(np.prod(self.reduced_shape, dtype=np.int))
         self.var_block = VariationalBlock(in_size=self.in_size, out_size=self.in_size, n_features=latent_features)
         self.relu = nn.ReLU()
         self.out_conv = conv1x1x1(in_planes=reduced_features, out_planes=in_features, stride=1)

@@ -24,8 +24,9 @@ class MyronenkoBlock(nn.Module):
     def forward(self, x):
         identity = x
 
-        out = self.norm1(x)
-        out = self.relu(out)
+        # out = self.norm1(x)
+        out = x
+        # out = self.relu(out)
         out = self.conv1(out)
 
         out = self.norm2(out)

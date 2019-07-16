@@ -5,21 +5,38 @@ from fcnn.models.pytorch.resnet import conv3x3x3, conv1x1x1
 from fcnn.models.pytorch.variational import VariationalBlock
 
 
-class MyronenkoBlock(nn.Module):
+class MyronenkoConvolutionBlock(nn.Module):
     def __init__(self, in_planes, planes, stride=1, norm_layer=None, norm_groups=8):
-        super(MyronenkoBlock, self).__init__()
+        super(MyronenkoConvolutionBlock, self).__init__()
         self.norm_groups = norm_groups
         if norm_layer is None:
-            # self.norm_layer = nn.GroupNorm
-            self.norm_layer = nn.BatchNorm3d
+            self.norm_layer = nn.GroupNorm
         else:
             self.norm_layer = norm_layer
         self.norm1 = self.create_norm_layer(in_planes)
         self.relu = nn.ReLU(inplace=True)
-        self.conv1 = conv3x3x3(in_planes, planes, stride)
-        self.norm2 = self.create_norm_layer(planes)
-        self.conv2 = conv3x3x3(planes, planes)
-        self.stride = stride
+        self.conv = conv3x3x3(in_planes, planes, stride)
+
+    def forward(self, x):
+        out = self.norm1(x)
+        out = self.relu(out)
+        out = self.conv(out)
+        return out
+
+    def create_norm_layer(self, planes):
+        if planes < self.norm_groups:
+            return self.norm_layer(planes, planes)
+        else:
+            return self.norm_layer(self.norm_groups, planes)
+
+
+class MyronenkoResidualBlock(nn.Module):
+    def __init__(self, in_planes, planes, stride=1, norm_layer=None, norm_groups=8):
+        super(MyronenkoResidualBlock, self).__init__()
+        self.conv1 = MyronenkoConvolutionBlock(in_planes=in_planes, planes=planes, stride=stride, norm_layer=norm_layer,
+                                               norm_groups=norm_groups)
+        self.conv2 = MyronenkoConvolutionBlock(in_planes=planes, planes=planes, stride=stride, norm_layer=norm_layer,
+                                               norm_groups=norm_groups)
         if in_planes != planes:
             self.sample = conv1x1x1(in_planes, planes)
         else:
@@ -28,12 +45,7 @@ class MyronenkoBlock(nn.Module):
     def forward(self, x):
         identity = x
 
-        out = self.norm1(x)
-        out = self.relu(out)
-        out = self.conv1(out)
-
-        out = self.norm2(out)
-        out = self.relu(out)
+        out = self.conv1(x)
         out = self.conv2(out)
 
         if self.sample is not None:
@@ -42,14 +54,6 @@ class MyronenkoBlock(nn.Module):
         out += identity
 
         return out
-
-    def create_norm_layer(self, planes):
-        if planes < self.norm_groups:
-            # return self.norm_layer(planes, planes)
-            return self.norm_layer(planes)
-        else:
-            # return self.norm_layer(self.norm_groups, planes)
-            return self.norm_layer(planes)
 
 
 class MyronenkoLayer(nn.Module):
@@ -70,8 +74,9 @@ class MyronenkoLayer(nn.Module):
 
 
 class MyronenkoVariationalLayer(nn.Module):
-    def __init__(self, in_features, input_shape, reduced_features=16, latent_features=128, conv_block=MyronenkoBlock,
-                 conv_stride=2, n_dims=3, upsampling_mode="trilinear", align_corners_upsampling=False):
+    def __init__(self, in_features, input_shape, reduced_features=16, latent_features=128,
+                 conv_block=MyronenkoConvolutionBlock, conv_stride=2, n_dims=3, upsampling_mode="trilinear",
+                 align_corners_upsampling=False):
         super(MyronenkoVariationalLayer, self).__init__()
         self.in_conv = conv_block(in_planes=in_features, planes=reduced_features, stride=conv_stride)
         self.reduced_shape = (reduced_features, *input_shape[-n_dims:])
@@ -93,7 +98,7 @@ class MyronenkoVariationalLayer(nn.Module):
 
 
 class MyronenkoEncoder(nn.Module):
-    def __init__(self, n_features, base_width=32, layer_blocks=None, layer=MyronenkoLayer, block=MyronenkoBlock,
+    def __init__(self, n_features, base_width=32, layer_blocks=None, layer=MyronenkoLayer, block=MyronenkoResidualBlock,
                  feature_dilation=2, downsampling_stride=2):
         super(MyronenkoEncoder, self).__init__()
         if layer_blocks is None:
@@ -119,7 +124,7 @@ class MyronenkoEncoder(nn.Module):
 
 
 class MyronenkoDecoder(nn.Module):
-    def __init__(self, base_width=32, layer_blocks=None, layer=MyronenkoLayer, block=MyronenkoBlock, upsampling_scale=2,
+    def __init__(self, base_width=32, layer_blocks=None, layer=MyronenkoLayer, block=MyronenkoResidualBlock, upsampling_scale=2,
                  feature_reduction_scale=2, upsampling_mode="trilinear", align_corners=False):
         super(MyronenkoDecoder, self).__init__()
         if layer_blocks is None:

@@ -20,8 +20,12 @@ class VariationalBlock(nn.Module):
         _x = x
         _x = self.dense1(_x)
         mu, logvar = torch.split(_x, self.n_features, dim=1)
+        print("mu shape", mu.shape)
+        print("logvar shape", logvar.shape)
         z = self.reparameterize(mu, logvar)
+        print("z shape", z.shape)
         out = self.dense2(z)
+        print("out shape", out.shape)
         if self.return_parameters:
             return out, mu, logvar, z
         else:

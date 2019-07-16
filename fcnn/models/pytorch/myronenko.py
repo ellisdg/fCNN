@@ -1,3 +1,5 @@
+from functools import partial
+
 from torch import nn as nn
 import numpy as np
 
@@ -84,8 +86,8 @@ class MyronenkoVariationalLayer(nn.Module):
         self.var_block = VariationalBlock(in_size=self.in_size, out_size=self.in_size, n_features=latent_features)
         self.relu = nn.ReLU()
         self.out_conv = conv1x1x1(in_planes=reduced_features, out_planes=in_features, stride=1)
-        self.upsample = nn.functional.interpolate(scale_factor=conv_stride, mode=upsampling_mode,
-                                                  align_corners=align_corners_upsampling)
+        self.upsample = partial(nn.functional.interpolate, scale_factor=conv_stride, mode=upsampling_mode,
+                                align_corners=align_corners_upsampling)
 
     def forward(self, x):
         _x = x
@@ -137,9 +139,8 @@ class MyronenkoDecoder(nn.Module):
             out_features = base_width * (feature_reduction_scale ** depth)
             in_features = out_features * feature_reduction_scale
             self.pre_upsampling_blocks.append(conv1x1x1(in_features, out_features, stride=1))
-            self.upsampling_blocks.append(nn.functional.interpolate(scale_factor=upsampling_scale,
-                                                                    mode=upsampling_mode,
-                                                                    align_corners=align_corners))
+            self.upsampling_blocks.append(partial(nn.functional.interpolate, scale_factor=upsampling_scale,
+                                                  mode=upsampling_mode, align_corners=align_corners))
             self.layers.append(layer(n_blocks=n_blocks, block=block, in_planes=out_features, planes=out_features))
 
     def forward(self, x):

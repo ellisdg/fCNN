@@ -91,7 +91,7 @@ class MyronenkoVariationalLayer(nn.Module):
         _x = x
         _x = self.in_conv(_x).flatten(start_dim=1)
         _x, mu, logvar = self.var_block(_x)
-        _x = self.relu(_x).reshape(self.reduced_shape)
+        _x = self.relu(_x).reshape(-1, *self.reduced_shape)
         _x = self.out_conv(_x)
         _x = self.upsample(_x)
         return _x, mu, logvar

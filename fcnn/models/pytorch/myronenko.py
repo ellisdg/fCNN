@@ -55,7 +55,7 @@ class MyronenkoLayer(nn.Module):
     def forward(self, x):
         _x = x
         for block in self.blocks:
-            _x = block(x)
+            _x = block(_x)
         return _x
 
 

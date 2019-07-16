@@ -48,7 +48,7 @@ class RegularizedResNet(VariationalAutoEncoder):
         latent_tensor = self.encoder(x)
         reduced_latent_vector = self.var_layer.in_conv(latent_tensor).flatten(start_dim=1)
         parameters, mu, logvar = self.var_layer.var_block(reduced_latent_vector)
-        _x = self.var_layer.relu(parameters).reshape(self.var_layer.reduced_shape)
+        _x = self.var_layer.relu(parameters).view(-1, *self.var_layer.reduced_shape)
         _x = self.var_layer.out_conv(_x)
         _x = self.var_layer.upsample(_x)
         vae_output = self.decoder(_x)

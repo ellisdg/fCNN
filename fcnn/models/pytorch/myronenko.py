@@ -133,7 +133,7 @@ class MyronenkoDecoder(nn.Module):
             layer_blocks = [1, 1, 1]
         self.layers = nn.ModuleList()
         self.pre_upsampling_blocks = nn.ModuleList()
-        self.upsampling_blocks = nn.ModuleList()
+        self.upsampling_blocks = list()
         for i, n_blocks in enumerate(layer_blocks):
             depth = len(layer_blocks) - (i + 1)
             out_features = base_width * (feature_reduction_scale ** depth)

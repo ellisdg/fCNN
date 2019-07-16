@@ -13,7 +13,7 @@ class VariationalAutoEncoder(nn.Module):
         if encoder_blocks is None:
             encoder_blocks = [1, 2, 2, 4]
         self.vae_features = vae_features
-        self.encoder = MyronenkoEncoder(base_width=base_width, layer_blocks=encoder_blocks,
+        self.encoder = MyronenkoEncoder(n_features=n_features, base_width=base_width, layer_blocks=encoder_blocks,
                                         feature_dilation=feature_dilation, downsampling_stride=downsampling_stride)
         n_latent_feature_maps = base_width * (feature_dilation ** (len(encoder_blocks) - 1))
         self.latent_shape = (n_latent_feature_maps, *np.divide(input_shape, downsampling_stride))

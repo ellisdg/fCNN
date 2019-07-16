@@ -1,7 +1,6 @@
 from torch import nn as nn
 import numpy as np
 
-from fcnn.models.pytorch.resnet import BasicBlock as ResNetBasicBlock
 from fcnn.models.pytorch.resnet import conv3x3x3, conv1x1x1
 from fcnn.models.pytorch.variational import VariationalBlock
 
@@ -82,20 +81,21 @@ class MyronenkoVariationalLayer(nn.Module):
 
 
 class MyronenkoEncoder(nn.Module):
-    def __init__(self, base_width=32, layer_blocks=None, layer=MyronenkoLayer, block=MyronenkoBlock, feature_dilation=2,
-                 downsampling_stride=2):
+    def __init__(self, n_features, base_width=32, layer_blocks=None, layer=MyronenkoLayer, block=MyronenkoBlock,
+                 feature_dilation=2, downsampling_stride=2):
         super(MyronenkoEncoder, self).__init__()
         if layer_blocks is None:
             layer_blocks = [1, 2, 2, 4]
         self.layers = list()
         self.downsampling_convolutions = list()
-        in_width = base_width
+        out_width = base_width
+        in_width = n_features
         for n_blocks in layer_blocks:
-            out_width = base_width * feature_dilation
             self.layers.append(layer(n_blocks, block, in_planes=in_width, planes=out_width))
             if n_blocks != layer_blocks[-1]:
                 self.downsampling_convolutions.append(conv3x3x3(out_width, out_width, stride=downsampling_stride))
             in_width = out_width
+            out_width = out_width * feature_dilation
 
     def forward(self, x):
         _x = x

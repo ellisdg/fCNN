@@ -51,7 +51,7 @@ class RegularizedResNet(VariationalAutoEncoder):
         _x = self.var_layer.relu(parameters).view(-1, *self.var_layer.reduced_shape)
         _x = self.var_layer.out_conv(_x)
         _x = self.var_layer.upsample(_x)
-        _ = self.decoder(_x)
+        _x = self.decoder(_x)
         vae_output = self.final_convolution(_x)
         output = self.dense(reduced_latent_vector)
         return output, vae_output, mu, logvar

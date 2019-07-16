@@ -11,13 +11,13 @@ class VariationalAutoEncoder(nn.Module):
                  interpolation_mode="trilinear"):
         super(VariationalAutoEncoder, self).__init__()
         if encoder_blocks is None:
-            encoder_blocks = [1, 2, 2, 4]
+            encoder_blocks = [1, 2, 2, 2]
         self.vae_features = vae_features
         self.encoder = MyronenkoEncoder(n_features=n_features, base_width=base_width, layer_blocks=encoder_blocks,
                                         feature_dilation=feature_dilation, downsampling_stride=downsampling_stride)
         depth = len(encoder_blocks) - 1
         n_latent_feature_maps = base_width * (feature_dilation ** depth)
-        self.latent_image_shape =  np.divide(input_shape, downsampling_stride ** depth)
+        self.latent_image_shape = np.divide(input_shape, downsampling_stride ** depth)
         self.var_layer = MyronenkoVariationalLayer(in_features=n_latent_feature_maps,
                                                    input_shape=self.latent_image_shape,
                                                    reduced_features=n_reduced_latent_feature_maps,

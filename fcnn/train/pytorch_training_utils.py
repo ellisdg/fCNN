@@ -208,6 +208,7 @@ def epoch_training(train_loader, model, criterion, optimizer, epoch, gpu=None, p
 
     end = time.time()
     for i, (images, target) in enumerate(train_loader):
+        print(i)
         # measure data loading time
         data_time.update(time.time() - end)
 

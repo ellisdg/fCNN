@@ -10,7 +10,8 @@ class MyronenkoBlock(nn.Module):
         super(MyronenkoBlock, self).__init__()
         self.norm_groups = norm_groups
         if norm_layer is None:
-            self.norm_layer = nn.GroupNorm
+            # self.norm_layer = nn.GroupNorm
+            self.norm_layer = nn.BatchNorm3d
         else:
             self.norm_layer = norm_layer
         self.norm1 = self.create_norm_layer(in_planes)
@@ -37,9 +38,11 @@ class MyronenkoBlock(nn.Module):
 
     def create_norm_layer(self, planes):
         if planes < self.norm_groups:
-            return self.norm_layer(planes, planes)
+            # return self.norm_layer(planes, planes)
+            return self.norm_layer(planes)
         else:
-            return self.norm_layer(self.norm_groups, planes)
+            # return self.norm_layer(self.norm_groups, planes)
+            return self.norm_layer(planes)
 
 
 class MyronenkoLayer(nn.Module):

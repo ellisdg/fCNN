@@ -216,7 +216,6 @@ def epoch_training(train_loader, model, criterion, optimizer, epoch, gpu=None, p
             target = target.cuda()
 
         # compute output
-        print("MODEL is using CUDA:", next(model.parameters()).is_cuda)
         output = model(images)
         if regularized:
             output, output_vae, mu, logvar = output

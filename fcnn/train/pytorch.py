@@ -14,12 +14,12 @@ from ..utils.pytorch import functions
 
 def build_or_load_model(model_name, model_filename, n_features, n_outputs, n_gpus=0, **kwargs):
     model = fetch_model_by_name(model_name, n_features=n_features, n_outputs=n_outputs, **kwargs)
-    if os.path.exists(model_filename):
-        model.load_state_dict(torch.load(model_filename))
     if n_gpus > 1:
         model = torch.nn.DataParallel(model).cuda()
     elif n_gpus > 0:
         model = model.cuda()
+    if os.path.exists(model_filename):
+        model.load_state_dict(torch.load(model_filename))
     return model
 
 
@@ -67,7 +67,7 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
         model_kwargs = dict()
 
     model = build_or_load_model(model_name, model_filename, n_features=config["n_features"],
-                                n_outputs=n_outputs, **model_kwargs)
+                                n_outputs=n_outputs, n_gpus=n_gpus, **model_kwargs)
     model.train()
     print(model)
     if "custom_loss" in config and config["custom_loss"]:

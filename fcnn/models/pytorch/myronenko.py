@@ -32,8 +32,11 @@ class MyronenkoBlock(ResNetBasicBlock):
 
         return out
 
-    def create_norm_layer(self, *args, **kwargs):
-        return self.norm_layer(self.norm_groups, *args, **kwargs)
+    def create_norm_layer(self, planes, *args, **kwargs):
+        if planes < self.norm_groups:
+            return self.norm_layer(planes, planes, *args, **kwargs)
+        else:
+            return self.norm_layer(self.norm_groups, planes, *args, **kwargs)
 
 
 class MyronenkoLayer(nn.Module):

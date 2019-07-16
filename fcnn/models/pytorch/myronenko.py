@@ -84,8 +84,8 @@ class MyronenkoVariationalLayer(nn.Module):
         self.var_block = VariationalBlock(in_size=self.in_size, out_size=self.in_size, n_features=latent_features)
         self.relu = nn.ReLU()
         self.out_conv = conv1x1x1(in_planes=reduced_features, out_planes=in_features, stride=1)
-        self.upsample = nn.Upsample(scale_factor=conv_stride, mode=upsampling_mode,
-                                    align_corners=align_corners_upsampling)
+        self.upsample = nn.functional.interpolate(scale_factor=conv_stride, mode=upsampling_mode,
+                                                  align_corners=align_corners_upsampling)
 
     def forward(self, x):
         _x = x
@@ -124,8 +124,8 @@ class MyronenkoEncoder(nn.Module):
 
 
 class MyronenkoDecoder(nn.Module):
-    def __init__(self, base_width=32, layer_blocks=None, layer=MyronenkoLayer, block=MyronenkoResidualBlock, upsampling_scale=2,
-                 feature_reduction_scale=2, upsampling_mode="trilinear", align_corners=False):
+    def __init__(self, base_width=32, layer_blocks=None, layer=MyronenkoLayer, block=MyronenkoResidualBlock,
+                 upsampling_scale=2, feature_reduction_scale=2, upsampling_mode="trilinear", align_corners=False):
         super(MyronenkoDecoder, self).__init__()
         if layer_blocks is None:
             layer_blocks = [1, 1, 1]
@@ -137,8 +137,9 @@ class MyronenkoDecoder(nn.Module):
             out_features = base_width * (feature_reduction_scale ** depth)
             in_features = out_features * feature_reduction_scale
             self.pre_upsampling_blocks.append(conv1x1x1(in_features, out_features, stride=1))
-            self.upsampling_blocks.append(nn.Upsample(scale_factor=upsampling_scale, mode=upsampling_mode,
-                                                      align_corners=align_corners))
+            self.upsampling_blocks.append(nn.functional.interpolate(scale_factor=upsampling_scale,
+                                                                    mode=upsampling_mode,
+                                                                    align_corners=align_corners))
             self.layers.append(layer(n_blocks=n_blocks, block=block, in_planes=out_features, planes=out_features))
 
     def forward(self, x):

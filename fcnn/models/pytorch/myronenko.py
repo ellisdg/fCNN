@@ -20,6 +20,10 @@ class MyronenkoBlock(nn.Module):
         self.norm2 = self.create_norm_layer(planes)
         self.conv2 = conv3x3x3(planes, planes)
         self.stride = stride
+        if in_planes != planes:
+            self.sample = conv1x1x1(in_planes, planes)
+        else:
+            self.sample = None
 
     def forward(self, x):
         identity = x
@@ -31,6 +35,9 @@ class MyronenkoBlock(nn.Module):
         out = self.norm2(out)
         out = self.relu(out)
         out = self.conv2(out)
+
+        if self.sample is not None:
+            identity = self.sample(x)
 
         out += identity
 

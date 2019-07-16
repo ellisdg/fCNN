@@ -217,10 +217,12 @@ def epoch_training(train_loader, model, criterion, optimizer, epoch, gpu=None, p
             target = target.cuda()
 
         # compute output
-        torch.cuda.empty_cache()
         output = model(images)
         batch_size = images.size(0)
         if regularized:
+            output = output.cpu()
+            images = images.cpu()
+            target = target.cpu()
             output, output_vae, mu, logvar = output
             loss = criterion(output, output_vae, mu, logvar, images, target)
             del output_vae, mu, logvar

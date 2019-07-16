@@ -14,7 +14,7 @@ class MyronenkoConvolutionBlock(nn.Module):
         else:
             self.norm_layer = norm_layer
         self.norm1 = self.create_norm_layer(in_planes)
-        self.relu = nn.ReLU(inplace=True)
+        self.relu = nn.ReLU()
         self.conv = conv3x3x3(in_planes, planes, stride)
 
     def forward(self, x):
@@ -75,11 +75,11 @@ class MyronenkoLayer(nn.Module):
 
 class MyronenkoVariationalLayer(nn.Module):
     def __init__(self, in_features, input_shape, reduced_features=16, latent_features=128,
-                 conv_block=MyronenkoConvolutionBlock, conv_stride=2, n_dims=3, upsampling_mode="trilinear",
+                 conv_block=MyronenkoConvolutionBlock, conv_stride=2, upsampling_mode="trilinear",
                  align_corners_upsampling=False):
         super(MyronenkoVariationalLayer, self).__init__()
         self.in_conv = conv_block(in_planes=in_features, planes=reduced_features, stride=conv_stride)
-        self.reduced_shape = (reduced_features, *input_shape[-n_dims:])
+        self.reduced_shape = (reduced_features, *np.divide(input_shape, 2))
         self.in_size = np.prod(self.reduced_shape, dtype=np.int)
         self.var_block = VariationalBlock(in_size=self.in_size, out_size=self.in_size, n_features=latent_features)
         self.relu = nn.ReLU()

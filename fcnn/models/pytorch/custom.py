@@ -15,9 +15,11 @@ class VariationalAutoEncoder(nn.Module):
         self.vae_features = vae_features
         self.encoder = MyronenkoEncoder(n_features=n_features, base_width=base_width, layer_blocks=encoder_blocks,
                                         feature_dilation=feature_dilation, downsampling_stride=downsampling_stride)
-        n_latent_feature_maps = base_width * (feature_dilation ** (len(encoder_blocks) - 1))
-        self.latent_shape = (n_latent_feature_maps, *np.divide(input_shape, downsampling_stride))
-        self.var_layer = MyronenkoVariationalLayer(in_features=n_latent_feature_maps, input_shape=self.latent_shape,
+        depth = len(encoder_blocks) - 1
+        n_latent_feature_maps = base_width * (feature_dilation ** depth)
+        self.latent_image_shape =  np.divide(input_shape, downsampling_stride ** depth)
+        self.var_layer = MyronenkoVariationalLayer(in_features=n_latent_feature_maps,
+                                                   input_shape=self.latent_image_shape,
                                                    reduced_features=n_reduced_latent_feature_maps,
                                                    latent_features=self.vae_features,
                                                    upsampling_mode=interpolation_mode)
@@ -40,7 +42,7 @@ class VariationalAutoEncoder(nn.Module):
 class RegularizedResNet(VariationalAutoEncoder):
     def __init__(self, n_outputs, *args, **kwargs):
         super(RegularizedResNet, self).__init__(*args, **kwargs)
-        self.dense = nn.Linear(self.vae_features, n_outputs)
+        self.dense = nn.Linear(self.var_layer.in_size, n_outputs)
 
     def forward(self, x):
         latent_tensor = self.encoder(x)
@@ -50,6 +52,6 @@ class RegularizedResNet(VariationalAutoEncoder):
         _x = self.var_layer.out_conv(_x)
         _x = self.var_layer.upsample(_x)
         vae_output = self.decoder(_x)
-        output = self.dense(parameters)
+        output = self.dense(reduced_latent_vector)
         return output, vae_output, mu, logvar
 

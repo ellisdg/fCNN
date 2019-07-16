@@ -11,7 +11,7 @@ class VariationalAutoEncoder(nn.Module):
                  interpolation_mode="trilinear"):
         super(VariationalAutoEncoder, self).__init__()
         if encoder_blocks is None:
-            encoder_blocks = [1, 2, 2, 2]
+            encoder_blocks = [1, 2, 2, 4]
         self.vae_features = vae_features
         self.encoder = MyronenkoEncoder(n_features=n_features, base_width=base_width, layer_blocks=encoder_blocks,
                                         feature_dilation=feature_dilation, downsampling_stride=downsampling_stride)

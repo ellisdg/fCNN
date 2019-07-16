@@ -220,8 +220,10 @@ def epoch_training(train_loader, model, criterion, optimizer, epoch, gpu=None, p
         if regularized:
             output, output_vae, mu, logvar = output
             loss = criterion(output, output_vae, mu, logvar, images, target)
+            del output, output_vae, mu, logvar, images, target
         else:
             loss = criterion(output, target)
+            del output, images, target
 
         # measure accuracy and record loss
         losses.update(loss.item(), images.size(0))

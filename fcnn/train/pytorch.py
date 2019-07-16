@@ -53,7 +53,6 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
     """
     window = np.asarray(config['window'])
     spacing = np.asarray(config['spacing'])
-    print("n_gpus: ", n_gpus)
     if 'model_name' in config:
         model_name = config['model_name']
 

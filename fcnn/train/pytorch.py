@@ -14,12 +14,12 @@ from ..utils.pytorch import functions
 
 def build_or_load_model(model_name, model_filename, n_features, n_outputs, n_gpus=0, **kwargs):
     model = fetch_model_by_name(model_name, n_features=n_features, n_outputs=n_outputs, **kwargs)
+    if os.path.exists(model_filename):
+        model.load_state_dict(torch.load(model_filename))
     if n_gpus > 1:
         model = torch.nn.DataParallel(model).cuda()
     elif n_gpus > 0:
         model = model.cuda()
-    if os.path.exists(model_filename):
-        model.load_state_dict(torch.load(model_filename))
     return model
 
 
@@ -154,7 +154,7 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
           training_log_filename=training_log_filename, iterations_per_epoch=iterations_per_epoch,
           metric_to_monitor=metric_to_monitor, early_stopping_patience=config["early_stopping_patience"],
           save_best_only=config["save_best_only"], learning_rate_decay_patience=config["decay_patience"],
-          regularized=regularized)
+          regularized=regularized, n_gpus=n_gpus)
 
 
 def train(model, optimizer, criterion, n_epochs, training_loader, validation_loader, training_log_filename,

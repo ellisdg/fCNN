@@ -85,8 +85,8 @@ class MyronenkoEncoder(nn.Module):
         super(MyronenkoEncoder, self).__init__()
         if layer_blocks is None:
             layer_blocks = [1, 2, 2, 4]
-        self.layers = list()
-        self.downsampling_convolutions = list()
+        self.layers = nn.ModuleList()
+        self.downsampling_convolutions = nn.ModuleList()
         out_width = base_width
         in_width = n_features
         for n_blocks in layer_blocks:
@@ -111,9 +111,9 @@ class MyronenkoDecoder(nn.Module):
         super(MyronenkoDecoder, self).__init__()
         if layer_blocks is None:
             layer_blocks = [1, 1, 1]
-        self.layers = list()
-        self.pre_upsampling_blocks = list()
-        self.upsampling_blocks = list()
+        self.layers = nn.ModuleList()
+        self.pre_upsampling_blocks = nn.ModuleList()
+        self.upsampling_blocks = nn.ModuleList()
         for i, n_blocks in enumerate(layer_blocks):
             depth = len(layer_blocks) - (i + 1)
             out_features = base_width * (feature_reduction_scale ** depth)

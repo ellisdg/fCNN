@@ -19,7 +19,7 @@ class VariationalBlock(nn.Module):
     def forward(self, x):
         _x = x
         _x = self.dense1(_x)
-        mu, logvar = torch.split(_x, self.n_features)
+        mu, logvar = torch.split(_x, self.n_features, dim=1)
         z = self.reparameterize(mu, logvar)
         out = self.dense2(z)
         if self.return_parameters:

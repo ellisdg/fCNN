@@ -6,25 +6,29 @@ from fcnn.models.pytorch.resnet import conv3x3x3, conv1x1x1
 from fcnn.models.pytorch.variational import VariationalBlock
 
 
-class MyronenkoBlock(ResNetBasicBlock):
-    def __init__(self, *args, norm_groups=8, **kwargs):
+class MyronenkoBlock(nn.Module):
+    def __init__(self, in_planes, planes, stride=1, norm_layer=None, norm_groups=8):
+        super(MyronenkoBlock, self).__init__()
         self.norm_groups = norm_groups
-        norm_layer = nn.GroupNorm
-        if "norm_layer" in kwargs:
-            raise RuntimeWarning(
-                "Ignoring specified normalization layer, {}, and setting it to GroupNorm".format(norm_layer))
-        kwargs["norm_layer"] = norm_layer
-        kwargs["downsample"] = None
-        super(MyronenkoBlock, self).__init__(*args, **kwargs)
+        if norm_layer is None:
+            self.norm_layer = nn.GroupNorm
+        else:
+            self.norm_layer = norm_layer
+        self.norm1 = self.create_norm_layer(in_planes)
+        self.relu = nn.ReLU(inplace=True)
+        self.conv1 = conv3x3x3(in_planes, planes, stride)
+        self.norm2 = self.create_norm_layer(planes)
+        self.conv2 = conv3x3x3(planes, planes)
+        self.stride = stride
 
     def forward(self, x):
         identity = x
 
-        out = self.bn1(x)
+        out = self.norm1(x)
         out = self.relu(out)
         out = self.conv1(out)
 
-        out = self.bn2(out)
+        out = self.norm2(out)
         out = self.relu(out)
         out = self.conv2(out)
 

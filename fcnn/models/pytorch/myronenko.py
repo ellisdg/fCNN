@@ -36,7 +36,6 @@ class MyronenkoBlock(nn.Module):
         return out
 
     def create_norm_layer(self, planes):
-        print(planes)
         if planes < self.norm_groups:
             return self.norm_layer(planes, planes)
         else:

@@ -217,16 +217,17 @@ def epoch_training(train_loader, model, criterion, optimizer, epoch, gpu=None, p
 
         # compute output
         output = model(images)
+        batch_size = images.size(0)
         if regularized:
             output, output_vae, mu, logvar = output
             loss = criterion(output, output_vae, mu, logvar, images, target)
-            del output, output_vae, mu, logvar, images, target
+            del output_vae, mu, logvar
         else:
             loss = criterion(output, target)
-            del output, images, target
+        del output, images, target
 
         # measure accuracy and record loss
-        losses.update(loss.item(), images.size(0))
+        losses.update(loss.item(), batch_size)
 
         # compute gradient and do step
         optimizer.zero_grad()

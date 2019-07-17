@@ -914,7 +914,7 @@
   "window": [
     128,
     128,
-    128
+    112
   ],
   "spacing": null,
   "n_features": 4,
@@ -939,7 +939,7 @@
   "initial_learning_rate": 1e-04,
   "model_name": "RegularizedResNet",
   "model_kwargs": {"base_width":  32, "encoder_blocks": [1, 2, 2, 2],
-    "input_shape": [128, 128, 128]
+    "input_shape": [128, 128, 112]
   },
   "skip_validation": false,
   "iterations_per_epoch": 1,

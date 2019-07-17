@@ -100,11 +100,11 @@ class MyronenkoVariationalLayer(nn.Module):
 
 
 class MyronenkoEncoder(nn.Module):
-    def __init__(self, n_features, base_width=16, layer_blocks=None, layer=MyronenkoLayer, block=MyronenkoResidualBlock,
+    def __init__(self, n_features, base_width=32, layer_blocks=None, layer=MyronenkoLayer, block=MyronenkoResidualBlock,
                  feature_dilation=2, downsampling_stride=2):
         super(MyronenkoEncoder, self).__init__()
         if layer_blocks is None:
-            layer_blocks = [1, 1, 1, 1]
+            layer_blocks = [1, 2, 2, 4]
         self.layers = nn.ModuleList()
         self.downsampling_convolutions = nn.ModuleList()
         out_width = base_width

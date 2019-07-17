@@ -211,10 +211,10 @@ def epoch_training(train_loader, model, criterion, optimizer, epoch, gpu=None, p
         # measure data loading time
         data_time.update(time.time() - end)
 
-        print("Memory allocated:", torch.cuda.memory_allocated())
-        print("Max memory allocated:", torch.cuda.max_memory_allocated())
-        print("Memory cached:", torch.cuda.memory_cached())
-        print("Max memory allocated:", torch.cuda.max_memory_cached())
+        print("Memory allocated:", human_readable_size(torch.cuda.memory_allocated()))
+        print("Max memory allocated:", human_readable_size(torch.cuda.max_memory_allocated()))
+        print("Memory cached:", human_readable_size(torch.cuda.memory_cached()))
+        print("Max memory allocated:", human_readable_size(torch.cuda.max_memory_cached()))
 
         loss, batch_size = batch_loss(model, images, target, criterion, gpu=gpu, regularized=regularized)
 
@@ -350,3 +350,11 @@ def accuracy(output, target, topk=(1,)):
             correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
             res.append(correct_k.mul_(100.0 / batch_size))
         return res
+
+
+def human_readable_size(size, decimal_places=1):
+    for unit in ['','KB','MB','GB','TB']:
+        if size < 1024.0:
+            break
+        size /= 1024.0
+    return f"{size:.{decimal_places}f}{unit}"

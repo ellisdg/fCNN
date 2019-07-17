@@ -142,7 +142,6 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
                                             surface_names=config['surface_names'],
                                             metric_names=config['metric_names'],
                                             **sequence_kwargs)
-        metric_to_monitor = 'val_' + metric_to_monitor
         validation_loader = DataLoader(validation_dataset,
                                        batch_size=config["validation_batch_size"],
                                        shuffle=False,

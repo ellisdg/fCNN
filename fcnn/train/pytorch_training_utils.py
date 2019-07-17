@@ -227,6 +227,9 @@ def epoch_training(train_loader, model, criterion, optimizer, epoch, gpu=None, p
 
         loss, batch_size = batch_loss(model, images, target, criterion, gpu=gpu, regularized=regularized)
 
+        if gpu:
+            torch.cuda.empty_cache()
+
         # measure accuracy and record loss
         losses.update(loss.item(), batch_size)
 

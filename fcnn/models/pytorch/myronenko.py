@@ -109,9 +109,9 @@ class MyronenkoEncoder(nn.Module):
         self.downsampling_convolutions = nn.ModuleList()
         out_width = base_width
         in_width = n_features
-        for n_blocks in layer_blocks:
+        for i, n_blocks in enumerate(layer_blocks):
             self.layers.append(layer(n_blocks, block, in_planes=in_width, planes=out_width))
-            if n_blocks != layer_blocks[-1]:
+            if i != len(layer_blocks) - 1:
                 self.downsampling_convolutions.append(conv3x3x3(out_width, out_width, stride=downsampling_stride))
             in_width = out_width
             out_width = out_width * feature_dilation

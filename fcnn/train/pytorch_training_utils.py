@@ -235,6 +235,8 @@ def epoch_training(train_loader, model, criterion, optimizer, epoch, gpu=None, p
         loss.backward()
         optimizer.step()
 
+        del loss
+
         # measure elapsed time
         batch_time.update(time.time() - end)
         end = time.time()

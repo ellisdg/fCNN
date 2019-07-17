@@ -194,7 +194,8 @@ def main_worker(gpu, ngpus_per_node, args):
             }, is_best)
 
 
-def epoch_training(train_loader, model, criterion, optimizer, epoch, gpu=None, print_frequency=1, regularized=False):
+def epoch_training(train_loader, model, criterion, optimizer, epoch, gpu=None, print_frequency=1, regularized=False,
+                   print_gpu_memory=False):
     batch_time = AverageMeter('Time', ':6.3f')
     data_time = AverageMeter('Data', ':6.3f')
     losses = AverageMeter('Loss', ':.4e')
@@ -212,18 +213,17 @@ def epoch_training(train_loader, model, criterion, optimizer, epoch, gpu=None, p
         data_time.update(time.time() - end)
 
         if gpu:
-            for i_gpu in range(gpu):
-                print("Memory allocated:", human_readable_size(torch.cuda.memory_allocated(i_gpu)))
-                print("Max memory allocated:", human_readable_size(torch.cuda.max_memory_allocated(i_gpu)))
-                print("Memory cached:", human_readable_size(torch.cuda.memory_cached(i_gpu)))
-                print("Max memory cached:", human_readable_size(torch.cuda.max_memory_cached(i_gpu)))
-
             torch.cuda.empty_cache()
-            for i_gpu in range(gpu):
-                print("Memory allocated:", human_readable_size(torch.cuda.memory_allocated(i_gpu)))
-                print("Max memory allocated:", human_readable_size(torch.cuda.max_memory_allocated(i_gpu)))
-                print("Memory cached:", human_readable_size(torch.cuda.memory_cached(i_gpu)))
-                print("Max memory cached:", human_readable_size(torch.cuda.max_memory_cached(i_gpu)))
+            if print_gpu_memory:
+                for i_gpu in range(gpu):
+                    print("Memory allocated (device {}):".format(i_gpu),
+                          human_readable_size(torch.cuda.memory_allocated(i_gpu)))
+                    print("Max memory allocated (device {}):".format(i_gpu),
+                          human_readable_size(torch.cuda.max_memory_allocated(i_gpu)))
+                    print("Memory cached (device {}):".format(i_gpu),
+                          human_readable_size(torch.cuda.memory_cached(i_gpu)))
+                    print("Max memory cached (device {}):".format(i_gpu),
+                          human_readable_size(torch.cuda.max_memory_cached(i_gpu)))
 
         loss, batch_size = batch_loss(model, images, target, criterion, gpu=gpu, regularized=regularized)
 

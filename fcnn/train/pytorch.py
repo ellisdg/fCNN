@@ -189,7 +189,7 @@ def train(model, optimizer, criterion, n_epochs, training_loader, validation_loa
 
         # update the training log
         training_log.append([epoch, loss, get_lr(optimizer), val_loss])
-        pd.DataFrame(training_log, columns=training_log_header).to_csv(training_log_filename)
+        pd.DataFrame(training_log, columns=training_log_header).set_index("epoch").to_csv(training_log_filename)
         min_epoch = np.asarray(training_log)[:, training_log_header.index(metric_to_monitor)].argmin()
 
         # check loss and decay

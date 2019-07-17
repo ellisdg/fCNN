@@ -6,7 +6,7 @@ from .resnet import conv1x1x1
 
 
 class VariationalAutoEncoder(nn.Module):
-    def __init__(self, input_shape, n_features, base_width=16, encoder_blocks=None, decoder_blocks=None,
+    def __init__(self, input_shape, n_features, base_width=32, encoder_blocks=None, decoder_blocks=None,
                  feature_dilation=2, downsampling_stride=2, n_reduced_latent_feature_maps=16, vae_features=128,
                  interpolation_mode="trilinear"):
         super(VariationalAutoEncoder, self).__init__()
@@ -45,14 +45,14 @@ class RegularizedResNet(VariationalAutoEncoder):
         self.dense = nn.Linear(self.var_layer.in_size, n_outputs)
 
     def forward(self, x):
-        latent_tensor = self.encoder(x)
-        reduced_latent_vector = self.var_layer.in_conv(latent_tensor).flatten(start_dim=1)
-        parameters, mu, logvar = self.var_layer.var_block(reduced_latent_vector)
-        _x = self.var_layer.relu(parameters).view(-1, *self.var_layer.reduced_shape)
+        _x = self.encoder(x)
+        _x = self.var_layer.in_conv(_x).flatten(start_dim=1)
+        output = self.dense(_x)
+        _x, mu, logvar = self.var_layer.var_block(_x)
+        _x = self.var_layer.relu(_x).view(-1, *self.var_layer.reduced_shape)
         _x = self.var_layer.out_conv(_x)
         _x = self.var_layer.upsample(_x)
         _x = self.decoder(_x)
         vae_output = self.final_convolution(_x)
-        output = self.dense(reduced_latent_vector)
         return output, vae_output, mu, logvar
 

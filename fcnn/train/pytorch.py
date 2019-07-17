@@ -160,7 +160,7 @@ def train(model, optimizer, criterion, n_epochs, training_loader, validation_loa
           learning_rate_decay_patience=None, save_best_only=False, n_gpus=1, verbose=True, regularized=False):
     training_log = list()
     if os.path.exists(training_log_filename):
-        training_log.extend(pd.read_csv(training_log_filename).values())
+        training_log.extend(pd.read_csv(training_log_filename).values)
     training_log_header = ["epoch", "loss", "lr", "val_loss"]
 
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, verbose=verbose)

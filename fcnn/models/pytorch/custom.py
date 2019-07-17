@@ -6,7 +6,7 @@ from .resnet import conv1x1x1
 
 
 class VariationalAutoEncoder(nn.Module):
-    def __init__(self, input_shape, n_features, base_width=32, encoder_blocks=None, decoder_blocks=None,
+    def __init__(self, input_shape, n_features, base_width=16, encoder_blocks=None, decoder_blocks=None,
                  feature_dilation=2, downsampling_stride=2, n_reduced_latent_feature_maps=16, vae_features=128,
                  interpolation_mode="trilinear"):
         super(VariationalAutoEncoder, self).__init__()

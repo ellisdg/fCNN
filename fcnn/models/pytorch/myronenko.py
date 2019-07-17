@@ -104,7 +104,7 @@ class MyronenkoEncoder(nn.Module):
                  feature_dilation=2, downsampling_stride=2):
         super(MyronenkoEncoder, self).__init__()
         if layer_blocks is None:
-            layer_blocks = [1, 2, 2, 4]
+            layer_blocks = [1, 1, 1, 1]
         self.layers = nn.ModuleList()
         self.downsampling_convolutions = nn.ModuleList()
         out_width = base_width

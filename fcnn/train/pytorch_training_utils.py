@@ -216,7 +216,14 @@ def epoch_training(train_loader, model, criterion, optimizer, epoch, gpu=None, p
                 print("Memory allocated:", human_readable_size(torch.cuda.memory_allocated(i_gpu)))
                 print("Max memory allocated:", human_readable_size(torch.cuda.max_memory_allocated(i_gpu)))
                 print("Memory cached:", human_readable_size(torch.cuda.memory_cached(i_gpu)))
-                print("Max memory allocated:", human_readable_size(torch.cuda.max_memory_cached(i_gpu)))
+                print("Max memory cached:", human_readable_size(torch.cuda.max_memory_cached(i_gpu)))
+
+            torch.cuda.empty_cache()
+            for i_gpu in range(gpu):
+                print("Memory allocated:", human_readable_size(torch.cuda.memory_allocated(i_gpu)))
+                print("Max memory allocated:", human_readable_size(torch.cuda.max_memory_allocated(i_gpu)))
+                print("Memory cached:", human_readable_size(torch.cuda.memory_cached(i_gpu)))
+                print("Max memory cached:", human_readable_size(torch.cuda.max_memory_cached(i_gpu)))
 
         loss, batch_size = batch_loss(model, images, target, criterion, gpu=gpu, regularized=regularized)
 

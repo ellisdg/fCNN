@@ -68,6 +68,11 @@ def main():
         else:
             metric_to_monitor = "val_loss"
 
+    if "subjects_filename" in config:
+        subjects = load_json(config["subjects_filename"])
+        for key, value in subjects.items():
+            config[key] = value
+
     for name in ("training", "validation"):
         key = name + "_filenames"
         if key not in config:

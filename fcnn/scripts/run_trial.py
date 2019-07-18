@@ -2,7 +2,7 @@ import sys
 import os
 from functools import partial, update_wrapper
 import pandas as pd
-fcnn_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+fcnn_path = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname((__file__)))))
 sys.path.append(fcnn_path)
 from fcnn.train import run_training
 from fcnn.utils.sequences import WholeBrainRegressionSequence, HCPRegressionSequence, ParcelBasedSequence

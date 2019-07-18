@@ -55,8 +55,8 @@
     ]
   ],
   "additional_generator_args": {
-    "augment_scale_std": 0.05,
+    "augment_scale_std": 0.1,
     "crop": true,
     "resample": "linear",
-    "additive_noise_std": 0.05}
+    "additive_noise_std": 0.1}
 }

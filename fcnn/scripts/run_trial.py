@@ -2,7 +2,8 @@ import sys
 import os
 from functools import partial, update_wrapper
 import pandas as pd
-sys.path.append(os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
+fcnn_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+sys.path.append(fcnn_path)
 from fcnn.train import run_training
 from fcnn.utils.sequences import WholeBrainRegressionSequence, HCPRegressionSequence, ParcelBasedSequence
 from fcnn.utils.pytorch.dataset import WholeBrainCIFTI2DenseScalarDataset
@@ -69,7 +70,7 @@ def main():
             metric_to_monitor = "val_loss"
 
     if "subjects_filename" in config:
-        subjects = load_json(config["subjects_filename"])
+        subjects = load_json(os.path.join(fcnn_path, config["subjects_filename"]))
         for key, value in subjects.items():
             config[key] = value
 

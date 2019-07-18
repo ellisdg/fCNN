@@ -22,6 +22,7 @@ def generate_hcp_filenames(directory, surface_basename_template, target_basename
                            hemispheres):
     rows = list()
     for subject_id in subject_ids:
+        subject_id = str(subject_id)
         subject_dir = os.path.join(directory, subject_id)
         if type(feature_basenames) == str:
             feature_filenames = os.path.join(subject_dir, feature_basenames)

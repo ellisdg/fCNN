@@ -59,7 +59,7 @@ class MyronenkoResidualBlock(nn.Module):
 
 
 class MyronenkoLayer(nn.Module):
-    def __init__(self, n_blocks, block, in_planes, planes, *args, **kwargs):
+    def __init__(self, n_blocks, block, in_planes, planes, *args, dropout=None, **kwargs):
         super(MyronenkoLayer, self).__init__()
         self.block = block
         self.n_blocks = n_blocks
@@ -67,11 +67,17 @@ class MyronenkoLayer(nn.Module):
         for i in range(n_blocks):
             self.blocks.append(block(in_planes, planes, *args, **kwargs))
             in_planes = planes
+        if dropout is not None:
+            self.dropout = nn.Dropout3d(dropout, inplace=True)
+        else:
+            self.dropout = None
 
     def forward(self, x):
         _x = x
-        for block in self.blocks:
+        for i, block in enumerate(self.blocks):
             _x = block(_x)
+            if i == 0 and self.dropout is not None:
+                _x = self.dropout(_x)
         return _x
 
 
@@ -101,7 +107,7 @@ class MyronenkoVariationalLayer(nn.Module):
 
 class MyronenkoEncoder(nn.Module):
     def __init__(self, n_features, base_width=32, layer_blocks=None, layer=MyronenkoLayer, block=MyronenkoResidualBlock,
-                 feature_dilation=2, downsampling_stride=2):
+                 feature_dilation=2, downsampling_stride=2, dropout=0.2):
         super(MyronenkoEncoder, self).__init__()
         if layer_blocks is None:
             layer_blocks = [1, 2, 2, 4]
@@ -110,7 +116,12 @@ class MyronenkoEncoder(nn.Module):
         out_width = base_width
         in_width = n_features
         for i, n_blocks in enumerate(layer_blocks):
-            self.layers.append(layer(n_blocks, block, in_planes=in_width, planes=out_width))
+            if dropout and i == 0:
+                layer_dropout = dropout
+            else:
+                layer_dropout = None
+            self.layers.append(layer(n_blocks=n_blocks, block=block, in_planes=in_width, planes=out_width,
+                                     dropout=layer_dropout))
             if i != len(layer_blocks) - 1:
                 self.downsampling_convolutions.append(conv3x3x3(out_width, out_width, stride=downsampling_stride))
             in_width = out_width

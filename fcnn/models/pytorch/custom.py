@@ -90,8 +90,7 @@ class _ResNetLatent(ResNet):
         x = self.layer4(x)
 
         x = self.avgpool(x)
-        print(x.shape)
-        latent = x.reshape(x.size(0), -1)
-        x = self.fc(latent)
-        print(x.shape)
+        latent = x
+        x = x.reshape(x.size(0), -1)
+        x = self.fc(x)
         return x, latent

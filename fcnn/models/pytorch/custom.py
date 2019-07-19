@@ -62,7 +62,7 @@ class RegularizedBasicResNet(nn.Module):
                  decoding_layers=None, latent_planes=512, layer_block=BasicBlock, **encoder_kwargs):
         super(RegularizedBasicResNet, self).__init__()
         if decoding_layers is None:
-            decoding_layers = [1, 1, 1, 1, 1]
+            decoding_layers = [1, 1, 1, 1, 1, 1, 1]
         self.encoder = _ResNetLatent(block=layer_block, n_features=n_features, **encoder_kwargs)
         self.decoder = BasicDecoder(upsampling_scale=upsampling_scale, upsampling_mode=upsampling_mode,
                                     plane_dilation=plane_dilation, layers=decoding_layers, in_planes=latent_planes,

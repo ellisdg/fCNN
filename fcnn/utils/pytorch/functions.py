@@ -12,8 +12,4 @@ def variational_regularized_loss(predicted, vae_x, mu, logvar, x, y, pred_loss=l
 
 
 def regularized_loss(predicted_y, predicted_x, x, y, pred_loss=l1_loss, decoder_loss=mse_loss, decoder_weight=0.1):
-    print(predicted_y.shape)
-    print(predicted_x.shape)
-    print(x.shape)
-    print(y.shape)
     return pred_loss(predicted_y, y) + decoder_weight * decoder_loss(predicted_x, x)

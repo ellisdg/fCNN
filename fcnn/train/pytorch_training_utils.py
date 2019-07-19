@@ -258,8 +258,12 @@ def batch_loss(model, images, target, criterion, gpu=0, regularized=False):
     output = model(images)
     batch_size = images.size(0)
     if regularized:
-        output, output_vae, mu, logvar = output
-        loss = criterion(output, output_vae, mu, logvar, images, target)
+        try:
+            output, output_vae, mu, logvar = output
+            loss = criterion(output, output_vae, mu, logvar, images, target)
+        except ValueError:
+            pred_y, pred_x = output
+            loss = criterion(pred_y, pred_x, images, target)
     else:
         loss = criterion(output, target)
     return loss, batch_size

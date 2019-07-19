@@ -2,7 +2,7 @@ from torch import nn
 import numpy as np
 
 from .myronenko import MyronenkoEncoder, MyronenkoVariationalLayer
-from fcnn.models.pytorch.decoder import MyronenkoDecoder
+from .decoder import MyronenkoDecoder, BasicDecoder
 from .resnet import conv1x1x1, ResNet
 
 
@@ -58,20 +58,22 @@ class RegularizedResNet(VariationalAutoEncoder):
 
 
 class RegularizedBasicResNet(nn.Module):
-    def __init__(self, model_name, **model_args):
+    def __init__(self, n_features, upsampling_mode="trilinear", upsampling_scale=2, plane_dilation=2,
+                 decoding_layers=None, latent_planes=512, **encoder_kwargs):
         super(RegularizedBasicResNet, self).__init__()
-        self.encoder = _ResNetLatent(**model_args)
-        self.decoder = MyronenkoDecoder(base_width=base_width, layer_blocks=decoder_blocks,
-                                        upsampling_scale=downsampling_stride, feature_reduction_scale=feature_dilation,
-                                        upsampling_mode=interpolation_mode)
-        self.final_convolution = conv1x1x1(in_planes=base_width, out_planes=n_features, stride=1)
+        if decoding_layers is None:
+            decoding_layers = [1, 1, 1, 1, 1]
+        self.encoder = _ResNetLatent(**encoder_kwargs)
+        self.decoder = BasicDecoder(upsampling_scale=upsampling_scale, upsampling_mode=upsampling_mode,
+                                    plane_dilation=plane_dilation, layers=decoding_layers, in_planes=latent_planes)
+        out_decoder_planes = int(latent_planes/(plane_dilation**len(decoding_layers)))
+        self.final_convolution = conv1x1x1(in_planes=out_decoder_planes, out_planes=n_features, stride=1)
 
     def forward(self, x):
-        out, latent = self.encoder(x)
-        x, mu, logvar = self.var_layer(latent)
+        out, x = self.encoder(x)
         x = self.decoder(x)
         x = self.final_convolution(x)
-        return out, x, mu, logvar
+        return out, x
 
 
 class _ResNetLatent(ResNet):

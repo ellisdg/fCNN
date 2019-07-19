@@ -17,9 +17,9 @@ class BasicDecoder(nn.Module):
         layer_planes = in_planes
         for n_blocks in layers:
             self.conv1s.append(resnet.conv1x1x1(in_planes=layer_planes,
-                                                out_planes=layer_planes/plane_dilation))
+                                                out_planes=int(layer_planes/plane_dilation)))
             layer = nn.ModuleList()
-            layer_planes /= plane_dilation
+            layer_planes = int(layer_planes/plane_dilation)
             for i_block in range(n_blocks):
                 layer.append(block(layer_planes, layer_planes))
             self.layers.append(layer)

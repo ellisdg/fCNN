@@ -91,5 +91,5 @@ class _ResNetLatent(ResNet):
 
         x = self.avgpool(x)
         latent = x.reshape(x.size(0), -1)
-        x = self.fc(x)
+        x = self.fc(latent)
         return x, latent

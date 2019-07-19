@@ -3,7 +3,7 @@ import numpy as np
 
 from .myronenko import MyronenkoEncoder, MyronenkoVariationalLayer
 from .decoder import MyronenkoDecoder, BasicDecoder
-from .resnet import conv1x1x1, ResNet
+from .resnet import conv1x1x1, ResNet, BasicBlock
 
 
 class VariationalAutoEncoder(nn.Module):
@@ -59,13 +59,14 @@ class RegularizedResNet(VariationalAutoEncoder):
 
 class RegularizedBasicResNet(nn.Module):
     def __init__(self, n_features, upsampling_mode="trilinear", upsampling_scale=2, plane_dilation=2,
-                 decoding_layers=None, latent_planes=512, **encoder_kwargs):
+                 decoding_layers=None, latent_planes=512, layer_block=BasicBlock, **encoder_kwargs):
         super(RegularizedBasicResNet, self).__init__()
         if decoding_layers is None:
             decoding_layers = [1, 1, 1, 1, 1]
-        self.encoder = _ResNetLatent(**encoder_kwargs)
+        self.encoder = _ResNetLatent(block=layer_block, **encoder_kwargs)
         self.decoder = BasicDecoder(upsampling_scale=upsampling_scale, upsampling_mode=upsampling_mode,
-                                    plane_dilation=plane_dilation, layers=decoding_layers, in_planes=latent_planes)
+                                    plane_dilation=plane_dilation, layers=decoding_layers, in_planes=latent_planes,
+                                    block=layer_block)
         out_decoder_planes = int(latent_planes/(plane_dilation**len(decoding_layers)))
         self.final_convolution = conv1x1x1(in_planes=out_decoder_planes, out_planes=n_features, stride=1)
 

@@ -1,8 +1,9 @@
 from torch import nn
 import numpy as np
 
-from .myronenko import MyronenkoEncoder, MyronenkoDecoder, MyronenkoVariationalLayer
-from .resnet import conv1x1x1
+from .myronenko import MyronenkoEncoder, MyronenkoVariationalLayer
+from fcnn.models.pytorch.decoder import MyronenkoDecoder
+from .resnet import conv1x1x1, ResNet
 
 
 class VariationalAutoEncoder(nn.Module):
@@ -31,12 +32,11 @@ class VariationalAutoEncoder(nn.Module):
         self.final_convolution = conv1x1x1(in_planes=base_width, out_planes=n_features, stride=1)
 
     def forward(self, x):
-        _x = x
-        _x = self.encoder(_x)
-        _x, mu, logvar = self.var_layer(_x)
-        _x = self.decoder(_x)
-        _x = self.final_convolution(_x)
-        return _x, mu, logvar
+        x = self.encoder(x)
+        x, mu, logvar = self.var_layer(x)
+        x = self.decoder(x)
+        x = self.final_convolution(x)
+        return x, mu, logvar
 
 
 class RegularizedResNet(VariationalAutoEncoder):
@@ -45,14 +45,48 @@ class RegularizedResNet(VariationalAutoEncoder):
         self.dense = nn.Linear(self.var_layer.in_size, n_outputs)
 
     def forward(self, x):
-        _x = self.encoder(x)
-        _x = self.var_layer.in_conv(_x).flatten(start_dim=1)
-        output = self.dense(_x)
-        _x, mu, logvar = self.var_layer.var_block(_x)
-        _x = self.var_layer.relu(_x).view(-1, *self.var_layer.reduced_shape)
-        _x = self.var_layer.out_conv(_x)
-        _x = self.var_layer.upsample(_x)
-        _x = self.decoder(_x)
-        vae_output = self.final_convolution(_x)
+        x = self.encoder(x)
+        x = self.var_layer.in_conv(x).flatten(start_dim=1)
+        output = self.dense(x)
+        x, mu, logvar = self.var_layer.var_block(x)
+        x = self.var_layer.relu(x).view(-1, *self.var_layer.reduced_shape)
+        x = self.var_layer.out_conv(x)
+        x = self.var_layer.upsample(x)
+        x = self.decoder(x)
+        vae_output = self.final_convolution(x)
         return output, vae_output, mu, logvar
 
+
+class RegularizedBasicResNet(nn.Module):
+    def __init__(self, model_name, **model_args):
+        super(RegularizedBasicResNet, self).__init__()
+        self.encoder = _ResNetLatent(**model_args)
+        self.decoder = MyronenkoDecoder(base_width=base_width, layer_blocks=decoder_blocks,
+                                        upsampling_scale=downsampling_stride, feature_reduction_scale=feature_dilation,
+                                        upsampling_mode=interpolation_mode)
+        self.final_convolution = conv1x1x1(in_planes=base_width, out_planes=n_features, stride=1)
+
+    def forward(self, x):
+        out, latent = self.encoder(x)
+        x, mu, logvar = self.var_layer(latent)
+        x = self.decoder(x)
+        x = self.final_convolution(x)
+        return out, x, mu, logvar
+
+
+class _ResNetLatent(ResNet):
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.maxpool(x)
+
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+        x = self.layer4(x)
+
+        x = self.avgpool(x)
+        latent = x.reshape(x.size(0), -1)
+        x = self.fc(x)
+        return x, latent

@@ -20,10 +20,10 @@ class MyronenkoConvolutionBlock(nn.Module):
         self.conv = conv3x3x3(in_planes, planes, stride)
 
     def forward(self, x):
-        out = self.norm1(x)
-        out = self.relu(out)
-        out = self.conv(out)
-        return out
+        x = self.norm1(x)
+        x = self.relu(x)
+        x = self.conv(x)
+        return x
 
     def create_norm_layer(self, planes):
         if planes < self.norm_groups:
@@ -47,15 +47,15 @@ class MyronenkoResidualBlock(nn.Module):
     def forward(self, x):
         identity = x
 
-        out = self.conv1(x)
-        out = self.conv2(out)
+        x = self.conv1(x)
+        x = self.conv2(x)
 
         if self.sample is not None:
-            identity = self.sample(x)
+            identity = self.sample(identity)
 
-        out += identity
+        x += identity
 
-        return out
+        return x
 
 
 class MyronenkoLayer(nn.Module):
@@ -73,12 +73,11 @@ class MyronenkoLayer(nn.Module):
             self.dropout = None
 
     def forward(self, x):
-        _x = x
         for i, block in enumerate(self.blocks):
-            _x = block(_x)
+            x = block(x)
             if i == 0 and self.dropout is not None:
-                _x = self.dropout(_x)
-        return _x
+                x = self.dropout(x)
+        return x
 
 
 class MyronenkoVariationalLayer(nn.Module):
@@ -96,13 +95,12 @@ class MyronenkoVariationalLayer(nn.Module):
                                 align_corners=align_corners_upsampling)
 
     def forward(self, x):
-        _x = x
-        _x = self.in_conv(_x).flatten(start_dim=1)
-        _x, mu, logvar = self.var_block(_x)
-        _x = self.relu(_x).view(-1, *self.reduced_shape)
-        _x = self.out_conv(_x)
-        _x = self.upsample(_x)
-        return _x, mu, logvar
+        x = self.in_conv(x).flatten(start_dim=1)
+        x, mu, logvar = self.var_block(x)
+        x = self.relu(x).view(-1, *self.reduced_shape)
+        x = self.out_conv(x)
+        x = self.upsample(x)
+        return x, mu, logvar
 
 
 class MyronenkoEncoder(nn.Module):
@@ -128,39 +126,11 @@ class MyronenkoEncoder(nn.Module):
             out_width = out_width * feature_dilation
 
     def forward(self, x):
-        _x = x
         for layer, downsampling in zip(self.layers[:-1], self.downsampling_convolutions):
-            _x = layer(_x)
-            _x = downsampling(_x)
-        _x = self.layers[-1](_x)
-        return _x
-
-
-class MyronenkoDecoder(nn.Module):
-    def __init__(self, base_width=32, layer_blocks=None, layer=MyronenkoLayer, block=MyronenkoResidualBlock,
-                 upsampling_scale=2, feature_reduction_scale=2, upsampling_mode="trilinear", align_corners=False):
-        super(MyronenkoDecoder, self).__init__()
-        if layer_blocks is None:
-            layer_blocks = [1, 1, 1]
-        self.layers = nn.ModuleList()
-        self.pre_upsampling_blocks = nn.ModuleList()
-        self.upsampling_blocks = list()
-        for i, n_blocks in enumerate(layer_blocks):
-            depth = len(layer_blocks) - (i + 1)
-            out_features = base_width * (feature_reduction_scale ** depth)
-            in_features = out_features * feature_reduction_scale
-            self.pre_upsampling_blocks.append(conv1x1x1(in_features, out_features, stride=1))
-            self.upsampling_blocks.append(partial(nn.functional.interpolate, scale_factor=upsampling_scale,
-                                                  mode=upsampling_mode, align_corners=align_corners))
-            self.layers.append(layer(n_blocks=n_blocks, block=block, in_planes=out_features, planes=out_features))
-
-    def forward(self, x):
-        _x = x
-        for pre, up, lay in zip(self.pre_upsampling_blocks, self.upsampling_blocks, self.layers):
-            _x = pre(_x)
-            _x = up(_x)
-            _x = lay(_x)
-        return _x
+            x = layer(x)
+            x = downsampling(x)
+        x = self.layers[-1](x)
+        return x
 
 
 

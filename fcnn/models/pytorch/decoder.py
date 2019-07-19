@@ -28,7 +28,8 @@ class BasicDecoder(nn.Module):
         for conv1, layer in zip(self.conv1s, self.layers):
             x = conv1(x)
             x = nn.functional.interpolate(x, scale_factor=self.upsampling_scale, mode=self.upsampling_mode)
-            x = layer(x)
+            for block in layer:
+                x = block(x)
         return x
 
 

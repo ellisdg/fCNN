@@ -167,7 +167,7 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
                 row.append(idx_score)
                 if reference is not None:
                     idx_ref_score = criterion(reference.reshape(y[i].unsqueeze(0).shape),
-                                              y[i].unsquueze(0)).item()
+                                              y[i].unsqueeze(0)).item()
                     row.append(idx_ref_score)
                 results.append(row)
                 save_predictions(prediction=pred_y[i].numpy(), args=args, basename=basename, metric_names=metric_names,

@@ -40,7 +40,7 @@
   "validation_batch_size": 2,
   "initial_learning_rate": 1e-04,
   "model_name": "RegularizedResNet",
-  "model_kwargs": {"base_width":  8, "encoder_blocks": [1, 1, 1, 2],
+  "model_kwargs": {"base_width":  16, "encoder_blocks": [1, 1, 1, 2],
     "input_shape": [128, 128, 128]
   },
   "skip_validation": false,

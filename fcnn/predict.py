@@ -145,12 +145,14 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
     criterion = load_criterion(criterion_name, n_gpus=n_gpus)
     loader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=n_workers)
     results = list()
+    print("Loader: ", len(loader), "  Batch_size: ", batch_size, "  Dataset: ", len(dataset))
     with torch.no_grad():
         if reference is not None:
             reference = torch.from_numpy(reference).unsqueeze(0)
             if n_gpus > 0:
                 reference = reference.cuda()
         for batch_idx, (x, y) in enumerate(loader):
+            print("Batch: ", batch_idx)
             if n_gpus > 0:
                 x = x.cuda()
                 y = y.cuda()
@@ -160,6 +162,7 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
             for i in range(batch_size):
                 row = list()
                 idx = (batch_idx * batch_size) + i
+                print("i: ", i, "  idx: ", idx)
                 args = dataset.filenames[idx]
                 subject_id = args[-1]
                 row.append(subject_id)

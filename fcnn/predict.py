@@ -181,6 +181,7 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
 
 
 def save_predictions(prediction, args, basename, metric_names, surface_names, prediction_dir):
+    print(args)
     ref_filename = args[2][0]
     subject_id = args[-1]
     ref_basename = os.path.basename(ref_filename)

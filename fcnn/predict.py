@@ -151,6 +151,9 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
             if n_gpus > 0:
                 reference = reference.cuda()
         for batch_idx, (x, y) in enumerate(loader):
+            if n_gpus > 0:
+                x = x.cuda()
+                y = y.cuda()
             pred_y = model(x)
             if type(pred_y) == tuple:
                 pred_y = pred_y[0]  # This is a hack to ignore other outputs that are used only for training

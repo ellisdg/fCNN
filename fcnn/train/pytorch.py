@@ -69,12 +69,8 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
     model = build_or_load_model(model_name, model_filename, n_features=config["n_features"],
                                 n_outputs=n_outputs, n_gpus=n_gpus, **model_kwargs)
     model.train()
-    if "custom_loss" in config and config["custom_loss"]:
-        criterion = getattr(functions, config['loss'])
-    else:
-        criterion = getattr(torch.nn, config['loss'])()
-        if n_gpus > 0:
-            criterion.cuda()
+
+    criterion = load_criterion(config['loss'], n_gpus=n_gpus)
 
     if "regularized" in config:
         regularized = config["regularized"]
@@ -175,11 +171,8 @@ def train(model, optimizer, criterion, n_epochs, training_loader, validation_loa
             break
 
         # train the model
-        loss = 0
-        for epoch_iteration in range(iterations_per_epoch):
-            loss += epoch_training(training_loader, model, criterion, optimizer=optimizer, epoch=epoch, gpu=n_gpus,
-                                   regularized=regularized)
-        loss /= iterations_per_epoch
+        loss = epoch_training(training_loader, model, criterion, optimizer=optimizer, epoch=epoch, gpu=n_gpus,
+                              regularized=regularized)
 
         # predict validation data
         if validation_loader:
@@ -207,3 +200,13 @@ def train(model, optimizer, criterion, n_epochs, training_loader, validation_loa
 def get_lr(optimizer):
     lrs = [params['lr'] for params in optimizer.param_groups]
     return np.squeeze(np.unique(lrs))
+
+
+def load_criterion(criterion_name, n_gpus=0):
+    try:
+        criterion = getattr(functions, criterion_name)
+    except AttributeError:
+        criterion = getattr(torch.nn, criterion_name)()
+        if n_gpus > 0:
+            criterion.cuda()
+    return criterion

@@ -24,6 +24,7 @@
   "optimizer": "Adam",
   "package": "pytorch",
   "loss": "regularized_loss",
+  "evaluation_metric": "L1Loss",
   "custom_loss": true,
   "regularized": true,
   "points_per_subject": 1,

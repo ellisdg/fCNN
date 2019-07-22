@@ -36,6 +36,13 @@ def generate_hcp_filenames(directory, surface_basename_template, target_basename
     return rows
 
 
+def load_subject_ids(config):
+    if "subjects_filename" in config:
+        subjects = load_json(os.path.join(fcnn_path, config["subjects_filename"]))
+        for key, value in subjects.items():
+            config[key] = value
+
+
 def main():
     import nibabel as nib
     nib.imageglobals.logger.level = 40
@@ -70,10 +77,7 @@ def main():
         else:
             metric_to_monitor = "val_loss"
 
-    if "subjects_filename" in config:
-        subjects = load_json(os.path.join(fcnn_path, config["subjects_filename"]))
-        for key, value in subjects.items():
-            config[key] = value
+    load_subject_ids(config)
 
     for name in ("training", "validation"):
         key = name + "_filenames"

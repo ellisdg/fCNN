@@ -170,8 +170,8 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
                                               y[i].unsqueeze(0)).item()
                     row.append(idx_ref_score)
                 results.append(row)
-                save_predictions(prediction=pred_y[i].numpy(), args=args, basename=basename, metric_names=metric_names,
-                                 surface_names=surface_names, prediction_dir=prediction_dir)
+                save_predictions(prediction=pred_y[i].cpu().numpy(), args=args, basename=basename,
+                                 metric_names=metric_names, surface_names=surface_names, prediction_dir=prediction_dir)
 
     if output_csv is not None:
         columns = ["subject_id", criterion_name]

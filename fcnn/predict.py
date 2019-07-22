@@ -93,7 +93,7 @@ def predict_local_subject(model, feature_filename, surface_filename, batch_size=
 def whole_brain_scalar_predictions(model_filename, subject_ids, hcp_dir, output_dir, hemispheres, feature_basenames,
                                    surface_basename_template, target_basenames, model_name, n_outputs, n_features,
                                    window, criterion_name, metric_names, surface_names, reference, package="keras",
-                                   n_gpus=1, n_workers=1, batch_size=1):
+                                   n_gpus=1, n_workers=1, batch_size=1, model_kwargs=None):
     from .scripts.run_trial import generate_hcp_filenames
     filenames = generate_hcp_filenames(directory=hcp_dir, surface_basename_template=surface_basename_template,
                                        target_basenames=target_basenames, feature_basenames=feature_basenames,
@@ -112,22 +112,26 @@ def whole_brain_scalar_predictions(model_filename, subject_ids, hcp_dir, output_
                                                reference=reference,
                                                n_gpus=n_gpus,
                                                n_workers=n_workers,
-                                               batch_size=batch_size)
+                                               batch_size=batch_size,
+                                               model_kwargs=model_kwargs)
     else:
         raise ValueError("Predictions not yet implemented for {}".format(package))
 
 
 def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs, n_features, filenames, window,
                                            criterion_name, metric_names, surface_names, prediction_dir=None,
-                                           output_csv=None, reference=None, n_gpus=1, n_workers=1, batch_size=1):
+                                           output_csv=None, reference=None, n_gpus=1, n_workers=1, batch_size=1,
+                                           model_kwargs=None):
     from .train.pytorch import build_or_load_model, load_criterion
     from .utils.pytorch.dataset import WholeBrainCIFTI2DenseScalarDataset
-    import torch.nn
     import torch
     from torch.utils.data import DataLoader
 
+    if model_kwargs is None:
+        model_kwargs = dict()
+
     model = build_or_load_model(model_name=model_name, model_filename=model_filename, n_outputs=n_outputs,
-                                n_features=n_features, n_gpus=n_gpus)
+                                n_features=n_features, n_gpus=n_gpus, **model_kwargs)
     model.eval()
     basename = os.path.basename(model_filename).split(".")[0]
     if prediction_dir and not output_csv:

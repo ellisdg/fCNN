@@ -3,6 +3,7 @@ import os
 from fcnn.utils.utils import load_json
 from fcnn.utils.hcp import get_metric_data, nib_load_files
 from fcnn.predict import whole_brain_scalar_predictions
+from .run_trial import load_subject_ids
 
 
 def main():
@@ -31,6 +32,13 @@ def main():
     except IndexError:
         reference_array = None
 
+    load_subject_ids(config)
+
+    if "evaluation_metric" in config:
+        criterion_name = config['evaluation_metric']
+    else:
+        criterion_name = config['loss']
+
     return whole_brain_scalar_predictions(model_filename=model_filename,
                                           subject_ids=config['validation'],
                                           hcp_dir=machine_config["directory"],
@@ -43,12 +51,14 @@ def main():
                                           n_outputs=config["n_outputs"],
                                           n_features=config["n_features"],
                                           window=config["window"],
-                                          criterion_name=config["loss"],
+                                          criterion_name=criterion_name,
                                           metric_names=config["metric_names"],
                                           surface_names=config["surface_names"],
                                           reference=reference_array,
                                           package=config['package'],
-                                          n_gpus=machine_config['n_gpus'])
+                                          n_gpus=machine_config['n_gpus'],
+                                          batch_size=config['validation_batch_size'],
+                                          n_workers=machine_config["n_workers"])
 
 
 if __name__ == '__main__':

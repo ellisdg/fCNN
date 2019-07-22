@@ -28,9 +28,10 @@ def load_image(filename, feature_axis=3, resample_unequal_affines=True, interpol
 
 class SingleSiteSequence(Sequence):
     def __init__(self, filenames, batch_size,
-                 target_labels, window, spacing, classification='binary',
+                 target_labels, window, spacing, classification='binary', shuffle=True,
                  points_per_subject=1, flip=False, reorder=False, iterations_per_epoch=1):
         self.batch_size = batch_size
+        self.shuffle = shuffle
         self.filenames = filenames
         self.target_labels = target_labels
         self.window = window
@@ -59,7 +60,8 @@ class SingleSiteSequence(Sequence):
         _filenames = list(self.filenames)
         epoch_filenames = list()
         for i in range(self.iterations_per_epoch):
-            np.random.shuffle(_filenames)
+            if self.shuffle:
+                np.random.shuffle(_filenames)
             epoch_filenames.extend(_filenames)
         self.epoch_filenames = list(epoch_filenames)
 

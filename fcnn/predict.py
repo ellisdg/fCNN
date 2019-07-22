@@ -93,7 +93,7 @@ def predict_local_subject(model, feature_filename, surface_filename, batch_size=
 def whole_brain_scalar_predictions(model_filename, subject_ids, hcp_dir, output_dir, hemispheres, feature_basenames,
                                    surface_basename_template, target_basenames, model_name, n_outputs, n_features,
                                    window, criterion_name, metric_names, surface_names, reference, package="keras",
-                                   n_gpus=1):
+                                   n_gpus=1, n_workers=1, batch_size=1):
     from .scripts.run_trial import generate_hcp_filenames
     filenames = generate_hcp_filenames(directory=hcp_dir, surface_basename_template=surface_basename_template,
                                        target_basenames=target_basenames, feature_basenames=feature_basenames,
@@ -110,24 +110,25 @@ def whole_brain_scalar_predictions(model_filename, subject_ids, hcp_dir, output_
                                                metric_names=metric_names,
                                                surface_names=surface_names,
                                                reference=reference,
-                                               n_gpus=n_gpus)
+                                               n_gpus=n_gpus,
+                                               n_workers=n_workers,
+                                               batch_size=batch_size)
     else:
         raise ValueError("Predictions not yet implemented for {}".format(package))
 
 
 def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs, n_features, filenames, window,
                                            criterion_name, metric_names, surface_names, prediction_dir=None,
-                                           output_csv=None, reference=None, n_gpus=1):
-    from .train.pytorch import build_or_load_model
+                                           output_csv=None, reference=None, n_gpus=1, n_workers=1, batch_size=1):
+    from .train.pytorch import build_or_load_model, load_criterion
     from .utils.pytorch.dataset import WholeBrainCIFTI2DenseScalarDataset
     import torch.nn
     import torch
+    from torch.utils.data import DataLoader
 
     model = build_or_load_model(model_name=model_name, model_filename=model_filename, n_outputs=n_outputs,
                                 n_features=n_features, n_gpus=n_gpus)
     model.eval()
-    if reference is not None:
-        reference = torch.from_numpy(reference).unsqueeze(0)
     basename = os.path.basename(model_filename).split(".")[0]
     if prediction_dir and not output_csv:
         output_csv = os.path.join(prediction_dir, str(basename) + "_prediction_scores.csv")
@@ -137,42 +138,88 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
                                                  surface_names=surface_names,
                                                  spacing=None,
                                                  batch_size=1)
-    criterion = getattr(torch.nn, criterion_name)()
+    criterion = load_criterion(criterion_name, n_gpus=n_gpus)
+    loader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=n_workers)
     results = list()
-    for args, idx in zip(dataset.filenames, range(len(dataset))):
-        with torch.no_grad():
-            ref_filename = args[2][0]
-            subject_id = args[-1]
-            ref_basename = os.path.basename(ref_filename)
-            prediction_name = "_".join((subject_id, basename, "prediction"))
-            _metric_names = [_metric_name.format(prediction_name) for _metric_name in np.asarray(metric_names).ravel()]
-            output_filename = os.path.join(prediction_dir, ref_basename.replace(subject_id, prediction_name))
-            x, y = dataset[idx]
-            if os.path.exists(output_filename):
-                prediction = torch.from_numpy(get_metric_data([nib.load(output_filename)],
-                                                              [_metric_names],
-                                                              surface_names,
-                                                              subject_id)).float().cpu()
-            else:
-                prediction = model(x.unsqueeze(0))
+    with torch.no_grad():
+        if reference is not None:
+            reference = torch.from_numpy(reference).unsqueeze(0)
             if n_gpus > 0:
-                prediction = prediction.cpu()
-            y = y.unsqueeze(0)
-            score = criterion(prediction.reshape(y.shape), y).item()
-            row = [subject_id, score]
-            if reference is not None:
-                reference_score = criterion(reference.reshape(y.shape), y).item()
-                row.append(reference_score)
-            results.append(row)
-            if prediction_dir is not None and not os.path.exists(output_filename):
-                ref_cifti = nib.load(ref_filename)
-                prediction_array = prediction.numpy().reshape(len(_metric_names),
-                                                              np.sum(ref_cifti.header.get_axis(1).surface_mask))
-                cifti_file = new_cifti_scalar_like(prediction_array, _metric_names, surface_names, ref_cifti)
-                cifti_file.to_filename(output_filename)
+                reference = reference.cuda()
+        for batch_idx, (x, y) in enumerate(loader):
+            pred_y = model(x)
+            if type(pred_y) == tuple:
+                pred_y = pred_y[0]  # This is a hack to ignore other outputs that are used only for training
+            for i in range(batch_idx):
+                row = list()
+                idx = (batch_idx * batch_size) + i
+                args = dataset[idx]
+                subject_id = args[-1]
+                row.append(subject_id)
+                idx_score = criterion(pred_y[i].unsqueeze(0), y[i].unsqueeze(0)).item()
+                row.append(idx_score)
+                if reference is not None:
+                    idx_ref_score = criterion(reference.reshape(y[i].unsqueeze(0).shape),
+                                              y[i].unsquueze(0)).item()
+                    row.append(idx_ref_score)
+                results.append(row)
+                save_predictions(prediction=pred_y[i].numpy(), args=args, basename=basename, metric_names=metric_names,
+                                 surface_names=surface_names, prediction_dir=prediction_dir)
 
     if output_csv is not None:
         columns = ["subject_id", criterion_name]
         if reference is not None:
             columns.append("reference_" + criterion_name)
         pd.DataFrame(results, columns=columns).to_csv(output_csv)
+
+
+def save_predictions(prediction, args, basename, metric_names, surface_names, prediction_dir):
+    ref_filename = args[2][0]
+    subject_id = args[-1]
+    ref_basename = os.path.basename(ref_filename)
+    prediction_name = "_".join((subject_id, basename, "prediction"))
+    _metric_names = [_metric_name.format(prediction_name) for _metric_name in np.asarray(metric_names).ravel()]
+    output_filename = os.path.join(prediction_dir, ref_basename.replace(subject_id, prediction_name))
+    if prediction_dir is not None and not os.path.exists(output_filename):
+        ref_cifti = nib.load(ref_filename)
+        prediction_array = prediction.reshape(len(_metric_names),
+                                                      np.sum(ref_cifti.header.get_axis(1).surface_mask))
+        cifti_file = new_cifti_scalar_like(prediction_array, _metric_names, surface_names, ref_cifti)
+        cifti_file.to_filename(output_filename)
+
+
+def pytorch_subject_predictions(idx, model, dataset, criterion, basename, prediction_dir, surface_names, metric_names,
+                                n_gpus, reference):
+    import torch
+    with torch.no_grad():
+        args = dataset.filenames[idx]
+        ref_filename = args[2][0]
+        subject_id = args[-1]
+        ref_basename = os.path.basename(ref_filename)
+        prediction_name = "_".join((subject_id, basename, "prediction"))
+        _metric_names = [_metric_name.format(prediction_name) for _metric_name in np.asarray(metric_names).ravel()]
+        output_filename = os.path.join(prediction_dir, ref_basename.replace(subject_id, prediction_name))
+        x, y = dataset[idx]
+        if os.path.exists(output_filename):
+            prediction = torch.from_numpy(get_metric_data([nib.load(output_filename)],
+                                                          [_metric_names],
+                                                          surface_names,
+                                                          subject_id)).float().cpu()
+        else:
+            prediction = model(x.unsqueeze(0))
+        if n_gpus > 0:
+            prediction = prediction.cpu()
+        y = y.unsqueeze(0)
+        score = criterion(prediction.reshape(y.shape), y).item()
+        row = [subject_id, score]
+        if reference is not None:
+            reference_score = criterion(reference.reshape(y.shape), y).item()
+            row.append(reference_score)
+
+        if prediction_dir is not None and not os.path.exists(output_filename):
+            ref_cifti = nib.load(ref_filename)
+            prediction_array = prediction.numpy().reshape(len(_metric_names),
+                                                          np.sum(ref_cifti.header.get_axis(1).surface_mask))
+            cifti_file = new_cifti_scalar_like(prediction_array, _metric_names, surface_names, ref_cifti)
+            cifti_file.to_filename(output_filename)
+    return row

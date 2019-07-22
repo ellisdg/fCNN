@@ -160,7 +160,7 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
             for i in range(batch_idx):
                 row = list()
                 idx = (batch_idx * batch_size) + i
-                args = dataset[idx]
+                args = dataset.filenames[idx]
                 subject_id = args[-1]
                 row.append(subject_id)
                 idx_score = criterion(pred_y[i].unsqueeze(0), y[i].unsqueeze(0)).item()
@@ -181,7 +181,6 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
 
 
 def save_predictions(prediction, args, basename, metric_names, surface_names, prediction_dir):
-    print(args)
     ref_filename = args[2][0]
     subject_id = args[-1]
     ref_basename = os.path.basename(ref_filename)

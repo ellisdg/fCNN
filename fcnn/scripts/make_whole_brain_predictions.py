@@ -39,6 +39,11 @@ def main():
     else:
         criterion_name = config['loss']
 
+    if "model_kwargs" in config:
+        model_kwargs = config["model_kwargs"]
+    else:
+        model_kwargs = dict()
+
     return whole_brain_scalar_predictions(model_filename=model_filename,
                                           subject_ids=config['validation'],
                                           hcp_dir=machine_config["directory"],
@@ -58,7 +63,8 @@ def main():
                                           package=config['package'],
                                           n_gpus=machine_config['n_gpus'],
                                           batch_size=config['validation_batch_size'],
-                                          n_workers=machine_config["n_workers"])
+                                          n_workers=machine_config["n_workers"],
+                                          model_kwargs=model_kwargs)
 
 
 if __name__ == '__main__':

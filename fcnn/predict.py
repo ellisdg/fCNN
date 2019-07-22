@@ -164,6 +164,7 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
                 idx = (batch_idx * batch_size) + i
                 print("i: ", i, "  idx: ", idx)
                 args = dataset.filenames[idx]
+
                 subject_id = args[-1]
                 row.append(subject_id)
                 idx_score = criterion(pred_y[i].unsqueeze(0), y[i].unsqueeze(0)).item()

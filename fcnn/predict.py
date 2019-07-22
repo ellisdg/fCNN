@@ -157,7 +157,7 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
             pred_y = model(x)
             if type(pred_y) == tuple:
                 pred_y = pred_y[0]  # This is a hack to ignore other outputs that are used only for training
-            for i in range(batch_idx):
+            for i in range(batch_size):
                 row = list()
                 idx = (batch_idx * batch_size) + i
                 args = dataset.filenames[idx]

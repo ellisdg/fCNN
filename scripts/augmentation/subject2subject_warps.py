@@ -15,8 +15,10 @@ def main(subjects_filename, hcp_dir, output_dir, relative_path, bash_script, sub
             time.sleep(after_limit_wait)
         subject1 = str(subject1)
         subject2 = str(subject2)
-        warp1 = os.path.join(hcp_dir, subject1, "MNINonLinear", "xfms", "acpc_dc2standard.nii.gz")
-        warp2 = os.path.join(hcp_dir, subject2, "MNINonLinear", "xfms", "acpc_dc2standard.nii.gz")
+        subject1_2_standard = os.path.join(hcp_dir, subject1, "MNINonLinear", "xfms", "acpc_dc2standard.nii.gz")
+        standard_2_subject1 = os.path.join(hcp_dir, subject1, "MNINonLinear", "xfms", "standard2acpc_dc.nii.gz")
+        subject2_2_standard = os.path.join(hcp_dir, subject2, "MNINonLinear", "xfms", "acpc_dc2standard.nii.gz")
+        standard_2_subject2 = os.path.join(hcp_dir, subject2, "MNINonLinear", "xfms", "standard2acpc_dc.nii.gz")
         ref_filename1 = os.path.join(hcp_dir, subject1, "T1w", "T1w_acpc_dc_restore_1.25.nii.gz")
         ref_filename2 = os.path.join(hcp_dir, subject2, "T1w", "T1w_acpc_dc_restore_1.25.nii.gz")
         comp_warp_filename1 = os.path.join(output_dir, "{0}_2_{1}_T1w_1.25.nii.gz".format(subject1, subject2))
@@ -29,10 +31,17 @@ def main(subjects_filename, hcp_dir, output_dir, relative_path, bash_script, sub
             os.makedirs(output_dir1)
         if not os.path.exists(output_dir2):
             os.makedirs(output_dir2)
-        out1 = os.path.join(output_dir1, "_".join((subject2, os.path.basename(relative_path))))
-        out2 = os.path.join(output_dir2, "_".join((subject1, os.path.basename(relative_path))))
+        out1 = os.path.join(output_dir2, "_".join((subject1, os.path.basename(relative_path))))
+        out2 = os.path.join(output_dir1, "_".join((subject2, os.path.basename(relative_path))))
         if not os.path.exists(out1) and not os.path.exists(out2):
-            cmd = ["sbatch", bash_script, warp1, warp2, ref_filename1, ref_filename2, comp_warp_filename1,
+            cmd = ["sbatch", bash_script,
+                   subject1_2_standard,
+                   subject2_2_standard,
+                   standard_2_subject1,
+                   standard_2_subject2,
+                   ref_filename1,
+                   ref_filename2,
+                   comp_warp_filename1,
                    comp_warp_filename2, moving1, moving2, out1, out2]
             print(" ".join(cmd))
             subprocess.call(cmd)

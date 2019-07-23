@@ -1,5 +1,5 @@
 {
-  "subjects_filename": "data/subjects_v3.csv",
+  "subjects_filename": "data/subjects_v3.json",
   "surface_names": [
     "CortexLeft",
     "CortexRight"

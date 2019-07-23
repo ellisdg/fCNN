@@ -7,4 +7,4 @@ REL=T1w/Diffusion/dti.nii.gz
 
 export PYTHONPATH=/home/aizenberg/dgellis/fCNN:${PYTHONPATH}
 
-python /home/aizenberg/dgellis/fCNN/fcnn/scripts/augmentation/subject2subject_warps.py
+python /home/aizenberg/dgellis/fCNN/fcnn/scripts/augmentation/subject2subject_warps.py ${SUB} ${HCP} ${OUT} ${REL} ${SCRIPT}

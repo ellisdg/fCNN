@@ -27,8 +27,8 @@ def main(subjects_filename, hcp_dir, output_dir, relative_path, bash_script):
         out1 = os.path.join(output_dir1, "_".join((subject2, os.path.basename(relative_path))))
         out2 = os.path.join(output_dir1, "_".join((subject1, os.path.basename(relative_path))))
         if not os.path.exists(out1) and not os.path.exists(out2):
-            cmd = [bash_script, warp1, warp2, ref_filename1, ref_filename2, comp_warp_filename1, comp_warp_filename2,
-                   moving1, moving2, out1, out2]
+            cmd = ["sbatch", bash_script, warp1, warp2, ref_filename1, ref_filename2, comp_warp_filename1,
+                   comp_warp_filename2, moving1, moving2, out1, out2]
             print(" ".join(cmd))
             subprocess.call(cmd)
 

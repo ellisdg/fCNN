@@ -10,6 +10,8 @@ def main(subjects_filename, hcp_dir, output_dir, relative_path, bash_script):
     subjects_dict = load_json(subjects_filename)
     subjects = subjects_dict["training"]
     for (subject1, subject2) in itertools.combinations(subjects, 2):
+        subject1 = str(subject1)
+        subject2 = str(subject2)
         warp1 = os.path.join(hcp_dir, subject1, "MNINonLinear", "xfms", "acpc_dc2standard.nii.gz")
         warp2 = os.path.join(hcp_dir, subject2, "MNINonLinear", "xfms", "acpc_dc2standard.nii.gz")
         ref_filename1 = os.path.join(hcp_dir, subject1, "T1w", "T1w_acpc_dc_restore_1.25.nii.gz")

@@ -2,14 +2,17 @@ import sys
 import itertools
 import os
 import subprocess
+import time
 
 from fcnn.utils.utils import load_json
 
 
-def main(subjects_filename, hcp_dir, output_dir, relative_path, bash_script):
+def main(subjects_filename, hcp_dir, output_dir, relative_path, bash_script, sub_limit=200, after_limit_wait=0.1):
     subjects_dict = load_json(subjects_filename)
     subjects = subjects_dict["training"]
-    for (subject1, subject2) in itertools.combinations(subjects, 2):
+    for i, (subject1, subject2) in enumerate(itertools.combinations(subjects, 2)):
+        if i > sub_limit:
+            time.sleep(after_limit_wait)
         subject1 = str(subject1)
         subject2 = str(subject2)
         warp1 = os.path.join(hcp_dir, subject1, "MNINonLinear", "xfms", "acpc_dc2standard.nii.gz")

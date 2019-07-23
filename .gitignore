@@ -22,4 +22,4 @@ trials/trial_3a/
 trials/models
 *.pyc
 *.png
-data/subjects_v3.csv
+data/subjects_v3.json

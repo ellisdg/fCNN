@@ -7,7 +7,7 @@ import time
 from fcnn.utils.utils import load_json
 
 
-def main(subjects_filename, hcp_dir, output_dir, relative_path, bash_script, sub_limit=200, after_limit_wait=0.1):
+def main(subjects_filename, hcp_dir, output_dir, relative_path, bash_script, sub_limit=100, after_limit_wait=0.2):
     subjects_dict = load_json(subjects_filename)
     subjects = subjects_dict["training"]
     for i, (subject1, subject2) in enumerate(itertools.combinations(subjects, 2)):

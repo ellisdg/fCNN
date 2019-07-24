@@ -2,18 +2,26 @@ import sys
 import itertools
 import os
 import subprocess
+from subprocess import Popen, PIPE, STDOUT
 import time
 
 from fcnn.utils.utils import load_json
 
 
-def main(subjects_filename, hcp_dir, output_dir, relative_path, bash_script, sub_limit=100, after_limit_wait=0.5):
+def check_queue_length(cmd):
+    p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
+    output = p.stdout.read()
+    return int(output.strip())
+
+
+def main(subjects_filename, hcp_dir, output_dir, relative_path, bash_script, queue_limit=100, after_limit_wait=0.5,
+         queue_length_cmd="squeue -u dgellis | wc -l"):
     subjects_dict = load_json(subjects_filename)
     subjects = subjects_dict["training"]
-    i = 0
     for ii, (subject1, subject2) in enumerate(itertools.combinations(subjects, 2)):
-        if i > sub_limit:
-            time.sleep(after_limit_wait)
+        if queue_length_cmd:
+            while check_queue_length(queue_length_cmd) > queue_limit:
+                time.sleep(after_limit_wait)
         subject1 = str(subject1)
         subject2 = str(subject2)
         subject1_2_standard = os.path.join(hcp_dir, subject1, "MNINonLinear", "xfms", "acpc_dc2standard.nii.gz")
@@ -46,7 +54,6 @@ def main(subjects_filename, hcp_dir, output_dir, relative_path, bash_script, sub
                    comp_warp_filename2, moving1, moving2, out1, out2]
             print(" ".join(cmd))
             subprocess.call(cmd)
-            i += 1
 
 
 if __name__ == "__main__":

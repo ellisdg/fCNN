@@ -7,10 +7,11 @@ import time
 from fcnn.utils.utils import load_json
 
 
-def main(subjects_filename, hcp_dir, output_dir, relative_path, bash_script, sub_limit=100, after_limit_wait=0.2):
+def main(subjects_filename, hcp_dir, output_dir, relative_path, bash_script, sub_limit=100, after_limit_wait=0.5):
     subjects_dict = load_json(subjects_filename)
     subjects = subjects_dict["training"]
-    for i, (subject1, subject2) in enumerate(itertools.combinations(subjects, 2)):
+    i = 0
+    for ii, (subject1, subject2) in enumerate(itertools.combinations(subjects, 2)):
         if i > sub_limit:
             time.sleep(after_limit_wait)
         subject1 = str(subject1)
@@ -45,6 +46,7 @@ def main(subjects_filename, hcp_dir, output_dir, relative_path, bash_script, sub
                    comp_warp_filename2, moving1, moving2, out1, out2]
             print(" ".join(cmd))
             subprocess.call(cmd)
+            i += 1
 
 
 if __name__ == "__main__":

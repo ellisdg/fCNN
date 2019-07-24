@@ -2,7 +2,7 @@
 #SBATCH --time=8:00:00          # Run time in hh:mm:ss
 #SBATCH --job-name=dti_aug
 #SBATCH --ntasks-per-node=1
-#SBATCH --mem-per-cpu=8000       # Maximum memory required per CPU (in megabytes)
+#SBATCH --mem-per-cpu=4000       # Maximum memory required per CPU (in megabytes)
 #SBATCH --error=/work/aizenberg/dgellis/fCNN/logs/job.%J.err
 #SBATCH --output=/work/aizenberg/dgellis/fCNN/logs/job.%J.out
 warp1S=${1}

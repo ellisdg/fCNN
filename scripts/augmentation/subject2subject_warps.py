@@ -18,11 +18,15 @@ def main(subjects_filename, hcp_dir, output_dir, relative_path, bash_script, que
          queue_length_cmd="squeue -u dgellis | wc -l"):
     subjects_dict = load_json(subjects_filename)
     subjects = subjects_dict["training"]
+    queue_length = 0
     for ii, (subject1, subject2) in enumerate(itertools.combinations(subjects, 2)):
-        if queue_length_cmd:
-            while check_queue_length(queue_length_cmd) >= queue_limit:
-                print("Queue limit reached: {}".format(check_queue_length(queue_length_cmd)))
+        if queue_length_cmd and queue_length >= queue_limit:
+            queue_length = check_queue_length(queue_length_cmd)
+            while queue_length >= queue_limit:
+                print("Queue limit reached: {}".format(queue_length))
                 time.sleep(after_limit_wait)
+                queue_length = check_queue_length(queue_length_cmd)
+
         subject1 = str(subject1)
         subject2 = str(subject2)
         subject1_2_standard = os.path.join(hcp_dir, subject1, "MNINonLinear", "xfms", "acpc_dc2standard.nii.gz")
@@ -55,6 +59,7 @@ def main(subjects_filename, hcp_dir, output_dir, relative_path, bash_script, que
                    comp_warp_filename2, moving1, moving2, out1, out2]
             print(" ".join(cmd))
             subprocess.call(cmd)
+            queue_length += 1
 
 
 if __name__ == "__main__":

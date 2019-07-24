@@ -14,13 +14,14 @@ def check_queue_length(cmd):
     return int(output.strip())
 
 
-def main(subjects_filename, hcp_dir, output_dir, relative_path, bash_script, queue_limit=100, after_limit_wait=0.5,
+def main(subjects_filename, hcp_dir, output_dir, relative_path, bash_script, queue_limit=900, after_limit_wait=0.5,
          queue_length_cmd="squeue -u dgellis | wc -l"):
     subjects_dict = load_json(subjects_filename)
     subjects = subjects_dict["training"]
     for ii, (subject1, subject2) in enumerate(itertools.combinations(subjects, 2)):
         if queue_length_cmd:
-            while check_queue_length(queue_length_cmd) > queue_limit:
+            while check_queue_length(queue_length_cmd) >= queue_limit:
+                print("Queue limit reached: {}".format(check_queue_length(queue_length_cmd)))
                 time.sleep(after_limit_wait)
         subject1 = str(subject1)
         subject2 = str(subject2)

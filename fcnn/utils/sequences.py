@@ -1,3 +1,5 @@
+import os
+import glob
 import numpy as np
 import nibabel as nib
 from keras.utils import Sequence
@@ -27,9 +29,10 @@ def load_image(filename, feature_axis=3, resample_unequal_affines=True, interpol
 
 
 class SingleSiteSequence(Sequence):
-    def __init__(self, filenames, batch_size,
-                 target_labels, window, spacing, classification='binary', shuffle=True,
-                 points_per_subject=1, flip=False, reorder=False, iterations_per_epoch=1):
+    def __init__(self, filenames, batch_size, target_labels, window, spacing, classification='binary', shuffle=True,
+                 points_per_subject=1, flip=False, reorder=False, iterations_per_epoch=1,
+                 deformation_augmentation=None):
+        self.deformation_augmentation = deformation_augmentation
         self.batch_size = batch_size
         self.shuffle = shuffle
         self.filenames = filenames
@@ -64,6 +67,14 @@ class SingleSiteSequence(Sequence):
                 np.random.shuffle(_filenames)
             epoch_filenames.extend(_filenames)
         self.epoch_filenames = list(epoch_filenames)
+
+    def switch_to_augmented_filename(self, filename):
+        augmented_filenames = glob.glob(os.path.join(os.path.dirname(filename),
+                                                     self.deformation_augmentation.format(os.path.basename(filename))))
+        if augmented_filenames:
+            return np.random.choice(augmented_filenames)
+        else:
+            return filename
 
     def __len__(self):
         return self.get_number_of_batches_per_epoch()
@@ -251,6 +262,8 @@ class WholeBrainRegressionSequence(HCPRegressionSequence):
         return np.asarray(x), np.asarray(y)
 
     def resample_input(self, feature_filename):
+        if self.deformation_augmentation:
+            feature_filename = self.switch_to_augmented_filename(filename=feature_filename)
         feature_image = load_image(feature_filename)
         affine = feature_image.affine.copy()
         shape = feature_image.shape

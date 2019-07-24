@@ -1,0 +1,62 @@
+{
+  "subjects_filename": "data/subjects_v3.json",
+  "surface_names": [
+    "CortexLeft",
+    "CortexRight"
+  ],
+  "surface_basename_template": "{subject_id}.{hemi}.pial.32k_fs_LR.surf.gii",
+  "feature_basenames": "T1w/Diffusion/dti.nii.gz",
+  "target_basenames": [
+    "MNINonLinear/Results/tfMRI_LANGUAGE/tfMRI_LANGUAGE_hp200_s2_level2.feat/{}_tfMRI_LANGUAGE_level2_hp200_s2.dscalar.nii"
+  ],
+  "hemispheres": [
+    "L",
+    "R"
+  ],
+  "window": [
+    128,
+    128,
+    128
+  ],
+  "spacing": null,
+  "n_features": 4,
+  "activation": null,
+  "optimizer": "Adam",
+  "package": "pytorch",
+  "loss": "L1Loss",
+  "evaluation_metric": "L1Loss",
+  "custom_loss": false,
+  "regularized": false,
+  "points_per_subject": 1,
+  "reorder": false,
+  "validation_points_per_subject": 1,
+  "save_best_only": false,
+  "n_epochs": 2000,
+  "min_learning_rate": 1e-08,
+  "decay_patience": 20,
+  "decay_factor": 0.5,
+  "early_stopping_patience": 50,
+  "flip": false,
+  "batch_size": 20,
+  "validation_batch_size": 20,
+  "initial_learning_rate": 1e-04,
+  "model_name": "resnet_18",
+  "model_kwargs": {},
+  "skip_validation": false,
+  "iterations_per_epoch": 1,
+  "n_outputs": 59412,
+  "sequence": "whole_brain",
+  "n_dense_layers": 1,
+  "freeze_bias": false,
+  "metric_names": [
+    [
+      "{}_tfMRI_LANGUAGE_level2_STORY_hp200_s2"
+    ]
+  ],
+  "additional_generator_args": {
+    "augment_scale_std": 0.1,
+    "crop": true,
+    "resample": "linear",
+    "additive_noise_std": 0.1,
+    "deformation_augmentation": "{base_directory}/{random_subject_id}/T1w/Diffusion/augmented/{subject_id}_{basename}"}
+}

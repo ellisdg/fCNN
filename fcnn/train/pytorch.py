@@ -29,8 +29,9 @@ def build_optimizer(optimizer_name, model_parameters, learning_rate=1e-4):
 
 def run_pytorch_training(config, model_filename, training_log_filename, verbose=1, use_multiprocessing=False,
                          n_workers=1, max_queue_size=5, model_name='resnet_34', n_gpus=1, regularized=False,
-                         sequence_class=WholeBrainCIFTI2DenseScalarDataset,
-                         test_input=1, metric_to_monitor="loss", model_metrics=(), **unused_args):
+                         sequence_class=WholeBrainCIFTI2DenseScalarDataset, directory=None, test_input=1,
+                         metric_to_monitor="loss", model_metrics=(),
+                         **unused_args):
     """
     :param test_input: integer with the number of inputs from the generator to write to file. 0, False, or None will
     write no inputs to file.
@@ -110,6 +111,8 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
                                       points_per_subject=config['points_per_subject'],
                                       surface_names=config['surface_names'],
                                       metric_names=config['metric_names'],
+                                      base_directory=directory,
+                                      subject_ids=config["training"],
                                       **train_kwargs,
                                       **sequence_kwargs)
 

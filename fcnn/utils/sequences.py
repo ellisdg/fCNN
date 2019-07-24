@@ -31,8 +31,10 @@ def load_image(filename, feature_axis=3, resample_unequal_affines=True, interpol
 class SingleSiteSequence(Sequence):
     def __init__(self, filenames, batch_size, target_labels, window, spacing, classification='binary', shuffle=True,
                  points_per_subject=1, flip=False, reorder=False, iterations_per_epoch=1,
-                 deformation_augmentation=None):
+                 deformation_augmentation=None, base_directory=None, subject_ids=None):
         self.deformation_augmentation = deformation_augmentation
+        self.base_directory = base_directory
+        self.subject_ids = subject_ids
         self.batch_size = batch_size
         self.shuffle = shuffle
         self.filenames = filenames
@@ -68,13 +70,16 @@ class SingleSiteSequence(Sequence):
             epoch_filenames.extend(_filenames)
         self.epoch_filenames = list(epoch_filenames)
 
-    def switch_to_augmented_filename(self, filename):
-        augmented_filenames = glob.glob(os.path.join(os.path.dirname(filename),
-                                                     self.deformation_augmentation.format(os.path.basename(filename))))
-        if augmented_filenames:
-            return np.random.choice(augmented_filenames)
+    def switch_to_augmented_filename(self, subject_id, filename):
+        augmented_filename = self.deformation_augmentation.format(base_directory=self.base_directory,
+                                                                  random_subject_id=np.random.choice(self.subject_ids),
+                                                                  subject_id=subject_id,
+                                                                  basename=os.path.basename(filename))
+        if not os.path.exists(augmented_filename):
+            raise RuntimeWarning("Augmented filename {} does not exists!".format(augmented_filename))
         else:
-            return filename
+            filename = augmented_filename
+        return filename
 
     def __len__(self):
         return self.get_number_of_batches_per_epoch()
@@ -256,14 +261,14 @@ class WholeBrainRegressionSequence(HCPRegressionSequence):
         y = list()
         batch_filenames = self.filenames[idx * self.batch_size:(idx + 1) * self.batch_size]
         for feature_filename, surface_filenames, metric_filenames, subject_id in batch_filenames:
+            if self.deformation_augmentation:
+                feature_filename = self.switch_to_augmented_filename(subject_id=subject_id, filename=feature_filename)
             metrics = nib_load_files(metric_filenames)
             x.append(self.resample_input(feature_filename))
             y.append(get_metric_data(metrics, self.metric_names, self.surface_names, subject_id).T.ravel())
         return np.asarray(x), np.asarray(y)
 
     def resample_input(self, feature_filename):
-        if self.deformation_augmentation:
-            feature_filename = self.switch_to_augmented_filename(filename=feature_filename)
         feature_image = load_image(feature_filename)
         affine = feature_image.affine.copy()
         shape = feature_image.shape

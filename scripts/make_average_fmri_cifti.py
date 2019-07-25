@@ -29,6 +29,7 @@ def main(args):
                                        output_basename + os.path.basename(target_basename.format(subset)))
         cmd = ["wb_command", "-cifti-average", output_filename]
         for subject_id in subject_ids:
+            subject_id = str(subject_id)
             cmd.append("-cifti")
             cmd.append(os.path.join(directory, subject_id, target_basename.format(subject_id)))
         print(" ".join(cmd))

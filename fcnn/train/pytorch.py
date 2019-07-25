@@ -12,8 +12,13 @@ from .pytorch_training_utils import epoch_training, epoch_validatation
 from ..utils.pytorch import functions
 
 
-def build_or_load_model(model_name, model_filename, n_features, n_outputs, n_gpus=0, **kwargs):
+def build_or_load_model(model_name, model_filename, n_features, n_outputs, n_gpus=0, bias=None, freeze_bias=False,
+                        **kwargs):
     model = fetch_model_by_name(model_name, n_features=n_features, n_outputs=n_outputs, **kwargs)
+    if bias is not None:
+        model.fc.bias.set_(torch.from_numpy(bias))
+    if freeze_bias:
+        model.fc.bias.requires_grad_(False)
     if n_gpus > 1:
         model = torch.nn.DataParallel(model).cuda()
     elif n_gpus > 0:
@@ -66,20 +71,19 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
     else:
         model_kwargs = dict()
 
+    if "freeze_bias" in config:
+        freeze_bias = config["freeze_bias"]
+    else:
+        freeze_bias = False
+
     model = build_or_load_model(model_name, model_filename, n_features=config["n_features"], n_outputs=n_outputs,
-                                n_gpus=n_gpus, **model_kwargs)
+                                freeze_bias=freeze_bias, bias=bias, n_gpus=n_gpus, **model_kwargs)
     model.train()
 
     criterion = load_criterion(config['loss'], n_gpus=n_gpus)
 
     if "regularized" in config:
         regularized = config["regularized"]
-
-    if bias is not None:
-        model.fc.bias.set_(torch.from_numpy(bias))
-
-    if "freeze_bias" in config and config["freeze_bias"]:
-        model.fc.bias.requires_grad_(False)
 
     optimizer_kwargs = dict()
     if "initial_learning_rate" in config:

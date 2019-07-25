@@ -14,7 +14,12 @@ def main(args):
     directory = os.path.abspath(args[2])
     output_directory = os.path.abspath(args[3])
     subset = str(args[4])
-    subject_ids = config[subset]
+    if subset not in config and "subjects_filename" in config:
+        subjects_config = load_json(config["subjects_filename"])
+        subject_ids = subjects_config[subset]
+    else:
+        subject_ids = config[subset]
+
     for target_basename in config["target_basenames"]:
         output_filename = os.path.join(output_directory,
                                        os.path.basename(target_basename.format(subset)))

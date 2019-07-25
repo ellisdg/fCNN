@@ -42,12 +42,12 @@ class VariationalAutoEncoder(nn.Module):
 class RegularizedResNet(VariationalAutoEncoder):
     def __init__(self, n_outputs, *args, **kwargs):
         super(RegularizedResNet, self).__init__(*args, **kwargs)
-        self.dense = nn.Linear(self.var_layer.in_size, n_outputs)
+        self.fc = nn.Linear(self.var_layer.in_size, n_outputs)
 
     def forward(self, x):
         x = self.encoder(x)
         x = self.var_layer.in_conv(x).flatten(start_dim=1)
-        output = self.dense(x)
+        output = self.fc(x)
         x, mu, logvar = self.var_layer.var_block(x)
         x = self.var_layer.relu(x).view(-1, *self.var_layer.reduced_shape)
         x = self.var_layer.out_conv(x)

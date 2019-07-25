@@ -326,7 +326,7 @@ def _create_se_resnet(num_outputs, img_input, include_top, initial_conv_filters,
     """Creates a SE ResNet model with specified parameters
     Args:
         initial_conv_filters: number of features for the initial convolution
-        include_top: Flag to include the last dense layer
+        include_top: Flag to include the last fc layer
         filters: number of filters per block, defined as a list.
             filters = [64, 128, 256, 512
         depth: number or layers in the each block, defined as a list.

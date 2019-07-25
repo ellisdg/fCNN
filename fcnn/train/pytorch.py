@@ -30,8 +30,7 @@ def build_optimizer(optimizer_name, model_parameters, learning_rate=1e-4):
 def run_pytorch_training(config, model_filename, training_log_filename, verbose=1, use_multiprocessing=False,
                          n_workers=1, max_queue_size=5, model_name='resnet_34', n_gpus=1, regularized=False,
                          sequence_class=WholeBrainCIFTI2DenseScalarDataset, directory=None, test_input=1,
-                         metric_to_monitor="loss", model_metrics=(),
-                         **unused_args):
+                         metric_to_monitor="loss", model_metrics=(), bias=None,  **unused_args):
     """
     :param test_input: integer with the number of inputs from the generator to write to file. 0, False, or None will
     write no inputs to file.
@@ -67,8 +66,8 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
     else:
         model_kwargs = dict()
 
-    model = build_or_load_model(model_name, model_filename, n_features=config["n_features"],
-                                n_outputs=n_outputs, n_gpus=n_gpus, **model_kwargs)
+    model = build_or_load_model(model_name, model_filename, n_features=config["n_features"], n_outputs=n_outputs,
+                                n_gpus=n_gpus, **model_kwargs)
     model.train()
 
     criterion = load_criterion(config['loss'], n_gpus=n_gpus)
@@ -76,9 +75,11 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
     if "regularized" in config:
         regularized = config["regularized"]
 
+    if bias is not None:
+        model.fc.bias.set_(torch.from_numpy(bias))
+
     if "freeze_bias" in config and config["freeze_bias"]:
-        # TODO
-        pass
+        model.fc.bias.requires_grad_(False)
 
     optimizer_kwargs = dict()
     if "initial_learning_rate" in config:

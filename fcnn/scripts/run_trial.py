@@ -43,6 +43,11 @@ def load_subject_ids(config):
             config[key] = value
 
 
+def load_bias(bias_filename):
+    import numpy as np
+    return np.fromfile(os.path.join(fcnn_path, bias_filename))
+
+
 def main():
     import nibabel as nib
     nib.imageglobals.logger.level = 40
@@ -106,6 +111,11 @@ def main():
     else:
         sequence_class = HCPRegressionSequence
 
+    if "bias_filename" in config["bias_filename"] and config["bias_filename"] is not None:
+        bias = load_bias(config["bias_filename"])
+    else:
+        bias = None
+
     if sequence_class == ParcelBasedSequence:
         target_parcels = config["sequence_kwargs"].pop("target_parcels")
         for target_parcel in target_parcels:
@@ -133,7 +143,7 @@ def main():
 
     else:
         run_training(package, config, model_filename, training_log_filename, sequence_class=sequence_class,
-                     model_metrics=model_metrics, metric_to_monitor=metric_to_monitor, **system_config)
+                     model_metrics=model_metrics, metric_to_monitor=metric_to_monitor, bias=bias, **system_config)
 
 
 if __name__ == '__main__':

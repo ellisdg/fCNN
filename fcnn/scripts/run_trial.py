@@ -111,7 +111,7 @@ def main():
     else:
         sequence_class = HCPRegressionSequence
 
-    if "bias_filename" in config["bias_filename"] and config["bias_filename"] is not None:
+    if "bias_filename" in config and config["bias_filename"] is not None:
         bias = load_bias(config["bias_filename"])
     else:
         bias = None

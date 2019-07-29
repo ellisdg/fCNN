@@ -117,7 +117,7 @@ class ResNetWithDecoder1D(nn.Module):
 
     def forward(self, x):
         x = self.encoder(x)
-        x = nn.functional.interpolate(x, size=self.initial_upsample)
+        x = nn.functional.interpolate(x.flatten(start_dim=1)[..., None], size=(self.initial_upsample,))
         x = self.decoder(x)
         x = self.out_conv(x)
         return x

@@ -98,9 +98,9 @@ class _ResNetLatent(ResNet):
 
 class ResNetWithDecoder1D(nn.Module):
     def __init__(self, n_fc_outputs, n_outputs, initial_upsample=1024, blocks_per_layer=1, channel_decay=2,
-                 upsample_factor=2, **kwargs):
+                 upsample_factor=2, resnet_block=BasicBlock, **kwargs):
         super(ResNetWithDecoder1D, self).__init__()
-        self.encoder = ResNet(n_outputs=n_fc_outputs, **kwargs)
+        self.encoder = ResNet(n_outputs=n_fc_outputs, block=resnet_block, **kwargs)
         self.initial_upsample=initial_upsample
         _size = initial_upsample
         _channels = n_fc_outputs

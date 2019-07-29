@@ -44,19 +44,26 @@ class BasicBlock(nn.Module):
 
     def forward(self, x):
         identity = x
-
+        print("conv1:", x.shape)
         out = self.conv1(x)
+        print("bn1:", out.shape)
         out = self.bn1(out)
+        print("relu1:", out.shape)
         out = self.relu(out)
+        print("conv2:", out.shape)
 
         out = self.conv2(out)
+        print("bn2:", out.shape)
         out = self.bn2(out)
+        print("res:", out.shape)
 
         if self.downsample is not None:
             identity = self.downsample(x)
 
         out += identity
+        print("relu2", out.shape)
         out = self.relu(out)
+        print("out:", out.shape)
 
         return out
 

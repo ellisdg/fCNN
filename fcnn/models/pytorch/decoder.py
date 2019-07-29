@@ -74,7 +74,7 @@ class Decoder1D(nn.Module):
         for n_blocks, out_channels in zip(layer_blocks, layer_channels):
             layer = nn.ModuleList()
             self.conv1s.append(nn.Conv1d(in_channels=in_channels, out_channels=out_channels, kernel_size=1,
-                                         stride=1))
+                                         stride=1, bias=False))
             for i_block in range(n_blocks):
                 layer.append(block(in_channels=out_channels, channels=out_channels, kernel_size=kernel_size, stride=1))
             in_channels = out_channels
@@ -82,15 +82,12 @@ class Decoder1D(nn.Module):
 
     def forward(self, x):
         for (layer, conv1) in zip(self.layers, self.conv1s):
-            print(x.shape)
             x = nn.functional.interpolate(x,
                                           size=(x.shape[-1] * self.upsample_factor),
                                           mode=self.interpolation_mode,
                                           align_corners=self.interpolation_align_corners)
-            print(x.shape)
             x = conv1(x)
             for block in layer:
-                print(x.shape)
                 x = block(x)
         return nn.functional.interpolate(x,
                                          size=(self.output_features,),

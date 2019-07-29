@@ -44,26 +44,18 @@ class BasicBlock(nn.Module):
 
     def forward(self, x):
         identity = x
-        print("conv1:", x.shape)
         out = self.conv1(x)
-        print("bn1:", out.shape)
         out = self.bn1(out)
-        print("relu1:", out.shape)
         out = self.relu(out)
-        print("conv2:", out.shape)
 
         out = self.conv2(out)
-        print("bn2:", out.shape)
         out = self.bn2(out)
-        print("res:", out.shape)
 
         if self.downsample is not None:
             identity = self.downsample(x)
 
         out += identity
-        print("relu2", out.shape)
         out = self.relu(out)
-        print("out:", out.shape)
 
         return out
 
@@ -78,10 +70,12 @@ class BasicBlock1D(BasicBlock):
             self.norm_layer = nn.BatchNorm1d
         else:
             self.norm_layer = norm_layer
-        self.conv1 = nn.Conv1d(in_channels=in_channels, out_channels=channels, stride=stride, kernel_size=kernel_size)
+        self.conv1 = nn.Conv1d(in_channels=in_channels, out_channels=channels, stride=stride, kernel_size=kernel_size,
+                               bias=False, padding=1)
         self.bn1 = self.create_norm_layer(channels)
         self.relu = nn.ReLU(inplace=True)
-        self.conv2 = nn.Conv1d(in_channels=channels, out_channels=channels, stride=stride, kernel_size=kernel_size)
+        self.conv2 = nn.Conv1d(in_channels=channels, out_channels=channels, stride=stride, kernel_size=kernel_size,
+                               bias=False, padding=1)
         self.bn2 = self.create_norm_layer(channels)
         self.downsample = downsample
         self.stride = stride

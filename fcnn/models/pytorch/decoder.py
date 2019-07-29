@@ -58,3 +58,36 @@ class MyronenkoDecoder(nn.Module):
             _x = up(_x)
             _x = lay(_x)
         return _x
+
+
+class Decoder1D(nn.Module):
+    def __init__(self, input_features, output_features, layer_blocks, layer_channels, block=resnet.BasicBlock1D,
+                 kernel_size=3, upsample_factor=2, interpolation_mode="linear", interpolation_align_corners=True):
+        super(Decoder1D, self).__init__()
+        self.layers = nn.ModuleList()
+        self.conv1s = nn.ModuleList()
+        self.output_features = output_features
+        self.interpolation_mode = interpolation_mode
+        self.interpolation_align_corners = interpolation_align_corners
+        self.upsample_factor = upsample_factor
+        in_channels = input_features
+        for n_blocks, out_channels in zip(layer_blocks, layer_channels):
+            layer = nn.ModuleList()
+            self.conv1s.append(nn.Conv1d(in_channels=in_channels, out_channels=out_channels, kernel_size=1))
+            for i_block in range(n_blocks):
+                layer.append(block(out_channels, out_channels, kernel_size=kernel_size))
+            in_channels = out_channels
+            self.layers.append(nn.Sequential(*layer))
+
+    def forward(self, x):
+        for (layer, conv1) in zip(self.layers, self.conv1s):
+            x = nn.functional.interpolate(x,
+                                          size=(x.shape[-1] * self.upsample_factor),
+                                          mode=self.interpolation_mode,
+                                          align_corners=self.interpolation_align_corners)
+            x = conv1(x)
+            x = layer(x)
+        return nn.functional.interpolate(x,
+                                         size=(self.output_features,),
+                                         mode=self.interpolation_mode,
+                                         align_corners=self.interpolation_align_corners)

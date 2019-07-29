@@ -131,8 +131,3 @@ class MyronenkoEncoder(nn.Module):
             x = downsampling(x)
         x = self.layers[-1](x)
         return x
-
-
-
-
-

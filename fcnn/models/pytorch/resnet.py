@@ -64,6 +64,22 @@ class BasicBlock(nn.Module):
         return self.norm_layer(*args, **kwargs)
 
 
+class BasicBlock1D(BasicBlock):
+    def __init__(self, in_channels, channels, stride=1, downsample=None, kernel_size=3, norm_layer=None):
+        super(BasicBlock, self).__init__()
+        if norm_layer is None:
+            self.norm_layer = nn.BatchNorm1d
+        else:
+            self.norm_layer = norm_layer
+        self.conv1 = nn.Conv1d(in_channels=in_channels, out_channels=channels, stride=stride, kernel_size=kernel_size)
+        self.bn1 = self.create_norm_layer(channels)
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = nn.Conv1d(in_channels=channels, out_channels=channels, stride=stride, kernel_size=kernel_size)
+        self.bn2 = self.create_norm_layer(channels)
+        self.downsample = downsample
+        self.stride = stride
+
+
 class Bottleneck(nn.Module):
     expansion = 4
 

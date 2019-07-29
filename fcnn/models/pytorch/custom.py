@@ -2,7 +2,7 @@ from torch import nn
 import numpy as np
 
 from .myronenko import MyronenkoEncoder, MyronenkoVariationalLayer
-from .decoder import MyronenkoDecoder, BasicDecoder
+from .decoder import MyronenkoDecoder, BasicDecoder, Decoder1D
 from .resnet import conv1x1x1, ResNet, BasicBlock
 
 
@@ -94,3 +94,30 @@ class _ResNetLatent(ResNet):
         x = x.reshape(x.size(0), -1)
         x = self.fc(x)
         return x, latent
+
+
+class ResNetWithDecoder1D(nn.Module):
+    def __init__(self, n_fc_outputs, n_outputs, initial_upsample=1024, blocks_per_layer=1, channel_decay=2,
+                 upsample_factor=2, **kwargs):
+        super(ResNetWithDecoder1D, self).__init__()
+        self.encoder = ResNet(n_outputs=n_fc_outputs, **kwargs)
+        self.initial_upsample=initial_upsample
+        _size = initial_upsample
+        _channels = n_fc_outputs
+        layer_blocks = list()
+        layer_channels = list()
+        while _size < n_outputs:
+            _size = int(_size * upsample_factor)
+            _channels = int(_channels/channel_decay)
+            layer_blocks.append(blocks_per_layer)
+            layer_channels.append(_channels)
+        self.decoder = Decoder1D(input_features=n_fc_outputs, output_features=n_fc_outputs, layer_blocks=layer_blocks,
+                                 layer_channels=layer_channels, upsample_factor=upsample_factor)
+        self.out_conv = nn.Conv1d(in_channels=layer_channels[-1], out_channels=1, kernel_size=3)
+
+    def forward(self, x):
+        x = self.encoder(x)
+        x = nn.functional.interpolate(x, size=self.initial_upsample)
+        x = self.decoder(x)
+        x = self.out_conv(x)
+        return x

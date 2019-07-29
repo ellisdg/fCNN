@@ -81,11 +81,14 @@ class Decoder1D(nn.Module):
 
     def forward(self, x):
         for (layer, conv1) in zip(self.layers, self.conv1s):
+            print(x.shape)
             x = nn.functional.interpolate(x,
                                           size=(x.shape[-1] * self.upsample_factor),
                                           mode=self.interpolation_mode,
                                           align_corners=self.interpolation_align_corners)
+            print(x.shape)
             x = conv1(x)
+            print(x.shape)
             x = layer(x)
         return nn.functional.interpolate(x,
                                          size=(self.output_features,),

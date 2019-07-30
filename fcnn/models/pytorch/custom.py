@@ -119,7 +119,7 @@ class ResNetWithDecoder1D(nn.Module):
         self.out_conv = nn.Conv1d(in_channels=layer_channels[-1], out_channels=1, kernel_size=3, bias=False)
         self.output_features = n_outputs
         self.interpolation_mode = interpolation_mode
-        self.align_corners = interpolation_align_corners
+        self.interpolation_align_corners = interpolation_align_corners
 
     def forward(self, x):
         x = self.encoder(x)

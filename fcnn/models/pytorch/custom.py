@@ -98,10 +98,11 @@ class _ResNetLatent(ResNet):
 
 class ResNetWithDecoder1D(nn.Module):
     def __init__(self, n_fc_outputs, n_outputs, initial_upsample=1024, blocks_per_layer=1, channel_decay=2,
-                 upsample_factor=2, resnet_block=BasicBlock, **kwargs):
+                 upsample_factor=2, resnet_block=BasicBlock, interpolation_mode="linear",
+                 interpolation_align_corners=True, **kwargs):
         super(ResNetWithDecoder1D, self).__init__()
         self.encoder = ResNet(n_outputs=n_fc_outputs, block=resnet_block, **kwargs)
-        self.initial_upsample=initial_upsample
+        self.initial_upsample = initial_upsample
         _size = initial_upsample
         _channels = n_fc_outputs
         layer_blocks = list()
@@ -112,12 +113,20 @@ class ResNetWithDecoder1D(nn.Module):
             layer_blocks.append(blocks_per_layer)
             layer_channels.append(_channels)
         self.decoder = Decoder1D(input_features=n_fc_outputs, output_features=n_outputs, layer_blocks=layer_blocks,
-                                 layer_channels=layer_channels, upsample_factor=upsample_factor)
+                                 layer_channels=layer_channels, upsample_factor=upsample_factor,
+                                 interpolation_mode=interpolation_mode,
+                                 interpolation_align_corners=interpolation_align_corners)
         self.out_conv = nn.Conv1d(in_channels=layer_channels[-1], out_channels=1, kernel_size=3, bias=False)
+        self.output_features = n_outputs
+        self.interpolation_mode = interpolation_mode
+        self.align_corners = interpolation_align_corners
 
     def forward(self, x):
         x = self.encoder(x)
         x = nn.functional.interpolate(x.flatten(start_dim=1)[..., None], size=(self.initial_upsample,))
         x = self.decoder(x)
         x = self.out_conv(x)
-        return x
+        return nn.functional.interpolate(x,
+                                         size=(self.output_features,),
+                                         mode=self.interpolation_mode,
+                                         align_corners=self.interpolation_align_corners)

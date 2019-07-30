@@ -89,7 +89,4 @@ class Decoder1D(nn.Module):
             x = conv1(x)
             for block in layer:
                 x = block(x)
-        return nn.functional.interpolate(x,
-                                         size=(self.output_features,),
-                                         mode=self.interpolation_mode,
-                                         align_corners=self.interpolation_align_corners)
+        return x

@@ -111,7 +111,7 @@ class ResNetWithDecoder1D(nn.Module):
             _channels = int(_channels/channel_decay)
             layer_blocks.append(blocks_per_layer)
             layer_channels.append(_channels)
-        self.decoder = Decoder1D(input_features=n_fc_outputs, output_features=n_fc_outputs, layer_blocks=layer_blocks,
+        self.decoder = Decoder1D(input_features=n_fc_outputs, output_features=n_outputs, layer_blocks=layer_blocks,
                                  layer_channels=layer_channels, upsample_factor=upsample_factor)
         self.out_conv = nn.Conv1d(in_channels=layer_channels[-1], out_channels=1, kernel_size=3, bias=False)
 
@@ -119,7 +119,5 @@ class ResNetWithDecoder1D(nn.Module):
         x = self.encoder(x)
         x = nn.functional.interpolate(x.flatten(start_dim=1)[..., None], size=(self.initial_upsample,))
         x = self.decoder(x)
-        print("Decoder output:", x.shape)
         x = self.out_conv(x)
-        print("Convolution output:", x.shape)
         return x

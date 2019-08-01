@@ -88,7 +88,7 @@ def SEResNet(input_shape=None,
                 into, only to be specified if `include_top` is True, and
                 if no `weights` argument is specified.
         # Returns
-            A Keras model instance.
+            adjacency_matrix Keras model instance.
         """
 
     if weights not in {'imagenet', None}:
@@ -243,7 +243,7 @@ def SEResNet154(input_shape=None,
 
 
 def _resnet_block(input, filters, k=1, strides=(1, 1, 1)):
-    ''' Adds a pre-activation resnet block without bottleneck layers
+    ''' Adds a pre-activation encoder block without bottleneck layers
 
     Args:
         input: input tensor
@@ -279,7 +279,7 @@ def _resnet_block(input, filters, k=1, strides=(1, 1, 1)):
 
 
 def _resnet_bottleneck_block(input, filters, k=1, strides=(1, 1)):
-    ''' Adds a pre-activation resnet block with bottleneck layers
+    ''' Adds a pre-activation encoder block with bottleneck layers
 
     Args:
         input: input tensor

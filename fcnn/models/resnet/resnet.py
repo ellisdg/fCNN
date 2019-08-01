@@ -155,11 +155,11 @@ def basic_block(filters, init_strides=(1, 1, 1), is_first_block_of_first_layer=F
 
 
 def bottleneck(filters, init_strides=(1, 1, 1), is_first_block_of_first_layer=False):
-    """Bottleneck architecture for > 34 layer resnet.
+    """Bottleneck architecture for > 34 layer encoder.
     Follows improved proposed scheme in http://arxiv.org/pdf/1603.05027v2.pdf
 
     Returns:
-        A final conv layer of filters * 4
+        adjacency_matrix final conv layer of filters * 4
     """
     def f(input):
 

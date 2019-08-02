@@ -1,11 +1,14 @@
 from . import resnet
 from . import custom
+from . import graph
 
 
 def fetch_model_by_name(model_name, *args, **kwargs):
     try:
         if "res" in model_name:
             return getattr(resnet, model_name)(*args, **kwargs)
+        elif "Graph" in model_name:
+            return getattr(graph, model_name)(*args, **kwargs)
         else:
             return getattr(custom, model_name)(*args, **kwargs)
     except AttributeError:

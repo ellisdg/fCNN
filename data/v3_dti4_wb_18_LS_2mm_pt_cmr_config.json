@@ -1,8 +1,7 @@
 {
   "subjects_filename": "data/subjects_v3.json",
   "surface_names": [
-    "CortexLeft",
-    "CortexRight"
+    "CortexLeft"
   ],
   "surface_basename_template": "{subject_id}.{hemi}.pial.32k_fs_LR.surf.gii",
   "feature_basenames": "T1w/Diffusion/dti.nii.gz",
@@ -10,8 +9,7 @@
     "MNINonLinear/Results/tfMRI_LANGUAGE/tfMRI_LANGUAGE_hp200_s2_level2.feat/{}_tfMRI_LANGUAGE_level2_hp200_s2.dscalar.nii"
   ],
   "hemispheres": [
-    "L",
-    "R"
+    "L"
   ],
   "window": [
     128,
@@ -41,7 +39,11 @@
   "validation_batch_size": 20,
   "initial_learning_rate": 1e-05,
   "model_name": "GraphCMR",
-  "model_kwargs": {"encoder_outputs": 512, "n_channels":  256, "output_features":  1, "reference_filename":  ""},
+  "model_kwargs": {
+    "encoder_outputs": 512,
+    "n_channels":  256,
+    "output_features":  1,
+    "reference_filename":  "/home/aizenberg/dgellis/fCNN/data/reference/v3_training.L.midthickness.32k_fs_LR.surf.gii"},
   "skip_validation": false,
   "iterations_per_epoch": 1,
   "n_outputs": 59412,

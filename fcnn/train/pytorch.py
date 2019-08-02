@@ -16,7 +16,7 @@ def build_or_load_model(model_name, model_filename, n_features, n_outputs, n_gpu
                         **kwargs):
     model = fetch_model_by_name(model_name, n_features=n_features, n_outputs=n_outputs, **kwargs)
     if bias is not None:
-        model.fc.bias.set_(torch.from_numpy(bias))
+        model.fc.bias = torch.nn.Parameter(torch.from_numpy(bias))
     if freeze_bias:
         model.fc.bias.requires_grad_(False)
     if n_gpus > 1:

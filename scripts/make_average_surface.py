@@ -25,10 +25,11 @@ def main(args):
         subject_ids = config[subset]
 
     for surface_hemisphere in config["hemispheres"]:
-        surface_basename = config["surface_basename_template"].format(hemi=surface_hemisphere).replace("pial",
-                                                                                                       "midthickness")
+        surface_basename = config["surface_basename_template"].format(hemi=surface_hemisphere,
+                                                                      subject_id="{subject_id}").replace("pial",
+                                                                                                         "midthickness")
         output_filename = os.path.join(output_directory,
-                                       output_basename + os.path.basename(surface_basename.format(subject=subset)))
+                                       output_basename + os.path.basename(surface_basename.format(subject_id=subset)))
         cmd = ["wb_command", "-surface-average", output_filename]
         for subject_id in subject_ids:
             subject_id = str(subject_id)
@@ -37,7 +38,7 @@ def main(args):
                                     subject_id,
                                     "MNINonLinear",
                                     "fsaverage_LR32k",
-                                    surface_basename.format(subject=subject_id)))
+                                    surface_basename.format(subject_id=subject_id)))
         print(" ".join(cmd))
         subprocess.call(cmd)
 

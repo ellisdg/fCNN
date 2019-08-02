@@ -10,22 +10,25 @@ import torch
 import torch.nn as nn
 
 from .graph_cmr_layers import GraphResBlock, GraphLinear
+from .utils import load_surface
 from ..resnet import resnet_18
 
 
-class GraphCNN(nn.Module):
-    def __init__(self, ref_vertices, adjacency_matrix, num_layers=5, num_channels=256, output_features=3,
-                 encoder=resnet_18, encoder_outputs=512):
-        super(GraphCNN, self).__init__()
+class GraphCMR(nn.Module):
+    def __init__(self, ref_vertices=None, adjacency_matrix=None, n_layers=5, n_channels=256, output_features=3,
+                 encoder=resnet_18, encoder_outputs=512, reference_filename=None):
+        super(GraphCMR, self).__init__()
+        if reference_filename is not None and (ref_vertices is None or adjacency_matrix is None):
+            ref_vertices, adjacency_matrix = load_surface(surface_filename=reference_filename)
         self.adjacency_matrix = adjacency_matrix
         self.ref_vertices = ref_vertices
         self.encoder = encoder(n_outputs=encoder_outputs)
         self.encoder_outputs = encoder_outputs
-        layers = [GraphLinear(3 + self.encoder_outputs, 2 * num_channels),
-                  GraphResBlock(2 * num_channels, num_channels, adjacency_matrix)]
-        for i in range(num_layers):
-            layers.append(GraphResBlock(num_channels, num_channels, adjacency_matrix))
-        self.shape = nn.Sequential(GraphResBlock(num_channels, 64, adjacency_matrix),
+        layers = [GraphLinear(3 + self.encoder_outputs, 2 * n_channels),
+                  GraphResBlock(2 * n_channels, n_channels, adjacency_matrix)]
+        for i in range(n_layers):
+            layers.append(GraphResBlock(n_channels, n_channels, adjacency_matrix))
+        self.shape = nn.Sequential(GraphResBlock(n_channels, 64, adjacency_matrix),
                                    GraphResBlock(64, 32, adjacency_matrix),
                                    nn.GroupNorm(32 // 8, 32),
                                    nn.ReLU(inplace=True),

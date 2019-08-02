@@ -45,6 +45,12 @@ def extract_scalar_map(pscalar, map_name, brain_structure_name=None, brain_model
     return data
 
 
+def extract_vertices(surface, mask, surface_name=None):
+    # extract the vertices
+    surface_vertices = extract_gifti_surface_vertices(surface, primary_anatomical_structure=surface_name)
+    return surface_vertices[mask]
+
+
 def extract_parcellated_scalar_parcel_names(pscalar, parcel_index=1):
     parcel_names = list()
     for index in pscalar.header.get_index_map(parcel_index):
@@ -102,3 +108,26 @@ def new_cifti_scalar_like(array, scalar_names, structure_names, reference_cifti,
     if default_value == 0:
         np.testing.assert_almost_equal(np.sum(dataobj), np.sum(array), almost_equals_decimals)
     return reference_cifti.__class__(dataobj=dataobj, header=[new_scalar_axis, model_axis])
+
+
+def new_gifti_array_like(data, gifti_array):
+    return gifti_array.__class__(data=data, intent=gifti_array.intent, datatype=gifti_array.datatype,
+                                 encoding=gifti_array.encoding, endian=gifti_array.endian,
+                                 coordsys=gifti_array.coordsys, meta=gifti_array.meta)
+
+
+def new_surface_like(data, surface):
+    return surface.__class__(darrays=[new_gifti_array_like(array, garray) for array, garray in zip(data,
+                                                                                                   surface.darrays)])
+
+
+def create_metric_masked_surface(surface, metric):
+    vertices = surface.darrays[0]
+    vert_indices = get_vertices_from_scalar(metric, vertices.metadata["AnatomicalStructurePrimary"])
+    masked_vertices = vertices.data[vert_indices]
+    faces_array = surface.darrays[1].data
+    faces_mask = np.all(np.in1d(faces_array, vert_indices).reshape(faces_array.shape), axis=1)
+    masked_faces = faces_array[faces_mask, :]
+    for new_idx, idx in enumerate(vert_indices):
+        masked_faces[masked_faces == idx] = new_idx
+    return new_surface_like([masked_vertices, masked_faces], surface)

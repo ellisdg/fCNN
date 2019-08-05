@@ -54,6 +54,7 @@ class GraphConvolution(nn.Module):
                + str(self.out_features) + ')'
 
     def cuda(self, *args, **kwargs):
+        print("Conv cuda!")
         self.adjacency_matrix = self.adjacency_matrix.cuda(*args, **kwargs)
         return super(GraphConvolution, self).cuda(*args, **kwargs)
 

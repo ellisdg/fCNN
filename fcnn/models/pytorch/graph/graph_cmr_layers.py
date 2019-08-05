@@ -11,11 +11,11 @@ import math
 
 class GraphConvolution(nn.Module):
     """Simple GCN layer, similar to https://arxiv.org/abs/1609.02907."""
-    def __init__(self, in_features, out_features, adjacency_matrix, bias=True):
+    def __init__(self, in_features, out_features, adjacency_matrix_wrapper, bias=True):
         super(GraphConvolution, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
-        self.adjacency_matrix = adjacency_matrix
+        self.adjacency_matrix_wrapper = adjacency_matrix_wrapper
         self.weight = nn.Parameter(torch.FloatTensor(in_features, out_features))
         if bias:
             self.bias = nn.Parameter(torch.FloatTensor(out_features))
@@ -33,7 +33,7 @@ class GraphConvolution(nn.Module):
     def forward(self, x):
         if x.ndimension() == 2:
             support = torch.matmul(x, self.weight)
-            output = torch.matmul(self.adjacency_matrix, support)
+            output = torch.matmul(self.adjacency_matrix_wrapper.adjacency_matrix, support)
             if self.bias is not None:
                 output = output + self.bias
             return output
@@ -42,7 +42,7 @@ class GraphConvolution(nn.Module):
             for i in range(x.shape[0]):
                 support = torch.matmul(x[i], self.weight)
                 # output.append(torch.matmul(self.adjacency_matrix, support))
-                output.append(spmm(self.adjacency_matrix, support))
+                output.append(spmm(self.adjacency_matrix_wrapper.adjacency_matrix, support))
             output = torch.stack(output, dim=0)
             if self.bias is not None:
                 output = output + self.bias
@@ -52,11 +52,6 @@ class GraphConvolution(nn.Module):
         return self.__class__.__name__ + ' (' \
                + str(self.in_features) + ' -> ' \
                + str(self.out_features) + ')'
-
-    def cuda(self, *args, **kwargs):
-        print("Conv cuda!")
-        self.adjacency_matrix = self.adjacency_matrix.cuda(*args, **kwargs)
-        return super(GraphConvolution, self).cuda(*args, **kwargs)
 
 
 class GraphLinear(nn.Module):
@@ -85,12 +80,12 @@ class GraphResBlock(nn.Module):
     Graph Residual Block similar to the Bottleneck Residual Block in ResNet
     """
 
-    def __init__(self, in_channels, out_channels, adjacency_matrix):
+    def __init__(self, in_channels, out_channels, adjacency_matrix_wrapper):
         super(GraphResBlock, self).__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.lin1 = GraphLinear(in_channels, out_channels // 2)
-        self.conv = GraphConvolution(out_channels // 2, out_channels // 2, adjacency_matrix)
+        self.conv = GraphConvolution(out_channels // 2, out_channels // 2, adjacency_matrix_wrapper)
         self.lin2 = GraphLinear(out_channels // 2, out_channels)
         self.skip_conv = GraphLinear(in_channels, out_channels)
         self.pre_norm = nn.GroupNorm(in_channels // 8, in_channels)

@@ -10,7 +10,7 @@ import torch
 import torch.nn as nn
 
 from .graph_cmr_layers import GraphResBlock, GraphLinear
-from .utils import load_surface
+from .utils import load_surface, AdjacencyMatrixWrapper
 from ..resnet import resnet_18
 
 
@@ -20,16 +20,16 @@ class GraphCMR(nn.Module):
         super(GraphCMR, self).__init__()
         if reference_filename is not None and (ref_vertices is None or adjacency_matrix is None):
             ref_vertices, adjacency_matrix = load_surface(surface_filename=reference_filename)
-        self.adjacency_matrix = adjacency_matrix
+        self.adjacency_matrix_wrapper = AdjacencyMatrixWrapper(adjacency_matrix)
         self.ref_vertices = ref_vertices
         self.encoder = encoder(n_outputs=encoder_outputs, **encoder_kwargs)
         self.encoder_outputs = encoder_outputs
         layers = [GraphLinear(3 + self.encoder_outputs, 2 * n_channels),
                   GraphResBlock(2 * n_channels, n_channels, adjacency_matrix)]
         for i in range(n_layers):
-            layers.append(GraphResBlock(n_channels, n_channels, adjacency_matrix))
-        self.shape = nn.Sequential(GraphResBlock(n_channels, 64, adjacency_matrix),
-                                   GraphResBlock(64, 32, adjacency_matrix),
+            layers.append(GraphResBlock(n_channels, n_channels, self.adjacency_matrix_wrapper))
+        self.shape = nn.Sequential(GraphResBlock(n_channels, 64, self.adjacency_matrix_wrapper),
+                                   GraphResBlock(64, 32, self.adjacency_matrix_wrapper),
                                    nn.GroupNorm(32 // 8, 32),
                                    nn.ReLU(inplace=True),
                                    GraphLinear(32, output_features))
@@ -54,5 +54,6 @@ class GraphCMR(nn.Module):
 
     def cuda(self, *args, **kwargs):
         self.ref_vertices = self.ref_vertices.cuda(*args, **kwargs)
-        self.adjacency_matrix = self.adjacency_matrix.cuda(*args, **kwargs)
+        self.adjacency_matrix_wrapper.adjacency_matrix = self.adjacency_matrix_wrapper.adjacency_matrix.cuda(*args,
+                                                                                                             **kwargs)
         return super(GraphCMR, self).cuda(*args, **kwargs)

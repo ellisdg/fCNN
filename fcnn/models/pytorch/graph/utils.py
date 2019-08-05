@@ -24,3 +24,8 @@ def faces_to_adjacency_matrix(faces, size):
     values = torch.zeros(indices.shape[1], dtype=torch.int)
     adjacency_matrix = torch.sparse.IntTensor(indices, values, size=size)
     return adjacency_matrix
+
+
+class AdjacencyMatrixWrapper(object):
+    def __init__(self, adjacency_matrix):
+        self.adjacency_matrix = adjacency_matrix

@@ -53,7 +53,6 @@ class GraphCMR(nn.Module):
         return shape
 
     def cuda(self, *args, **kwargs):
-        print("Custom CUDA!")
         self.ref_vertices = self.ref_vertices.cuda(*args, **kwargs)
         self.adjacency_matrix = self.adjacency_matrix.cuda(*args, **kwargs)
         return super(GraphCMR, self).cuda(*args, **kwargs)

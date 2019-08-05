@@ -46,7 +46,7 @@
     "reference_filename":  "/home/aizenberg/dgellis/fCNN/data/reference/v3_training.L.midthickness.30k_fmri_fs_LR.surf.gii"},
   "skip_validation": false,
   "iterations_per_epoch": 1,
-  "n_outputs": 59412,
+  "n_outputs": 29696,
   "sequence": "whole_brain",
   "n_dense_layers": 1,
   "freeze_bias": false,

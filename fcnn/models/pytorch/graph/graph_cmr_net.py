@@ -16,13 +16,13 @@ from ..resnet import resnet_18
 
 class GraphCMR(nn.Module):
     def __init__(self, ref_vertices=None, adjacency_matrix=None, n_layers=5, n_channels=256, output_features=3,
-                 encoder=resnet_18, encoder_outputs=512, reference_filename=None):
+                 encoder=resnet_18, encoder_outputs=512, reference_filename=None, **encoder_kwargs):
         super(GraphCMR, self).__init__()
         if reference_filename is not None and (ref_vertices is None or adjacency_matrix is None):
             ref_vertices, adjacency_matrix = load_surface(surface_filename=reference_filename)
         self.adjacency_matrix = adjacency_matrix
         self.ref_vertices = ref_vertices
-        self.encoder = encoder(n_outputs=encoder_outputs)
+        self.encoder = encoder(n_outputs=encoder_outputs, **encoder_kwargs)
         self.encoder_outputs = encoder_outputs
         layers = [GraphLinear(3 + self.encoder_outputs, 2 * n_channels),
                   GraphResBlock(2 * n_channels, n_channels, adjacency_matrix)]

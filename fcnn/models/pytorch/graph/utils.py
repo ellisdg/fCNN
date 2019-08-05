@@ -9,7 +9,7 @@ def load_surface(surface_filename):
     n_vertices = vertices.shape[0]
     faces = surface.darrays[1].data
     adjacency_matrix = faces_to_adjacency_matrix(faces, size=(n_vertices, n_vertices))
-    return torch.FloatTensor(vertices), adjacency_matrix
+    return torch.FloatTensor(vertices).t(), adjacency_matrix
 
 
 def faces_to_edges(faces):

@@ -15,8 +15,8 @@ from ..resnet import resnet_18
 
 
 class GraphCMR(nn.Module):
-    def __init__(self, ref_vertices=None, adjacency_matrix=None, n_layers=5, n_channels=256, output_features=3,
-                 encoder=resnet_18, encoder_outputs=512, reference_filename=None, **encoder_kwargs):
+    def __init__(self, n_outputs=None, ref_vertices=None, adjacency_matrix=None, n_layers=5, n_channels=256,
+                 output_features=3, encoder=resnet_18, encoder_outputs=512, reference_filename=None, **encoder_kwargs):
         super(GraphCMR, self).__init__()
         if reference_filename is not None and (ref_vertices is None or adjacency_matrix is None):
             ref_vertices, adjacency_matrix = load_surface(surface_filename=reference_filename)

@@ -72,6 +72,9 @@ class GraphLinear(nn.Module):
         self.b.data.uniform_(-w_stdv, w_stdv)
 
     def forward(self, x):
+        print("x:", x.size())
+        print("W:", self.W.size())
+        print("b:", self.b.size())
         return torch.matmul(self.W[None, :], x) + self.b[None, :, None]
 
 

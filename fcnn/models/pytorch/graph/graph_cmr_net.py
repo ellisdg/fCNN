@@ -25,7 +25,7 @@ class GraphCMR(nn.Module):
         self.encoder = encoder(n_outputs=encoder_outputs, **encoder_kwargs)
         self.encoder_outputs = encoder_outputs
         layers = [GraphLinear(3 + self.encoder_outputs, 2 * n_channels),
-                  GraphResBlock(2 * n_channels, n_channels, adjacency_matrix)]
+                  GraphResBlock(2 * n_channels, n_channels, self.adjacency_matrix_wrapper)]
         for i in range(n_layers):
             layers.append(GraphResBlock(n_channels, n_channels, self.adjacency_matrix_wrapper))
         self.shape = nn.Sequential(GraphResBlock(n_channels, 64, self.adjacency_matrix_wrapper),

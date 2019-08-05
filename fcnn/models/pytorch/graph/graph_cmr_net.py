@@ -45,8 +45,6 @@ class GraphCMR(nn.Module):
         """
         batch_size = x.shape[0]
         ref_vertices = self.ref_vertices[None, :, :].expand(batch_size, -1, -1)
-        print(x.is_cuda)
-        print(ref_vertices.is_cuda)
         if x.is_cuda:
             ref_vertices.cuda()
         x = self.encoder(x)

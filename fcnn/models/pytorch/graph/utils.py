@@ -21,7 +21,7 @@ def faces_to_edges(faces):
 
 def faces_to_adjacency_matrix(faces, size):
     indices = faces_to_edges(faces)
-    values = torch.zeros(indices.shape[1], dtype=torch.int)
+    values = torch.zeros(indices.shape[1], dtype=torch.long)
     adjacency_matrix = torch.sparse.LongTensor(indices, values, size=size)
     return adjacency_matrix
 

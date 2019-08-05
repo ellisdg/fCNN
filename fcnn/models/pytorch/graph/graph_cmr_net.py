@@ -45,6 +45,8 @@ class GraphCMR(nn.Module):
         """
         batch_size = x.shape[0]
         ref_vertices = self.ref_vertices[None, :, :].expand(batch_size, -1, -1)
+        if x.is_cuda:
+            ref_vertices.cuda()
         x = self.encoder(x)
         x = x.view(batch_size, self.encoder_outputs, 1).expand(-1, -1, ref_vertices.shape[-1])
         x = torch.cat([ref_vertices, x], dim=1)

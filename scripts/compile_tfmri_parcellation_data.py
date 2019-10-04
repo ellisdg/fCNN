@@ -4,7 +4,7 @@ import sys
 import pandas as pd
 from fcnn.utils.utils import load_json
 from fcnn.utils.hcp import extract_parcellated_scalar_parcel_names
-from fcnn.utils.hcp import extract_scalar_map
+from fcnn.utils.hcp import extract_cifti_scalar_data
 
 
 def main():
@@ -51,7 +51,7 @@ def main():
                         if smoothing_name not in target_name:
                             target_name = target_name.replace(("_s2_", "_s4_")[[4, 2].index(smoothing_level)],
                                                               smoothing_name)
-                        parcel_data = extract_scalar_map(pscalar, target_name)
+                        parcel_data = extract_cifti_scalar_data(pscalar, target_name)
                         task_name = parse_metric_name(target_name)
                         for index, parcel_name in enumerate(parcel_names):
                             column = "_".join((task_name, "s" + str(smoothing_level), parcel_name))

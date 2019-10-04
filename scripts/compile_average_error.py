@@ -3,7 +3,7 @@ import os
 import sys
 import pandas as pd
 from fcnn.utils.utils import load_json
-from fcnn.utils.hcp import extract_scalar_map
+from fcnn.utils.hcp import extract_cifti_scalar_data
 import numpy as np
 
 
@@ -54,16 +54,16 @@ def main():
                 metric_mae.append(list())
             for brain_structure in brain_structures:
                 print(brain_structure)
-                pred_metric_data = extract_scalar_map(pred_dscalar, subject_metric_name,
-                                                      brain_structure_name=brain_structure)
-                fmri_metric_data = extract_scalar_map(fmri_dscalar, subject_metric_name, 
-                                                      brain_structure_name=brain_structure)
+                pred_metric_data = extract_cifti_scalar_data(pred_dscalar, subject_metric_name,
+                                                             brain_structure_name=brain_structure)
+                fmri_metric_data = extract_cifti_scalar_data(fmri_dscalar, subject_metric_name,
+                                                             brain_structure_name=brain_structure)
                 pred_mask = np.in1d(pred_bmaxis.vertex[pred_bmaxis.name == pred_bmaxis.to_cifti_brain_structure_name(brain_structure)], 
                                     fmri_bmaxis.vertex[fmri_bmaxis.name == fmri_bmaxis.to_cifti_brain_structure_name(brain_structure)])
 
-                all_metric_data = [extract_scalar_map(average_map,
-                                                      metric_name.format(key),
-                                                      brain_structure_name=brain_structure)
+                all_metric_data = [extract_cifti_scalar_data(average_map,
+                                                             metric_name.format(key),
+                                                             brain_structure_name=brain_structure)
                                    for average_map, key in zip(average_maps, average_subject_ids)] + [pred_metric_data[pred_mask]]
                 structure_mae = [np.abs(fmri_metric_data - metric_data) for metric_data in all_metric_data]
                 for i, mae in enumerate(structure_mae):

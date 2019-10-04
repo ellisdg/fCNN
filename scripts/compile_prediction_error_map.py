@@ -37,9 +37,9 @@ def main():
         output_fn = pred_dscalar_filename.replace(".dscalar", "_error.dscalar")
         if not os.path.exists(output_fn):
             cmd_args = ["wb_command",
-                        "-cifti-math", '"a - b"', output_fn,
-                        "-var", '"a"', fmri_dscalar_filename,
-                        "-var", '"b"', pred_dscalar_filename]
+                        "-cifti-math", "'a - b'", output_fn,
+                        "-var", "'a'", fmri_dscalar_filename,
+                        "-var", "'b'", pred_dscalar_filename]
             print(" ".join(cmd_args))
             subprocess.call(cmd_args)
         all_output_fns.append(output_fn)

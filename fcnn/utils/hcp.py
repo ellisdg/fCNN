@@ -31,21 +31,21 @@ def extract_gifti_array_names(gifti_object, key='Name'):
     return [array.metadata[key] for array in gifti_object.darrays]
 
 
-def extract_scalar_map_names(pscalar, map_index=0):
-    return [index.map_name for index in pscalar.header.get_index_map(map_index)]
+def extract_cifti_scalar_map_names(cifti_scalar, map_index=0):
+    return [index.map_name for index in cifti_scalar.header.get_index_map(map_index)]
 
 
-def extract_scalar_map(pscalar, map_name, brain_structure_name=None, brain_model_axis_index=1):
-    map_names = extract_scalar_map_names(pscalar)
-    data = pscalar.dataobj[map_names.index(map_name)]
+def extract_cifti_scalar_data(cifti_scalar, map_name, brain_structure_name=None, brain_model_axis_index=1):
+    map_names = extract_cifti_scalar_map_names(cifti_scalar)
+    data = cifti_scalar.dataobj[map_names.index(map_name)]
     if brain_structure_name is not None:
-        data = data[get_mask_from_scalar(pscalar,
+        data = data[get_mask_from_scalar(cifti_scalar,
                                          brain_structure_name=brain_structure_name,
                                          axis_index=brain_model_axis_index)]
     return data
 
 
-def extract_vertices(surface, mask, surface_name=None):
+def extract_masked_surface_vertices(surface, mask, surface_name=None):
     # extract the vertices
     surface_vertices = extract_gifti_surface_vertices(surface, primary_anatomical_structure=surface_name)
     return surface_vertices[mask]
@@ -87,8 +87,8 @@ def get_metric_data(metrics, metric_names, surface_names, subject_id, stack_axis
         for metric_name in metric_names:
             metric_data = list()
             for surface_name in surface_names:
-                metric_data.extend(extract_scalar_map(metric, metric_name.format(subject_id),
-                                                      brain_structure_name=surface_name))
+                metric_data.extend(extract_cifti_scalar_data(metric, metric_name.format(subject_id),
+                                                             brain_structure_name=surface_name))
             all_metric_data.append(metric_data)
     return np.stack(all_metric_data, axis=stack_axis)
 

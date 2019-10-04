@@ -33,7 +33,7 @@ def main():
         pscalar = nib.load(parcellated_filename)
 
         parcel_names = extract_parcellated_scalar_parcel_names(pscalar)
-        for raw_target_name in lang_config['metric_names']:
+        for raw_target_name in lang_config['metric_names'][0]:
             target_name = raw_target_name.format(subject_id)
             if smoothing_name not in target_name:
                 target_name = target_name.replace(("_s2_", "_s4_")[[4, 2].index(smoothing_level)],

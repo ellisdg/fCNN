@@ -23,6 +23,8 @@ def main():
                                  "tfMRI_{task_name}/tfMRI_{task_name}_hp200_s{smoothing_level}_level2_MSMAll.feat",
                                  "{subject_id}_tfMRI_{task_name}_level2_hp200_s{smoothing_level}_MSMAll.dscalar.nii")
 
+    all_output_fns = list()
+
     for subject_id in lang_config['validation']:
         pred_dscalar_filename = prediction_filename.format(subject_id=subject_id)
         if not os.path.exists(pred_dscalar_filename):
@@ -40,6 +42,15 @@ def main():
                         "-var", '"b"', pred_dscalar_filename]
             print(" ".join(cmd_args))
             subprocess.call(cmd_args)
+        all_output_fns.append(output_fn)
+
+    cmd_args = ["wb_command",
+                "-cifti-average",
+                prediction_filename.format(subject_id="average").replace(".dscalar", "_error.dscalar"),
+                ]
+    for output_fn in all_output_fns:
+        cmd_args.append("-cifti")
+        cmd_args.append(output_fn)
 
 
 if __name__ == "__main__":

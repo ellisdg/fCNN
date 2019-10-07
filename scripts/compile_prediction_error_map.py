@@ -1,10 +1,10 @@
 import nibabel as nib
 import os
 import sys
-import pandas as pd
 from fcnn.utils.utils import load_json
 from fcnn.utils.hcp import extract_cifti_scalar_data, new_cifti_scalar_like
 import numpy as np
+import subprocess
 
 
 def main():
@@ -77,6 +77,9 @@ def main():
                                                reference_cifti=fmri_dscalar,
                                                almost_equals_decimals=0)
         output_dscalar.to_filename(output_fn)
+
+    print(" ".join(cmd_args))
+    subprocess.call(cmd_args)
 
 
 if __name__ == "__main__":

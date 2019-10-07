@@ -37,7 +37,6 @@ def main():
     header.insert(0, 'subject_id')
     average_subject_ids = ('198855', '173940', '198855')
 
-    data = list()
     for subject_id in lang_config['validation']:
         pred_dscalar_filename = prediction_filename.format(subject_id=subject_id)
         output_fn = pred_dscalar_filename.replace(".dscalar", "_error.dscalar")
@@ -53,7 +52,7 @@ def main():
         fmri_bmaxis = fmri_dscalar.header.get_axis(1)
         pred_bmaxis = pred_dscalar.header.get_axis(1)
         subject_mae = list()
-        for metric_name in lang_config['metric_names']:
+        for metric_name in lang_config['metric_names'][0]:
             print(metric_name)
             subject_metric_name = metric_name.format(subject_id)
             metric_mae = list()
@@ -84,7 +83,6 @@ def main():
                                                lang_config["metric_names"],
                                                pred_dscalar)
         output_dscalar.to_filename(output_fn)
-
 
 
 if __name__ == "__main__":

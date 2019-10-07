@@ -65,10 +65,10 @@ def main():
             print(np.asarray(metric_mae).shape)
             subject_mae.append(metric_mae)
         print(np.asarray(subject_mae).shape)
-        output_dscalar = new_cifti_scalar_like(np.asarray(subject_mae),
-                                               lang_config["surface_names"],
-                                               subject_metric_names,
-                                               pred_dscalar)
+        output_dscalar = new_cifti_scalar_like(array=np.asarray(subject_mae),
+                                               structure_names=lang_config["surface_names"],
+                                               scalar_names=subject_metric_names,
+                                               reference_cifti=pred_dscalar)
         output_dscalar.to_filename(output_fn)
 
 

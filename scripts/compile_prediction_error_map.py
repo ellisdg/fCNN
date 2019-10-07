@@ -68,7 +68,7 @@ def main():
         output_dscalar = new_cifti_scalar_like(array=np.asarray(subject_mae),
                                                structure_names=lang_config["surface_names"],
                                                scalar_names=subject_metric_names,
-                                               reference_cifti=pred_dscalar)
+                                               reference_cifti=fmri_dscalar)
         output_dscalar.to_filename(output_fn)
 
 

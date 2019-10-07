@@ -27,13 +27,19 @@ def main():
     task_filename = os.path.join(hcp_dir, "{subject_id}", "MNINonLinear/Results",
                                  "tfMRI_{task_name}/tfMRI_{task_name}_hp200_s{smoothing_level}_level2_MSMAll.feat",
                                  "{subject_id}_tfMRI_{task_name}_level2_hp200_s{smoothing_level}_MSMAll.dscalar.nii")
-    average_subject_ids = ('198855', '173940', '198855')
+
+    output_average_fn = prediction_filename.format(subject_id="average").replace(".dscalar", "_error.dscalar")
+    cmd_args = ["wb_command", "-cifti-average", output_average_fn]
 
     for subject_id in lang_config['validation']:
         pred_dscalar_filename = prediction_filename.format(subject_id=subject_id)
         output_fn = pred_dscalar_filename.replace(".dscalar", "_error.dscalar")
         if not os.path.exists(pred_dscalar_filename):
             print("Does not exists:", pred_dscalar_filename)
+            continue
+        cmd_args.extend(["-cifti", output_fn])
+        if os.path.exists(output_fn):
+            print("Already exists:", output_fn)
             continue
         print(subject_id)
         pred_dscalar = nib.load(pred_dscalar_filename)

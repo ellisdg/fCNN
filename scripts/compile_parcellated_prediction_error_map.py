@@ -33,36 +33,36 @@ def main():
     cmd_args = ["wb_command", "-cifti-average", output_average_fn]
 
     for subject_id in lang_config['validation']:
-        pred_dscalar_filename = prediction_filename.format(subject_id=subject_id)
-        output_fn = pred_dscalar_filename.replace("." + cifti_type,
+        pred_scalar_filename = prediction_filename.format(subject_id=subject_id)
+        output_fn = pred_scalar_filename.replace("." + cifti_type,
                                                   "_error." + cifti_type)
-        if not os.path.exists(pred_dscalar_filename):
-            print("Does not exists:", pred_dscalar_filename)
+        if not os.path.exists(pred_scalar_filename):
+            print("Does not exists:", pred_scalar_filename)
             continue
         cmd_args.extend(["-cifti", output_fn])
         if os.path.exists(output_fn):
             print("Already exists:", output_fn)
             continue
         print(subject_id)
-        pred_dscalar = nib.load(pred_dscalar_filename)
-        fmri_dscalar_filename = task_filename.format(subject_id=subject_id,
+        pred_scalar = nib.load(pred_scalar_filename)
+        fmri_scalar_filename = task_filename.format(subject_id=subject_id,
                                                      task_name=task_name,
                                                      smoothing_level=smoothing_level,
                                                      cifti_type=cifti_type)
-        fmri_dscalar = nib.load(fmri_dscalar_filename)
+        fmri_scalar = nib.load(fmri_scalar_filename)
         subject_mae = list()
         subject_metric_names = list()
         for metric_name in lang_config['metric_names'][0]:
             print(metric_name)
             subject_metric_name = metric_name.format(subject_id)
             subject_metric_names.append(subject_metric_name)
-            pred_metric_data = extract_cifti_scalar_data(pred_dscalar, subject_metric_name)
-            fmri_metric_data = extract_cifti_scalar_data(fmri_dscalar, subject_metric_name)
+            pred_metric_data = extract_cifti_scalar_data(pred_scalar, subject_metric_name)
+            fmri_metric_data = extract_cifti_scalar_data(fmri_scalar, subject_metric_name)
             structure_mae = np.abs(fmri_metric_data - pred_metric_data)
             subject_mae.append(structure_mae)
         print(np.asarray(subject_mae).shape)
-        output_dscalar = pred_dscalar.__class__(dataobj=np.asarray(subject_mae), header=fmri_dscalar.header)
-        output_dscalar.to_filename(output_fn)
+        output_scalar = pred_scalar.__class__(dataobj=np.asarray(subject_mae), header=pred_scalar.header)
+        output_scalar.to_filename(output_fn)
 
     print(" ".join(cmd_args))
     subprocess.call(cmd_args)

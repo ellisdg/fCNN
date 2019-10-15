@@ -61,11 +61,7 @@ def main():
             structure_mae = np.abs(fmri_metric_data - pred_metric_data)
             subject_mae.append(structure_mae)
         print(np.asarray(subject_mae).shape)
-        output_dscalar = new_cifti_scalar_like(array=np.asarray(subject_mae),
-                                               structure_names=lang_config["surface_names"],
-                                               scalar_names=subject_metric_names,
-                                               reference_cifti=fmri_dscalar,
-                                               almost_equals_decimals=0)
+        output_dscalar = pred_dscalar.__class__(dataobj=np.asarray(subject_mae), header=fmri_dscalar.header)
         output_dscalar.to_filename(output_fn)
 
     print(" ".join(cmd_args))

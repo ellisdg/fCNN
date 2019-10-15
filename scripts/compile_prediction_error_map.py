@@ -9,15 +9,15 @@ import subprocess
 
 def main():
     model_name = sys.argv[1]
-
+    cifti_type = "pscalar"
     prediction_dir = "/work/aizenberg/dgellis/fCNN/predictions"
     output_fn = os.path.join(prediction_dir, model_name + "_prediction_error.csv")
     smoothing_level = 4
     smoothing_name = "_s{}_".format(smoothing_level)
     task_name = "LANGUAGE"
-    basename = "{subject_id}_tfMRI_{task_name}_level2_hp200_s{smoothing}_MSMAll.model_{model_name}_prediction.dscalar.nii"
+    basename = "{subject_id}_tfMRI_{task_name}_level2_hp200_s{smoothing}_MSMAll.model_{model_name}_prediction.{cifti_type}.nii"
     basename = basename.format(task_name=task_name, smoothing=smoothing_level, model_name=model_name,
-                               subject_id="{subject_id}")
+                               subject_id="{subject_id}", cifti_type=cifti_type)
     prediction_filename = os.path.join(prediction_dir, basename)
     data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
     lang_config_fn = os.path.join(data_dir, "trial_lowq_32_LS_LM_config.json")
@@ -26,14 +26,16 @@ def main():
     hcp_dir = "/work/aizenberg/dgellis/HCP/HCP_1200"
     task_filename = os.path.join(hcp_dir, "{subject_id}", "MNINonLinear/Results",
                                  "tfMRI_{task_name}/tfMRI_{task_name}_hp200_s{smoothing_level}_level2_MSMAll.feat",
-                                 "{subject_id}_tfMRI_{task_name}_level2_hp200_s{smoothing_level}_MSMAll.dscalar.nii")
+                                 "{subject_id}_tfMRI_{task_name}_level2_hp200_s{smoothing_level}_MSMAll.{cifti_type}.nii")
 
-    output_average_fn = prediction_filename.format(subject_id="average").replace(".dscalar", "_error.dscalar")
+    output_average_fn = prediction_filename.format(subject_id="average").replace("." + cifti_type,
+                                                                                 "_error." + cifti_type)
     cmd_args = ["wb_command", "-cifti-average", output_average_fn]
 
     for subject_id in lang_config['validation']:
         pred_dscalar_filename = prediction_filename.format(subject_id=subject_id)
-        output_fn = pred_dscalar_filename.replace(".dscalar", "_error.dscalar")
+        output_fn = pred_dscalar_filename.replace("." + cifti_type,
+                                                  "_error." + cifti_type)
         if not os.path.exists(pred_dscalar_filename):
             print("Does not exists:", pred_dscalar_filename)
             continue
@@ -45,7 +47,8 @@ def main():
         pred_dscalar = nib.load(pred_dscalar_filename)
         fmri_dscalar_filename = task_filename.format(subject_id=subject_id,
                                                      task_name=task_name,
-                                                     smoothing_level=smoothing_level)
+                                                     smoothing_level=smoothing_level,
+                                                     cifti_type=cifti_type)
         fmri_dscalar = nib.load(fmri_dscalar_filename)
         fmri_bmaxis = fmri_dscalar.header.get_axis(1)
         pred_bmaxis = pred_dscalar.header.get_axis(1)

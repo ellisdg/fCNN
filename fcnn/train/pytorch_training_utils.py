@@ -16,7 +16,11 @@ import torch.optim
 import torch.multiprocessing as mp
 import torch.utils.data
 import torch.utils.data.distributed
-from torch.utils.data._utils.collate import default_collate
+try:
+    from torch.utils.data._utils.collate import default_collate
+except ModuleNotFoundError:
+    # import from older versions of pytorch
+    from torch.utils.data.dataloader import default_collate
 
 
 def main(args):

@@ -118,6 +118,7 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
                                       metric_names=config['metric_names'],
                                       base_directory=directory,
                                       subject_ids=config["training"],
+                                      iterations_per_epoch=config["iterations_per_epoch"],
                                       **train_kwargs,
                                       **sequence_kwargs)
 

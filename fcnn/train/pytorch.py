@@ -122,7 +122,7 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
                                       **sequence_kwargs)
 
     training_loader = DataLoader(training_dataset,
-                                 batch_size=config["batch_size"],
+                                 batch_size=config["batch_size"]//config['points_per_subject'],
                                  shuffle=True,
                                  num_workers=n_workers,
                                  collate_fn=collate_flatten)
@@ -150,7 +150,7 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
                                             metric_names=config['metric_names'],
                                             **sequence_kwargs)
         validation_loader = DataLoader(validation_dataset,
-                                       batch_size=config["validation_batch_size"],
+                                       batch_size=config["validation_batch_size"]//config["points_per_subject"],
                                        shuffle=False,
                                        num_workers=n_workers,
                                        collate_fn=collate_flatten)

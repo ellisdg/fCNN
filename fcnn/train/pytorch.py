@@ -107,9 +107,6 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
     else:
         sequence_kwargs = dict()
 
-    print("train_kwargs", train_kwargs)
-    print("sequence_kwargs", sequence_kwargs)
-
     # 4. Create datasets
     training_dataset = sequence_class(filenames=config['training_filenames'],
                                       flip=config['flip'],

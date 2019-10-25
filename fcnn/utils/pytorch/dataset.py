@@ -26,9 +26,7 @@ class WholeBrainCIFTI2DenseScalarDataset(WholeBrainRegressionSequence, Dataset):
 
 class HCPRegressionDataset(HCPRegressionSequence, Dataset):
     def __init__(self, *args, batch_size=1, **kwargs):
-        print("args", args)
-        print("kwargs", list(kwargs.keys()))
-        super().__init__(self, *args, batch_size=batch_size, **kwargs)
+        super().__init__(*args, batch_size=batch_size, **kwargs)
 
     def __len__(self):
         return len(self.epoch_filenames)

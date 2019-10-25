@@ -170,11 +170,14 @@ def train(model, optimizer, criterion, n_epochs, training_loader, validation_loa
     training_log = list()
     if os.path.exists(training_log_filename):
         training_log.extend(pd.read_csv(training_log_filename).values)
+        start_epoch = training_log[-1][0] + 1
+    else:
+        start_epoch = 0
     training_log_header = ["epoch", "loss", "lr", "val_loss"]
 
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, verbose=verbose)
 
-    for epoch in range(n_epochs):
+    for epoch in range(start_epoch, n_epochs):
 
         # early stopping
         if (training_log and early_stopping_patience

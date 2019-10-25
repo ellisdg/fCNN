@@ -33,4 +33,4 @@ class HCPRegressionDataset(HCPRegressionSequence, Dataset):
 
     def __getitem__(self, idx):
         x, y = self.fetch_hcp_subject_batch(*self.epoch_filenames[idx])
-        return np.asarray(x).swapaxes(-1, 1), np.asarray(y)
+        return torch.from_numpy(np.asarray(x).swapaxes(-1, 1)).float(), torch.from_numpy(np.asarray(y)).float()

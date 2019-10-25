@@ -117,5 +117,5 @@
       "{}_tfMRI_WM_level2_TOOL-AVG_hp200_s2"
     ]
   ],
-  "additional_generator_args": {}
+  "additional_training_args": {}
 }

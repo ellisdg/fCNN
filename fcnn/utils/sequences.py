@@ -133,8 +133,8 @@ class MultiScannerSequence(SingleSiteSequence):
 class HCPRegressionSequence(SingleSiteSequence):
     def __init__(self, filenames, batch_size, window, spacing, metric_names, classification=None,
                  surface_names=('CortexLeft', 'CortexRight'), **kwargs):
-        super().__init__(filenames, batch_size, target_labels=tuple(), window=window, spacing=spacing,
-                         classification=classification, **kwargs)
+        super().__init__(filenames=filenames, batch_size=batch_size, target_labels=tuple(), window=window,
+                         spacing=spacing, classification=classification, **kwargs)
         self.metric_names = metric_names
         self.surface_names = surface_names
 

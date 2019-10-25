@@ -1,10 +1,11 @@
 from itertools import permutations
 import nibabel as nib
 import torch
+import os
 
 
 def load_surface(surface_filename):
-    surface = nib.load(surface_filename)
+    surface = nib.load(os.path.abspath(surface_filename))
     vertices = surface.darrays[0].data
     n_vertices = vertices.shape[0]
     faces = surface.darrays[1].data

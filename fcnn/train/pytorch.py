@@ -8,7 +8,7 @@ import torch.nn
 
 from ..utils.pytorch import WholeBrainCIFTI2DenseScalarDataset
 from ..models.pytorch import fetch_model_by_name
-from .pytorch_training_utils import epoch_training, epoch_validatation
+from .pytorch_training_utils import epoch_training, epoch_validatation, collate_flatten
 from ..utils.pytorch import functions
 
 
@@ -124,7 +124,8 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
     training_loader = DataLoader(training_dataset,
                                  batch_size=config["batch_size"],
                                  shuffle=True,
-                                 num_workers=n_workers)
+                                 num_workers=n_workers,
+                                 collate_fn=collate_flatten)
 
     if test_input:
         for index in range(test_input):
@@ -149,7 +150,8 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
         validation_loader = DataLoader(validation_dataset,
                                        batch_size=config["validation_batch_size"],
                                        shuffle=False,
-                                       num_workers=n_workers)
+                                       num_workers=n_workers,
+                                       collate_fn=collate_flatten)
 
     train(model=model, optimizer=optimizer, criterion=criterion, n_epochs=config["n_epochs"], verbose=bool(verbose),
           training_loader=training_loader, validation_loader=validation_loader, model_filename=model_filename,

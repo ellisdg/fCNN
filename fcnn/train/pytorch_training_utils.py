@@ -16,6 +16,7 @@ import torch.optim
 import torch.multiprocessing as mp
 import torch.utils.data
 import torch.utils.data.distributed
+from torch.utils.data._utils.collate import default_collate
 
 
 def main(args):
@@ -376,3 +377,12 @@ def human_readable_size(size, decimal_places=1):
             break
         size /= 1024.0
     return f"{size:.{decimal_places}f}{unit}"
+
+
+def collate_flatten(batch, x_dim_flatten=5, y_dim_flatten=2):
+    x, y = default_collate(batch)
+    if len(x.shape) > x_dim_flatten:
+        x = x.flatten(start_dim=0, end_dim=len(x.shape) - x_dim_flatten)
+    if len(y.shape) > y_dim_flatten:
+        y = y.flatten(start_dim=0, end_dim=len(y.shape) - y_dim_flatten)
+    return [x, y]

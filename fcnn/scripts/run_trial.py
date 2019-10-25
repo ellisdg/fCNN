@@ -6,7 +6,7 @@ fcnn_path = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname((__f
 sys.path.append(fcnn_path)
 from fcnn.train import run_training
 from fcnn.utils.sequences import WholeBrainRegressionSequence, HCPRegressionSequence, ParcelBasedSequence
-from fcnn.utils.pytorch.dataset import WholeBrainCIFTI2DenseScalarDataset
+from fcnn.utils.pytorch.dataset import WholeBrainCIFTI2DenseScalarDataset, HCPRegressionDataset
 from fcnn.utils.utils import load_json
 from fcnn.utils.custom import get_metric_data_from_config
 from fcnn.models.resnet.resnet import compare_scores
@@ -109,7 +109,10 @@ def main():
         config["sequence_kwargs"]["parcellation_template"] = os.path.join(
             directory, config["sequence_kwargs"]["parcellation_template"])
     else:
-        sequence_class = HCPRegressionSequence
+        if config["package"] == "pytorch":
+            sequence_class = HCPRegressionDataset
+        else:
+            sequence_class = HCPRegressionSequence
 
     if "bias_filename" in config and config["bias_filename"] is not None:
         bias = load_bias(config["bias_filename"])

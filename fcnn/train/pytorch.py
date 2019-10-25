@@ -130,7 +130,9 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
     if test_input:
         for index in range(test_input):
             x, y = training_dataset[index]
-            x_image = nib.Nifti1Image(x.numpy()[index], affine=np.diag(np.ones(4)))
+            if not isinstance(x, np.ndarray):
+                x = x.numpy()
+            x_image = nib.Nifti1Image(x[index], affine=np.diag(np.ones(4)))
             x_image.to_filename(model_filename.replace(".pt",
                                                        "_input_test_{}.nii.gz".format(index)))
 

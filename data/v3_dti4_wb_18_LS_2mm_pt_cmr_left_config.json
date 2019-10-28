@@ -43,7 +43,7 @@
     "encoder_outputs": 512,
     "n_channels":  256,
     "output_features":  1,
-    "reference_filename":  "/home/aizenberg/dgellis/fCNN/data/reference/v3_training.L.midthickness.30k_fmri_fs_LR.surf.gii"},
+    "reference_filename":  "data/reference/v3_training.L.midthickness.30k_fmri_fs_LR.surf.gii"},
   "skip_validation": false,
   "iterations_per_epoch": 1,
   "n_outputs": 29696,
@@ -55,7 +55,7 @@
       "{}_tfMRI_LANGUAGE_level2_STORY_hp200_s2"
     ]
   ],
-  "additional_generator_args": {
+  "additional_training_args": {
     "augment_scale_std": 0.1,
     "crop": true,
     "resample": "linear",

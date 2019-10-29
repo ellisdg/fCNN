@@ -20,6 +20,7 @@ def build_or_load_model(model_name, model_filename, n_features, n_outputs, n_gpu
     if freeze_bias:
         model.fc.bias.requires_grad_(False)
     if n_gpus > 1:
+        model = model.cuda()
         model = torch.nn.DataParallel(model).cuda()
     elif n_gpus > 0:
         model = model.cuda()
@@ -134,7 +135,7 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
             if not isinstance(x, np.ndarray):
                 x = x.numpy()
             x_image = nib.Nifti1Image(x[index], affine=np.diag(np.ones(4)))
-            x_image.to_filename(model_filename.replace(".pt",
+            x_image.to_filename(model_filename.replace(".h5",
                                                        "_input_test_{}.nii.gz".format(index)))
 
     if 'skip_validation' in config and config['skip_validation']:
@@ -184,12 +185,12 @@ def train(model, optimizer, criterion, n_epochs, training_loader, validation_loa
             break
 
         # train the model
-        loss = epoch_training(training_loader, model, criterion, optimizer=optimizer, epoch=epoch, gpu=n_gpus,
+        loss = epoch_training(training_loader, model, criterion, optimizer=optimizer, epoch=epoch, n_gpus=n_gpus,
                               regularized=regularized)
 
         # predict validation data
         if validation_loader:
-            val_loss = epoch_validatation(validation_loader, model, criterion, gpu=n_gpus, regularized=regularized)
+            val_loss = epoch_validatation(validation_loader, model, criterion, n_gpus=n_gpus, regularized=regularized)
         else:
             val_loss = None
 

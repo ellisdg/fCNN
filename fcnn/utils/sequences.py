@@ -284,3 +284,35 @@ class WholeBrainRegressionSequence(HCPRegressionSequence):
         affine = resize_affine(affine, shape, self.window)
         input_img = resample(feature_image, affine, self.window, interpolation=self.resample)
         return normalize_image_data(input_img.get_data())
+
+
+class WholeBrainAutoEncoder(WholeBrainRegressionSequence):
+    def __getitem__(self, idx):
+        x_batch = list()
+        y_batch = list()
+        batch_filenames = self.filenames[idx * self.batch_size:(idx + 1) * self.batch_size]
+        for item in batch_filenames:
+            feature_filename = item[0]
+            x, y = self.resample_input(feature_filename)
+            x_batch.append(x)
+            y_batch.append(y)
+        return np.asarray(x_batch), np.asarray(y_batch)
+
+    def resample_input(self, feature_filename):
+        feature_image = load_image(feature_filename)
+        affine = feature_image.affine.copy()
+        shape = feature_image.shape
+        if self.reorder:
+            affine = reorder_affine(affine, shape)
+        if self.crop:
+            affine, shape = crop_img(feature_image, return_affine=True, pad=True)
+        if self.augment_scale_std:
+            scale = np.random.normal(1, self.augment_scale_std, 3)
+            affine = scale_affine(affine, shape, scale)
+        target_image = resample(feature_image, resize_affine(affine, shape, self.window), self.window,
+                                interpolation=self.resample)
+        if self.additive_noise_std:
+            feature_image.get_data()[:] = add_noise(feature_image.get_data(), sigma_factor=self.additive_noise_std)
+        affine = resize_affine(affine, shape, self.window)
+        input_image = resample(feature_image, affine, self.window, interpolation=self.resample)
+        return normalize_image_data(input_image.get_data()), normalize_image_data(target_image.get_data())

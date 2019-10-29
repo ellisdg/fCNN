@@ -3,7 +3,8 @@ import torch
 import numpy as np
 
 
-from ..sequences import WholeBrainRegressionSequence, HCPRegressionSequence, nib_load_files, get_metric_data
+from ..sequences import (WholeBrainRegressionSequence, HCPRegressionSequence, nib_load_files, get_metric_data,
+                         WholeBrainAutoEncoder)
 
 
 class WholeBrainCIFTI2DenseScalarDataset(WholeBrainRegressionSequence, Dataset):
@@ -34,3 +35,18 @@ class HCPRegressionDataset(HCPRegressionSequence, Dataset):
     def __getitem__(self, idx):
         x, y = self.fetch_hcp_subject_batch(*self.epoch_filenames[idx])
         return torch.from_numpy(np.asarray(x).swapaxes(-1, 1)).float(), torch.from_numpy(np.asarray(y)).float()
+
+
+class VAEDataset(WholeBrainAutoEncoder, Dataset):
+    def __init__(self, *args, batch_size=1, shuffle=False, **kwargs):
+        super().__init__(*args, batch_size=batch_size, shuffle=shuffle, **kwargs)
+
+    def __len__(self):
+        return len(self.epoch_filenames)
+
+    def __getitem__(self, idx):
+        item = self.epoch_filenames[idx]
+        feature_filename = item[0]
+        x, y = self.resample_input(feature_filename)
+        return (torch.from_numpy(np.asarray(x).swapaxes(-1, 1).float()),
+                torch.from_numpy(np.asarray(y).swapaxes(-1, 1).float()))

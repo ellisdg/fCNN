@@ -200,7 +200,7 @@ def main_worker(gpu, ngpus_per_node, args):
 
 
 def epoch_training(train_loader, model, criterion, optimizer, epoch, gpu=None, print_frequency=1, regularized=False,
-                   print_gpu_memory=False):
+                   print_gpu_memory=False, vae=False):
     batch_time = AverageMeter('Time', ':6.3f')
     data_time = AverageMeter('Data', ':6.3f')
     losses = AverageMeter('Loss', ':.4e')
@@ -230,7 +230,7 @@ def epoch_training(train_loader, model, criterion, optimizer, epoch, gpu=None, p
                     print("Max memory cached (device {}):".format(i_gpu),
                           human_readable_size(torch.cuda.max_memory_cached(i_gpu)))
 
-        loss, batch_size = batch_loss(model, images, target, criterion, gpu=gpu, regularized=regularized)
+        loss, batch_size = batch_loss(model, images, target, criterion, gpu=gpu, regularized=regularized, vae=vae)
 
         if gpu:
             torch.cuda.empty_cache()
@@ -254,7 +254,7 @@ def epoch_training(train_loader, model, criterion, optimizer, epoch, gpu=None, p
     return losses.avg
 
 
-def batch_loss(model, images, target, criterion, gpu=0, regularized=False):
+def batch_loss(model, images, target, criterion, gpu=0, regularized=False, vae=False):
     if gpu is not None:
         images = images.cuda()
         target = target.cuda()
@@ -269,12 +269,15 @@ def batch_loss(model, images, target, criterion, gpu=0, regularized=False):
         except ValueError:
             pred_y, pred_x = output
             loss = criterion(pred_y, pred_x, images, target)
+    elif vae:
+        pred_x, mu, logvar = output
+        loss = criterion(pred_x, mu, logvar, target)
     else:
         loss = criterion(output, target)
     return loss, batch_size
 
 
-def epoch_validatation(val_loader, model, criterion, gpu, print_freq=1, regularized=False):
+def epoch_validatation(val_loader, model, criterion, gpu, print_freq=1, regularized=False, vae=False):
     batch_time = AverageMeter('Time', ':6.3f')
     losses = AverageMeter('Loss', ':.4e')
     progress = ProgressMeter(
@@ -289,7 +292,7 @@ def epoch_validatation(val_loader, model, criterion, gpu, print_freq=1, regulari
         end = time.time()
         for i, (images, target) in enumerate(val_loader):
 
-            loss, batch_size = batch_loss(model, images, target, criterion, gpu=gpu, regularized=regularized)
+            loss, batch_size = batch_loss(model, images, target, criterion, gpu=gpu, regularized=regularized, vae=vae)
 
             # measure accuracy and record loss
             losses.update(loss.item(), batch_size)

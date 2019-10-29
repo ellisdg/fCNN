@@ -4,11 +4,9 @@
     "CortexLeft",
     "CortexRight"
   ],
-  "surface_basename_template": "{subject_id}.{hemi}.pial.32k_fs_LR.surf.gii",
+  "surface_basename_template": null,
   "feature_basenames": "T1w/Diffusion/dti.nii.gz",
-  "target_basenames": [
-    "MNINonLinear/Results/tfMRI_LANGUAGE/tfMRI_LANGUAGE_hp200_s2_level2.feat/{}_tfMRI_LANGUAGE_level2_hp200_s2.dscalar.nii"
-  ],
+  "target_basenames": null,
   "hemispheres": [
     "L",
     "R"
@@ -27,6 +25,7 @@
   "evaluation_metric": "L2Loss",
   "custom_loss": true,
   "regularized": false,
+  "vae": true,
   "points_per_subject": 1,
   "reorder": false,
   "validation_points_per_subject": 1,
@@ -48,17 +47,13 @@
   "skip_validation": false,
   "iterations_per_epoch": 1,
   "n_outputs": 1,
-  "sequence": "whole_brain",
+  "sequence": "VAEDataset",
   "n_dense_layers": 1,
   "freeze_bias": false,
-  "metric_names": [
-    [
-      "{}_tfMRI_LANGUAGE_level2_STORY_hp200_s2"
-    ]
-  ],
+  "metric_names": null,
   "additional_generator_args": {
     "augment_scale_std": 0.1,
     "crop": true,
     "resample": "linear",
-    "additive_noise_std": null}
+    "additive_noise_std": 0.1}
 }

@@ -15,17 +15,21 @@ from .hcp import nib_load_files, extract_gifti_surface_vertices, get_vertices_fr
 from .utils import read_polydata, extract_polydata_vertices, normalize_image_data
 
 
-def load_image(filename, feature_axis=3, resample_unequal_affines=True, interpolation="linear"):
+def load_image(filename, feature_axis=3, resample_unequal_affines=True, interpolation="linear", force_4d=False):
     """
     :param feature_axis: axis along which to combine the images, if necessary.
     :param filename: can be either string path to the file or a list of paths.
     :return: image containing either the 1 image in the filename or a combined image based on multiple filenames.
     """
-    if type(filename) == list:
-        return combine_images(nib_load_files(filename), axis=feature_axis,
-                              resample_unequal_affines=resample_unequal_affines, interpolation=interpolation)
-    else:
-        return nib.load(filename)
+
+    if type(filename) != list:
+        if not force_4d:
+            return nib.load(filename)
+        else:
+            filename = [filename]
+
+    return combine_images(nib_load_files(filename), axis=feature_axis,
+                          resample_unequal_affines=resample_unequal_affines, interpolation=interpolation)
 
 
 class SingleSiteSequence(Sequence):
@@ -299,7 +303,11 @@ class WholeBrainAutoEncoder(WholeBrainRegressionSequence):
         return np.asarray(x_batch), np.asarray(y_batch)
 
     def resample_input(self, feature_filename):
-        feature_image = load_image(feature_filename)
+        input_image, target_image = self.resample_image(feature_filename)
+        return normalize_image_data(input_image.get_data()), normalize_image_data(target_image.get_data())
+
+    def resample_image(self, feature_filename):
+        feature_image = load_image(feature_filename, force_4d=True)
         affine = feature_image.affine.copy()
         shape = feature_image.shape
         if self.reorder:
@@ -315,4 +323,7 @@ class WholeBrainAutoEncoder(WholeBrainRegressionSequence):
             feature_image.get_data()[:] = add_noise(feature_image.get_data(), sigma_factor=self.additive_noise_std)
         affine = resize_affine(affine, shape, self.window)
         input_image = resample(feature_image, affine, self.window, interpolation=self.resample)
-        return normalize_image_data(input_image.get_data()), normalize_image_data(target_image.get_data())
+        return input_image, target_image
+
+    def get_image(self, idx):
+        input_image, _ = self.resample_image(self.filenames[idx][0])

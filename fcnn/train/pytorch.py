@@ -113,6 +113,11 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
     else:
         sequence_kwargs = dict()
 
+    if "flatten_y" in config and config["flatten_y"]:
+        collate_fn = collate_flatten
+    else:
+        collate_fn = None
+
     # 4. Create datasets
     training_dataset = sequence_class(filenames=config['training_filenames'],
                                       flip=config['flip'],
@@ -132,7 +137,7 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
                                  batch_size=config["batch_size"]//config['points_per_subject'],
                                  shuffle=True,
                                  num_workers=n_workers,
-                                 collate_fn=collate_flatten)
+                                 collate_fn=collate_fn)
 
     if test_input:
         for index in range(test_input):
@@ -160,7 +165,7 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
                                        batch_size=config["validation_batch_size"]//config["points_per_subject"],
                                        shuffle=False,
                                        num_workers=n_workers,
-                                       collate_fn=collate_flatten)
+                                       collate_fn=collate_fn)
 
     train(model=model, optimizer=optimizer, criterion=criterion, n_epochs=config["n_epochs"], verbose=bool(verbose),
           training_loader=training_loader, validation_loader=validation_loader, model_filename=model_filename,
@@ -177,7 +182,7 @@ def train(model, optimizer, criterion, n_epochs, training_loader, validation_loa
     training_log = list()
     if os.path.exists(training_log_filename):
         training_log.extend(pd.read_csv(training_log_filename).values)
-        start_epoch = training_log[-1][0] + 1
+        start_epoch = int(training_log[-1][0]) + 1
     else:
         start_epoch = 0
     training_log_header = ["epoch", "loss", "lr", "val_loss"]

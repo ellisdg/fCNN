@@ -58,10 +58,9 @@ def make_predictions(config_filename, model_filename, output_directory='./', n_s
             output_filenames = list()
             task = os.path.basename(metric_filenames[0]).split(".")[0]
             for hemisphere in config['hemispheres']:
-
                 output_basename = "{task}.{hemi}.{model}_prediction.func.gii".format(hemi=hemisphere,
-                                                                                      model=model_basename,
-                                                                                      task=task)
+                                                                                     model=model_basename,
+                                                                                     task=task)
                 output_filenames.append(os.path.join(output_directory, output_basename))
             subject_metric_names = [metric_name.format(subject_id)
                                     for metric_name in np.squeeze(config['metric_names'])]
@@ -82,7 +81,7 @@ def make_predictions(config_filename, model_filename, output_directory='./', n_s
 
 
 def predict_local_subject(model, feature_filename, surface_filename, batch_size=50, window=(64, 64, 64),
-                          spacing=(1, 1, 1), flip=False, use_multiprocessing=False, workers=1, max_queue_size=10,):
+                          spacing=(1, 1, 1), flip=False, use_multiprocessing=False, workers=1, max_queue_size=10, ):
     generator = SubjectPredictionSequence(feature_filename=feature_filename, surface_filename=surface_filename,
                                           surface_name=None, batch_size=batch_size, window=window,
                                           flip=flip, spacing=spacing)
@@ -114,6 +113,29 @@ def whole_brain_scalar_predictions(model_filename, subject_ids, hcp_dir, output_
                                                n_workers=n_workers,
                                                batch_size=batch_size,
                                                model_kwargs=model_kwargs)
+    else:
+        raise ValueError("Predictions not yet implemented for {}".format(package))
+
+
+def whole_brain_autoencoder_predictions(model_filename, subject_ids, hcp_dir, output_dir, feature_basenames,
+                                        model_name, n_features, window, criterion_name, package="keras",
+                                        n_gpus=1, n_workers=1, batch_size=1, model_kwargs=None, n_outputs=None):
+    from .scripts.run_trial import generate_hcp_filenames
+    filenames = generate_hcp_filenames(directory=hcp_dir, surface_basename_template=None, target_basenames=None,
+                                       feature_basenames=feature_basenames, subject_ids=subject_ids, hemispheres=None)
+    if package == "pytorch":
+        pytorch_whole_brain_autoencoder_predictions(model_filename=model_filename,
+                                                    model_name=model_name,
+                                                    n_outputs=n_outputs,
+                                                    n_features=n_features,
+                                                    filenames=filenames,
+                                                    prediction_dir=output_dir,
+                                                    window=window,
+                                                    criterion_name=criterion_name,
+                                                    n_gpus=n_gpus,
+                                                    n_workers=n_workers,
+                                                    batch_size=batch_size,
+                                                    model_kwargs=model_kwargs)
     else:
         raise ValueError("Predictions not yet implemented for {}".format(package))
 
@@ -185,6 +207,56 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
         pd.DataFrame(results, columns=columns).to_csv(output_csv)
 
 
+def pytorch_whole_brain_autoencoder_predictions(model_filename, model_name, n_features, filenames, window,
+                                                criterion_name, prediction_dir=None, output_csv=None, reference=None,
+                                                n_gpus=1, n_workers=1, batch_size=1, model_kwargs=None, n_outputs=None):
+    from .train.pytorch import build_or_load_model, load_criterion
+    from .utils.pytorch.dataset import AEDataset
+    import torch
+    from .utils.utils import normalize_image_data
+    from nilearn.image import new_img_like
+
+    if model_kwargs is None:
+        model_kwargs = dict()
+
+    model = build_or_load_model(model_name=model_name, model_filename=model_filename, n_outputs=n_outputs,
+                                n_features=n_features, n_gpus=n_gpus, **model_kwargs)
+    model.eval()
+    basename = os.path.basename(model_filename).split(".")[0]
+    if prediction_dir and not output_csv:
+        output_csv = os.path.join(prediction_dir, str(basename) + "_prediction_scores.csv")
+    dataset = AEDataset(filenames=filenames, window=window, spacing=None, batch_size=1)
+    criterion = load_criterion(criterion_name, n_gpus=n_gpus)
+    results = list()
+    print("Dataset: ", len(dataset))
+    with torch.no_grad():
+        for idx in range(dataset):
+            image = dataset.get_image(idx)
+            subject_id = dataset.filenames[idx][-1]
+            x = normalize_image_data(image.get_data())
+            if n_gpus > 0:
+                x = x.cuda()
+            pred_x = model(x)
+            if type(pred_x) == tuple:
+                pred_x, mu, logvar = pred_x
+            else:
+                mu = None
+                logvar = None
+            score = criterion(pred_x, x)
+            pred_image = new_img_like(image, pred_x.cpu().numpy(), affine=image.affine)
+            pred_image.to_filename(os.path.join(prediction_dir,
+                                                "_".join([subject_id,
+                                                          basename,
+                                                          os.path.basename(dataset.filenames[idx][0])])))
+            results.append([subject_id, score, mu, logvar])
+
+    if output_csv is not None:
+        columns = ["subject_id", criterion_name, "mu", "logvar"]
+        if reference is not None:
+            columns.append("reference_" + criterion_name)
+        pd.DataFrame(results, columns=columns).to_csv(output_csv, sep=";")
+
+
 def save_predictions(prediction, args, basename, metric_names, surface_names, prediction_dir):
     ref_filename = args[2][0]
     subject_id = args[-1]
@@ -195,7 +267,7 @@ def save_predictions(prediction, args, basename, metric_names, surface_names, pr
     if prediction_dir is not None and not os.path.exists(output_filename):
         ref_cifti = nib.load(ref_filename)
         prediction_array = prediction.reshape(len(_metric_names),
-                                                      np.sum(ref_cifti.header.get_axis(1).surface_mask))
+                                              np.sum(ref_cifti.header.get_axis(1).surface_mask))
         cifti_file = new_cifti_scalar_like(prediction_array, _metric_names, surface_names, ref_cifti)
         cifti_file.to_filename(output_filename)
 

@@ -6,7 +6,7 @@ fcnn_path = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname((__f
 sys.path.append(fcnn_path)
 from fcnn.train import run_training
 from fcnn.utils.sequences import WholeBrainRegressionSequence, HCPRegressionSequence, ParcelBasedSequence
-from fcnn.utils.pytorch.dataset import WholeBrainCIFTI2DenseScalarDataset, HCPRegressionDataset, VAEDataset
+from fcnn.utils.pytorch.dataset import WholeBrainCIFTI2DenseScalarDataset, HCPRegressionDataset, AEDataset
 from fcnn.utils.utils import load_json
 from fcnn.utils.custom import get_metric_data_from_config
 from fcnn.models.resnet.resnet import compare_scores
@@ -28,10 +28,16 @@ def generate_hcp_filenames(directory, surface_basename_template, target_basename
             feature_filenames = os.path.join(subject_dir, feature_basenames)
         else:
             feature_filenames = [os.path.join(subject_dir, fbn) for fbn in feature_basenames]
-        surface_filenames = [os.path.join(subject_dir,
-                                          surface_basename_template.format(hemi=hemi, subject_id=subject_id))
-                             for hemi in hemispheres]
-        metric_filenames = [os.path.join(subject_dir, mbn.format(subject_id)) for mbn in target_basenames]
+        if surface_basename_template is not None:
+            surface_filenames = [os.path.join(subject_dir,
+                                              surface_basename_template.format(hemi=hemi, subject_id=subject_id))
+                                 for hemi in hemispheres]
+        else:
+            surface_filenames = None
+        if target_basenames is not None:
+            metric_filenames = [os.path.join(subject_dir, mbn.format(subject_id)) for mbn in target_basenames]
+        else:
+            metric_filenames = None
         rows.append([feature_filenames, surface_filenames, metric_filenames, subject_id])
     return rows
 
@@ -100,8 +106,8 @@ def main():
 
     if "_wb_" in os.path.basename(config_filename):
         if "package" in config and config["package"] == "pytorch":
-            if config["sequence"] == "VAEDataset":
-                sequence_class = VAEDataset
+            if config["sequence"] == "AEDataset":
+                sequence_class = AEDataset
             else:
                 sequence_class = WholeBrainCIFTI2DenseScalarDataset
         else:

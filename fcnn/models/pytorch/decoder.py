@@ -35,7 +35,8 @@ class BasicDecoder(nn.Module):
 
 class MyronenkoDecoder(nn.Module):
     def __init__(self, base_width=32, layer_blocks=None, layer=MyronenkoLayer, block=MyronenkoResidualBlock,
-                 upsampling_scale=2, feature_reduction_scale=2, upsampling_mode="trilinear", align_corners=False):
+                 upsampling_scale=2, feature_reduction_scale=2, upsampling_mode="trilinear", align_corners=False,
+                 layer_widths=None):
         super(MyronenkoDecoder, self).__init__()
         if layer_blocks is None:
             layer_blocks = [1, 1, 1]
@@ -44,20 +45,23 @@ class MyronenkoDecoder(nn.Module):
         self.upsampling_blocks = list()
         for i, n_blocks in enumerate(layer_blocks):
             depth = len(layer_blocks) - (i + 1)
-            out_features = base_width * (feature_reduction_scale ** depth)
-            in_features = out_features * feature_reduction_scale
-            self.pre_upsampling_blocks.append(resnet.conv1x1x1(in_features, out_features, stride=1))
+            if layer_widths is not None:
+                out_width = layer_widths[depth]
+                in_width = layer_widths[depth + 1]
+            else:
+                out_width = base_width * (feature_reduction_scale ** depth)
+                in_width = out_width * feature_reduction_scale
+            self.pre_upsampling_blocks.append(resnet.conv1x1x1(in_width, out_width, stride=1))
             self.upsampling_blocks.append(partial(nn.functional.interpolate, scale_factor=upsampling_scale,
                                                   mode=upsampling_mode, align_corners=align_corners))
-            self.layers.append(layer(n_blocks=n_blocks, block=block, in_planes=out_features, planes=out_features))
+            self.layers.append(layer(n_blocks=n_blocks, block=block, in_planes=out_width, planes=out_width))
 
     def forward(self, x):
-        _x = x
         for pre, up, lay in zip(self.pre_upsampling_blocks, self.upsampling_blocks, self.layers):
-            _x = pre(_x)
-            _x = up(_x)
-            _x = lay(_x)
-        return _x
+            x = pre(x)
+            x = up(x)
+            x = lay(x)
+        return x
 
 
 class Decoder1D(nn.Module):

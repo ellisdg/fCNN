@@ -37,7 +37,7 @@ class HCPRegressionDataset(HCPRegressionSequence, Dataset):
         return torch.from_numpy(np.asarray(x).swapaxes(-1, 1)).float(), torch.from_numpy(np.asarray(y)).float()
 
 
-class VAEDataset(WholeBrainAutoEncoder, Dataset):
+class AEDataset(WholeBrainAutoEncoder, Dataset):
     def __init__(self, *args, batch_size=1, shuffle=False, **kwargs):
         super().__init__(*args, batch_size=batch_size, shuffle=shuffle, **kwargs)
 
@@ -48,5 +48,5 @@ class VAEDataset(WholeBrainAutoEncoder, Dataset):
         item = self.epoch_filenames[idx]
         feature_filename = item[0]
         x, y = self.resample_input(feature_filename)
-        return (torch.from_numpy(np.asarray(x).swapaxes(-1, 1).float()),
-                torch.from_numpy(np.asarray(y).swapaxes(-1, 1).float()))
+        return (torch.from_numpy(np.asarray(x).swapaxes(-1, 0)).float(),
+                torch.from_numpy(np.asarray(y).swapaxes(-1, 0)).float())

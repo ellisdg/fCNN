@@ -259,7 +259,6 @@ def batch_loss(model, images, target, criterion, n_gpus=0, regularized=False, va
     if n_gpus is not None:
         images = images.cuda()
         target = target.cuda()
-
     # compute output
     output = model(images)
     batch_size = images.size(0)

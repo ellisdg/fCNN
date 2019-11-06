@@ -327,3 +327,4 @@ class WholeBrainAutoEncoder(WholeBrainRegressionSequence):
 
     def get_image(self, idx):
         input_image, _ = self.resample_image(self.filenames[idx][0])
+        return input_image

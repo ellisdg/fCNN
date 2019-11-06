@@ -1,10 +1,6 @@
-from functools import partial
-
 from torch import nn as nn
-import numpy as np
 
 from fcnn.models.pytorch.resnet import conv3x3x3, conv1x1x1
-from fcnn.models.pytorch.variational import VariationalBlock
 
 
 class MyronenkoConvolutionBlock(nn.Module):
@@ -78,29 +74,6 @@ class MyronenkoLayer(nn.Module):
             if i == 0 and self.dropout is not None:
                 x = self.dropout(x)
         return x
-
-
-class MyronenkoVariationalLayer(nn.Module):
-    def __init__(self, in_features, input_shape, reduced_features=16, latent_features=128,
-                 conv_block=MyronenkoConvolutionBlock, conv_stride=2, upsampling_mode="trilinear",
-                 align_corners_upsampling=False):
-        super(MyronenkoVariationalLayer, self).__init__()
-        self.in_conv = conv_block(in_planes=in_features, planes=reduced_features, stride=conv_stride)
-        self.reduced_shape = tuple(np.asarray((reduced_features, *np.divide(input_shape, 2)), dtype=np.int))
-        self.in_size = np.prod(self.reduced_shape, dtype=np.int)
-        self.var_block = VariationalBlock(in_size=self.in_size, out_size=self.in_size, n_features=latent_features)
-        self.relu = nn.ReLU(inplace=True)
-        self.out_conv = conv1x1x1(in_planes=reduced_features, out_planes=in_features, stride=1)
-        self.upsample = partial(nn.functional.interpolate, scale_factor=conv_stride, mode=upsampling_mode,
-                                align_corners=align_corners_upsampling)
-
-    def forward(self, x):
-        x = self.in_conv(x).flatten(start_dim=1)
-        x, mu, logvar = self.var_block(x)
-        x = self.relu(x).view(-1, *self.reduced_shape)
-        x = self.out_conv(x)
-        x = self.upsample(x)
-        return x, mu, logvar
 
 
 class MyronenkoEncoder(nn.Module):

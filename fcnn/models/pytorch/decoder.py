@@ -64,6 +64,39 @@ class MyronenkoDecoder(nn.Module):
         return x
 
 
+class MirroredDecoder(nn.Module):
+    def __init__(self, base_width=32, layer_blocks=None, layer=MyronenkoLayer, block=MyronenkoResidualBlock,
+                 upsampling_scale=2, feature_reduction_scale=2, upsampling_mode="trilinear", align_corners=False,
+                 layer_widths=None):
+        super(MirroredDecoder, self).__init__()
+        if layer_blocks is None:
+            layer_blocks = [1, 1, 1, 1]
+        self.layers = nn.ModuleList()
+        self.pre_upsampling_blocks = nn.ModuleList()
+        self.upsampling_blocks = list()
+        for i, n_blocks in enumerate(layer_blocks):
+            depth = len(layer_blocks) - (i + 1)
+            if layer_widths is not None:
+                out_width = layer_widths[depth]
+                in_width = layer_widths[depth + 1]
+            else:
+                out_width = int(base_width * (feature_reduction_scale ** (depth - 1)))
+                in_width = out_width * feature_reduction_scale
+            self.layers.append(layer(n_blocks=n_blocks, block=block, in_planes=in_width, planes=in_width))
+            if depth != 0:
+                self.pre_upsampling_blocks.append(resnet.conv1x1x1(in_width, out_width, stride=1))
+                self.upsampling_blocks.append(partial(nn.functional.interpolate, scale_factor=upsampling_scale,
+                                                      mode=upsampling_mode, align_corners=align_corners))
+
+    def forward(self, x):
+        for pre, up, lay in zip(self.pre_upsampling_blocks, self.upsampling_blocks, self.layers[:-1]):
+            x = lay(x)
+            x = pre(x)
+            x = up(x)
+        x = self.layers[-1](x)
+        return x
+
+
 class Decoder1D(nn.Module):
     def __init__(self, input_features, output_features, layer_blocks, layer_channels, block=resnet.BasicBlock1D,
                  kernel_size=3, upsample_factor=2, interpolation_mode="linear", interpolation_align_corners=True):

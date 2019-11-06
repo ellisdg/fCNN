@@ -1,62 +1,8 @@
 from torch import nn
-import numpy as np
 
-from .myronenko import MyronenkoEncoder, MyronenkoVariationalLayer
-from .decoder import MyronenkoDecoder, BasicDecoder, Decoder1D
+from fcnn.models.pytorch.variational import VariationalAutoEncoder
+from .decoder import BasicDecoder, Decoder1D
 from .resnet import conv1x1x1, ResNet, BasicBlock
-
-
-class ConvolutionalAutoEncoder(nn.Module):
-    def __init__(self, input_shape=None, n_features=1, base_width=32, encoder_blocks=None, decoder_blocks=None,
-                 feature_dilation=2, downsampling_stride=2, interpolation_mode="trilinear", encoder=MyronenkoEncoder,
-                 decoder=MyronenkoDecoder, n_outputs=None, layer_widths=None):
-        super(ConvolutionalAutoEncoder, self).__init__()
-        if encoder_blocks is None:
-            encoder_blocks = [1, 2, 2, 4]
-        self.encoder = encoder(n_features=n_features, base_width=base_width, layer_blocks=encoder_blocks,
-                               feature_dilation=feature_dilation, downsampling_stride=downsampling_stride,
-                               layer_widths=layer_widths)
-        if decoder_blocks is None:
-            decoder_blocks = [1] * (len(encoder_blocks) - 1)
-        self.decoder = decoder(base_width=base_width, layer_blocks=decoder_blocks,
-                               upsampling_scale=downsampling_stride, feature_reduction_scale=feature_dilation,
-                               upsampling_mode=interpolation_mode, layer_widths=layer_widths)
-        self.final_convolution = conv1x1x1(in_planes=base_width, out_planes=n_features, stride=1)
-
-    def forward(self, x):
-        x = self.encoder(x)
-        x = self.decoder(x)
-        x = self.final_convolution(x)
-        return x
-
-
-class VariationalAutoEncoder(ConvolutionalAutoEncoder):
-    def __init__(self, n_reduced_latent_feature_maps=16, vae_features=128, variational_layer=MyronenkoVariationalLayer,
-                 input_shape=None, n_features=1, base_width=32, encoder_blocks=None, decoder_blocks=None,
-                 feature_dilation=2, downsampling_stride=2, interpolation_mode="trilinear", encoder=MyronenkoEncoder,
-                 decoder=MyronenkoDecoder, n_outputs=None, layer_widths=None):
-        super(VariationalAutoEncoder, self).__init__(input_shape=input_shape, n_features=n_features,
-                                                     base_width=base_width, encoder_blocks=encoder_blocks,
-                                                     decoder_blocks=decoder_blocks, feature_dilation=feature_dilation,
-                                                     downsampling_stride=downsampling_stride,
-                                                     interpolation_mode=interpolation_mode, encoder=encoder,
-                                                     decoder=decoder, n_outputs=n_outputs, layer_widths=layer_widths)
-        if vae_features is not None:
-            depth = len(encoder_blocks) - 1
-            n_latent_feature_maps = base_width * (feature_dilation ** depth)
-            latent_image_shape = np.divide(input_shape, downsampling_stride ** depth)
-            self.var_layer = variational_layer(in_features=n_latent_feature_maps,
-                                               input_shape=latent_image_shape,
-                                               reduced_features=n_reduced_latent_feature_maps,
-                                               latent_features=vae_features,
-                                               upsampling_mode=interpolation_mode)
-
-    def forward(self, x):
-        x = self.encoder(x)
-        x, mu, logvar = self.var_layer(x)
-        x = self.decoder(x)
-        x = self.final_convolution(x)
-        return x, mu, logvar
 
 
 class RegularizedResNet(VariationalAutoEncoder):

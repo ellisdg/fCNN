@@ -34,12 +34,12 @@ class HCPRegressionDataset(HCPRegressionSequence, Dataset):
 
     def __getitem__(self, idx):
         x, y = self.fetch_hcp_subject_batch(*self.epoch_filenames[idx])
-        return torch.from_numpy(np.asarray(x).swapaxes(-1, 1)).float(), torch.from_numpy(np.asarray(y)).float()
+        return torch.from_numpy(np.moveaxis(np.asarray(x), -1, 1)).float(), torch.from_numpy(np.asarray(y)).float()
 
 
 class AEDataset(WholeBrainAutoEncoder, Dataset):
-    def __init__(self, *args, batch_size=1, shuffle=False, **kwargs):
-        super().__init__(*args, batch_size=batch_size, shuffle=shuffle, **kwargs)
+    def __init__(self, *args, batch_size=1, shuffle=False, metric_names=None, **kwargs):
+        super().__init__(*args, batch_size=batch_size, shuffle=shuffle, metric_names=metric_names, **kwargs)
 
     def __len__(self):
         return len(self.epoch_filenames)
@@ -48,5 +48,5 @@ class AEDataset(WholeBrainAutoEncoder, Dataset):
         item = self.epoch_filenames[idx]
         feature_filename = item[0]
         x, y = self.resample_input(feature_filename)
-        return (torch.from_numpy(np.asarray(x).swapaxes(-1, 0)).float(),
-                torch.from_numpy(np.asarray(y).swapaxes(-1, 0)).float())
+        return (torch.from_numpy(np.moveaxis(np.asarray(x), -1, 0)).float(),
+                torch.from_numpy(np.moveaxis(np.asarray(y), -1, 0)).float())

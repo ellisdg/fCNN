@@ -230,10 +230,11 @@ def pytorch_whole_brain_autoencoder_predictions(model_filename, model_name, n_fe
     results = list()
     print("Dataset: ", len(dataset))
     with torch.no_grad():
-        for idx in range(dataset):
+        for idx in range(len(dataset)):
             image = dataset.get_image(idx)
             subject_id = dataset.filenames[idx][-1]
-            x = normalize_image_data(image.get_data())
+            data = normalize_image_data(np.moveaxis(image.get_data(), -1, 0), axis=(-3, -2, -1))
+            x = torch.from_numpy(data[np.newaxis]).float()
             if n_gpus > 0:
                 x = x.cuda()
             pred_x = model(x)
@@ -243,13 +244,15 @@ def pytorch_whole_brain_autoencoder_predictions(model_filename, model_name, n_fe
                 mu = None
                 logvar = None
             score = criterion(pred_x, x)
-            pred_image = new_img_like(image, pred_x.cpu().numpy(), affine=image.affine)
+            pred_x = np.moveaxis(pred_x.cpu().numpy(), 0, -1).squeeze()
+            pred_image = new_img_like(ref_niimg=image,
+                                      data=pred_x,
+                                      affine=image.affine)
             pred_image.to_filename(os.path.join(prediction_dir,
                                                 "_".join([subject_id,
                                                           basename,
                                                           os.path.basename(dataset.filenames[idx][0])])))
             results.append([subject_id, score, mu, logvar])
-
     if output_csv is not None:
         columns = ["subject_id", criterion_name, "mu", "logvar"]
         if reference is not None:

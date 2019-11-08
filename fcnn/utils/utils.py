@@ -43,8 +43,22 @@ def extract_polydata_vertices(polydata):
     return np.asarray([polydata.GetPoint(index) for index in range(polydata.GetNumberOfPoints())])
 
 
-def normalize_image_data(data, axis=(0, 1, 2)):
+def zero_mean_normalize_image_data(data, axis=(0, 1, 2)):
     return np.divide(data - data.mean(axis=axis), data.std(axis=axis))
+
+
+def zero_floor_normalize_image_data(data, axis=(0, 1, 2), floor_percentile=1, floor=0):
+    floor_threshold = np.percentile(data, floor_percentile, axis=axis)
+    if data.ndim != len(axis):
+        floor_threshold_shape = np.asarray(floor_threshold.shape * data.ndim)
+        floor_threshold_shape[np.asarray(axis)] = 1
+        floor_threshold = floor_threshold.reshape(floor_threshold_shape)
+    background = data <= floor_threshold
+    data = np.ma.masked_array(data - floor_threshold, mask=background)
+    std = data.std(axis=axis)
+    if data.ndim != len(axis):
+        std = std.reshape(floor_threshold_shape)
+    return np.divide(data, std).filled(floor)
 
 
 def hist_match(source, template):

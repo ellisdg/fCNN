@@ -12,7 +12,8 @@ from .radiomic_utils import binary_classification, multilabel_classification, fe
     fetch_data_for_point
 from .radiomic_utils import load_single_image
 from .hcp import nib_load_files, extract_gifti_surface_vertices, get_vertices_from_scalar, get_metric_data
-from .utils import read_polydata, extract_polydata_vertices, normalize_image_data
+from .utils import (read_polydata, extract_polydata_vertices, zero_mean_normalize_image_data,
+                    zero_floor_normalize_image_data)
 
 
 def load_image(filename, feature_axis=3, resample_unequal_affines=True, interpolation="linear", force_4d=False):
@@ -250,12 +251,19 @@ class SubjectPredictionSequence(Sequence):
 
 
 class WholeBrainRegressionSequence(HCPRegressionSequence):
-    def __init__(self, resample='linear', crop=True, augment_scale_std=0, additive_noise_std=0, **kwargs):
+    def __init__(self, resample='linear', crop=True, augment_scale_std=0, additive_noise_std=0,
+                 normalization="zero_mean", **kwargs):
         super().__init__(**kwargs)
         self.resample = resample
         self.crop = crop
         self.augment_scale_std = augment_scale_std
         self.additive_noise_std = additive_noise_std
+        if normalization == "zero_mean":
+            self.normalization_func = zero_mean_normalize_image_data
+        elif normalization == "zero_floor":
+            self.normalization_func = zero_floor_normalize_image_data
+        else:
+            self.normalization_func = lambda x, **kwargs: x
 
     def __len__(self):
         return int(np.ceil(np.divide(len(self.filenames) * self.iterations_per_epoch, self.batch_size)))
@@ -287,7 +295,7 @@ class WholeBrainRegressionSequence(HCPRegressionSequence):
             feature_image.get_data()[:] = add_noise(feature_image.get_data(), sigma_factor=self.additive_noise_std)
         affine = resize_affine(affine, shape, self.window)
         input_img = resample(feature_image, affine, self.window, interpolation=self.resample)
-        return normalize_image_data(input_img.get_data())
+        return self.normalization_func(input_img.get_data())
 
 
 class WholeBrainAutoEncoder(WholeBrainRegressionSequence):
@@ -302,12 +310,14 @@ class WholeBrainAutoEncoder(WholeBrainRegressionSequence):
             y_batch.append(y)
         return np.asarray(x_batch), np.asarray(y_batch)
 
-    def resample_input(self, feature_filename):
-        input_image, target_image = self.resample_image(feature_filename)
-        return normalize_image_data(input_image.get_data()), normalize_image_data(target_image.get_data())
+    def resample_input(self, feature_filename, normalize=True):
+        input_image, target_image = self.resample_image(feature_filename, normalize=normalize)
+        return input_image.get_data(), target_image.get_data()
 
-    def resample_image(self, feature_filename):
+    def resample_image(self, feature_filename, normalize=True):
         feature_image = load_image(feature_filename, force_4d=True)
+        if normalize:
+            feature_image.get_data()[:] = self.normalization_func(feature_image.get_data())
         affine = feature_image.affine.copy()
         shape = feature_image.shape
         if self.reorder:

@@ -52,6 +52,9 @@
   "n_dense_layers": 1,
   "freeze_bias": false,
   "metric_names": null,
+  "sequence_kwargs": {
+    "normalization": "zero_floor"
+  },
   "additional_training_args": {
     "augment_scale_std": 0.1,
     "crop": true,

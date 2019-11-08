@@ -213,7 +213,7 @@ def pytorch_whole_brain_autoencoder_predictions(model_filename, model_name, n_fe
     from .train.pytorch import build_or_load_model, load_criterion
     from .utils.pytorch.dataset import AEDataset
     import torch
-    from .utils.utils import normalize_image_data
+    from .utils.utils import zero_mean_normalize_image_data
     from nilearn.image import new_img_like
 
     if model_kwargs is None:
@@ -233,7 +233,7 @@ def pytorch_whole_brain_autoencoder_predictions(model_filename, model_name, n_fe
         for idx in range(len(dataset)):
             image = dataset.get_image(idx)
             subject_id = dataset.filenames[idx][-1]
-            data = normalize_image_data(np.moveaxis(image.get_data(), -1, 0), axis=(-3, -2, -1))
+            data = zero_mean_normalize_image_data(np.moveaxis(image.get_data(), -1, 0), axis=(-3, -2, -1))
             x = torch.from_numpy(data[np.newaxis]).float()
             if n_gpus > 0:
                 x = x.cuda()

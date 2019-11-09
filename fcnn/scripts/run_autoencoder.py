@@ -34,6 +34,11 @@ def main():
     else:
         model_kwargs = dict()
 
+    if "sequence_kwargs" in config:
+        sequence_kwargs = config["sequence_kwargs"]
+    else:
+        sequence_kwargs = dict()
+
     return whole_brain_autoencoder_predictions(model_filename=model_filename,
                                                subject_ids=config['validation'],
                                                hcp_dir=machine_config["directory"],
@@ -47,7 +52,8 @@ def main():
                                                n_gpus=machine_config['n_gpus'],
                                                batch_size=config['validation_batch_size'],
                                                n_workers=machine_config["n_workers"],
-                                               model_kwargs=model_kwargs)
+                                               model_kwargs=model_kwargs,
+                                               sequence_kwargs=sequence_kwargs)
 
 
 if __name__ == '__main__':

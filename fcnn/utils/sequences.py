@@ -335,6 +335,7 @@ class WholeBrainAutoEncoder(WholeBrainRegressionSequence):
         input_image = resample(feature_image, affine, self.window, interpolation=self.resample)
         return input_image, target_image
 
-    def get_image(self, idx):
+    def get_image(self, idx, normalize=True):
         input_image, _ = self.resample_image(self.filenames[idx][0])
+
         return input_image

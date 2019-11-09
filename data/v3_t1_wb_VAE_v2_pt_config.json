@@ -53,11 +53,11 @@
   "freeze_bias": false,
   "metric_names": null,
   "sequence_kwargs": {
-    "normalization": "zero_floor"
+    "normalization": "zero_floor",
+    "crop": true,
+    "resample": "linear"
   },
   "additional_training_args": {
     "augment_scale_std": 0.1,
-    "crop": true,
-    "resample": "linear",
     "additive_noise_std": 0.1}
 }

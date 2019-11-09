@@ -259,7 +259,6 @@ def pytorch_whole_brain_autoencoder_predictions(model_filename, model_name, n_fe
                                                           basename,
                                                           os.path.basename(dataset.filenames[idx][0])])))
             results.append([subject_id, score.cpu().numpy(), mu.cpu().numpy(), logvar.cpu().numpy()])
-            break
     if output_csv is not None:
         columns = ["subject_id", criterion_name, "mu", "logvar"]
         if reference is not None:

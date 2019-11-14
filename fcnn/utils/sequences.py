@@ -13,7 +13,7 @@ from .radiomic_utils import binary_classification, multilabel_classification, fe
 from .radiomic_utils import load_single_image
 from .hcp import nib_load_files, extract_gifti_surface_vertices, get_vertices_from_scalar, get_metric_data
 from .utils import (read_polydata, extract_polydata_vertices, zero_mean_normalize_image_data,
-                    zero_floor_normalize_image_data)
+                    zero_floor_normalize_image_data, zero_one_window)
 
 
 def load_image(filename, feature_axis=3, resample_unequal_affines=True, interpolation="linear", force_4d=False):
@@ -262,6 +262,8 @@ class WholeBrainRegressionSequence(HCPRegressionSequence):
             self.normalization_func = zero_mean_normalize_image_data
         elif normalization == "zero_floor":
             self.normalization_func = zero_floor_normalize_image_data
+        elif normalization == "zero_one_window":
+            self.normalization_func = zero_one_window
         else:
             self.normalization_func = lambda x, **kwargs: x
 

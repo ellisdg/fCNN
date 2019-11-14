@@ -61,6 +61,35 @@ def zero_floor_normalize_image_data(data, axis=(0, 1, 2), floor_percentile=1, fl
     return np.divide(data, std).filled(floor)
 
 
+def zero_one_window(data, axis=(0, 1, 2), percentile=1, floor=0, ceiling=1, channels_axis=None):
+    if len(axis) != data.ndim:
+        floor_threshold = np.percentile(data, percentile, axis=axis)
+        if channels_axis is None:
+            for i in range(data.ndim):
+                if i not in axis and (i - data.ndim) not in axis:
+                    channels_axis = i
+        data = np.moveaxis(data, channels_axis, 0)
+        for channel in range(data.shape[0]):
+            channel_data = data[channel]
+            bg_mask = channel_data <= floor_threshold[channel]
+            fg = channel_data[bg_mask == False]
+            ceiling_threshold = np.percentile(fg, 100 - percentile)
+            channel_data = (channel_data - floor_threshold[channel])/(ceiling_threshold - floor_threshold[channel])
+            channel_data[channel_data < floor] = floor
+            channel_data[channel_data > ceiling] = ceiling
+            data[channel] = channel_data
+        data = np.moveaxis(data, 0, channels_axis)
+    else:
+        floor_threshold = np.percentile(data, percentile)
+        bg_mask = data <= floor_threshold
+        fg = data[bg_mask == False]
+        ceiling_threshold = np.percentile(fg, 100 - percentile)
+        data = (data - floor_threshold)/(ceiling_threshold - floor_threshold)
+        data[data < floor] = floor
+        data[data > ceiling] = ceiling
+    return data
+
+
 def hist_match(source, template):
     """
     Source: https://stackoverflow.com/a/33047048

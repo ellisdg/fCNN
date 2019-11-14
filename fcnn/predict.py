@@ -216,7 +216,6 @@ def pytorch_whole_brain_autoencoder_predictions(model_filename, model_name, n_fe
     from .train.pytorch import build_or_load_model, load_criterion
     from .utils.pytorch.dataset import AEDataset
     import torch
-    from .utils.utils import zero_mean_normalize_image_data
     from nilearn.image import new_img_like
 
     if model_kwargs is None:
@@ -243,7 +242,10 @@ def pytorch_whole_brain_autoencoder_predictions(model_filename, model_name, n_fe
             x = torch.from_numpy(data[np.newaxis]).float()
             if n_gpus > 0:
                 x = x.cuda()
-            pred_x = model(x)
+            try:
+                pred_x = model.test(x)
+            except AttributeError:
+                pred_x = model(x)
             if type(pred_x) == tuple:
                 pred_x, mu, logvar = pred_x
             else:
@@ -259,6 +261,7 @@ def pytorch_whole_brain_autoencoder_predictions(model_filename, model_name, n_fe
                                                           basename,
                                                           os.path.basename(dataset.filenames[idx][0])])))
             results.append([subject_id, score.cpu().numpy(), mu.cpu().numpy(), logvar.cpu().numpy()])
+            break
     if output_csv is not None:
         columns = ["subject_id", criterion_name, "mu", "logvar"]
         if reference is not None:

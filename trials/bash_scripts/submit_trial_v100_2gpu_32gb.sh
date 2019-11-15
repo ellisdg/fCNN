@@ -11,7 +11,7 @@
 
 module load cuda
 module load anaconda
-source activate fcnn-1.12
+conda activate fcnn-1.12
 
 export PYTHONPATH=/home/aizenberg/dgellis/fCNN:/home/aizenberg/dgellis/3DUnetCNN:${PYTHONPATH}
 

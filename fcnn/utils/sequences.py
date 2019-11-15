@@ -13,7 +13,7 @@ from .radiomic_utils import binary_classification, multilabel_classification, fe
 from .radiomic_utils import load_single_image
 from .hcp import nib_load_files, extract_gifti_surface_vertices, get_vertices_from_scalar, get_metric_data
 from .utils import (read_polydata, extract_polydata_vertices, zero_mean_normalize_image_data,
-                    zero_floor_normalize_image_data, zero_one_window)
+                    zero_floor_normalize_image_data, zero_one_window, compile_one_hot_encoding)
 
 
 def load_image(filename, feature_axis=3, resample_unequal_affines=True, interpolation="linear", force_4d=False):
@@ -304,19 +304,19 @@ class WholeBrainAutoEncoder(WholeBrainRegressionSequence):
     def __getitem__(self, idx):
         x_batch = list()
         y_batch = list()
-        batch_filenames = self.filenames[idx * self.batch_size:(idx + 1) * self.batch_size]
+        batch_filenames = self.epoch_filenames[idx * self.batch_size:(idx + 1) * self.batch_size]
         for item in batch_filenames:
-            feature_filename = item[0]
-            x, y = self.resample_input(feature_filename)
+            x, y = self.resample_input(item)
             x_batch.append(x)
             y_batch.append(y)
         return np.asarray(x_batch), np.asarray(y_batch)
 
-    def resample_input(self, feature_filename, normalize=True):
-        input_image, target_image = self.resample_image(feature_filename, normalize=normalize)
+    def resample_input(self, input, normalize=True):
+        input_image, target_image = self.resample_image(input, normalize=normalize)
         return input_image.get_data(), target_image.get_data()
 
-    def resample_image(self, feature_filename, normalize=True):
+    def resample_image(self, input, normalize=True, feature_index=0, target_index=None, target_resample=None):
+        feature_filename = input[feature_index]
         feature_image = load_image(feature_filename, force_4d=True)
         if normalize:
             feature_image.get_data()[:] = self.normalization_func(feature_image.get_data())
@@ -329,8 +329,14 @@ class WholeBrainAutoEncoder(WholeBrainRegressionSequence):
         if self.augment_scale_std:
             scale = np.random.normal(1, self.augment_scale_std, 3)
             affine = scale_affine(affine, shape, scale)
-        target_image = resample(feature_image, resize_affine(affine, shape, self.window), self.window,
-                                interpolation=self.resample)
+        if target_index is None:
+            target_image = feature_image
+        else:
+            target_image = load_image(input[target_index], force_4d=True)
+        if target_resample is None:
+            target_resample = self.resample
+        target_image = resample(target_image, resize_affine(affine, shape, self.window), self.window,
+                                interpolation=target_resample)
         if self.additive_noise_std:
             feature_image.get_data()[:] = add_noise(feature_image.get_data(), sigma_factor=self.additive_noise_std)
         affine = resize_affine(affine, shape, self.window)
@@ -338,6 +344,26 @@ class WholeBrainAutoEncoder(WholeBrainRegressionSequence):
         return input_image, target_image
 
     def get_image(self, idx, normalize=True):
-        input_image, _ = self.resample_image(self.filenames[idx][0])
+        input_image, target_image = self.resample_image(self.epoch_filenames[idx], normalize=normalize)
+        return input_image, target_image
 
-        return input_image
+
+class WholeBrainLabeledAutoEncoder(WholeBrainAutoEncoder):
+    def __init__(self, *args, target_resample="nearest", target_index=2, labels=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.target_resample = target_resample
+        self.target_index = target_index
+        self.labels = labels
+
+    def resample_input(self, input, normalize=True):
+        input_image, target_image = self.resample_image(input,
+                                                        normalize=normalize,
+                                                        target_resample=self.target_resample,
+                                                        target_index=self.target_index)
+        target_data = target_image.get_data()
+        if self.labels is None:
+            self.labels = np.unique(target_data)
+        target_data = np.moveaxis(compile_one_hot_encoding(np.moveaxis(target_data, -1, 1),
+                                                           n_labels=len(self.labels),
+                                                           labels=self.labels), 1, -1)
+        return input_image.get_data(), target_data

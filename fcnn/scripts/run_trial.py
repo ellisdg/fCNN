@@ -6,7 +6,8 @@ fcnn_path = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname((__f
 sys.path.append(fcnn_path)
 from fcnn.train import run_training
 from fcnn.utils.sequences import WholeBrainRegressionSequence, HCPRegressionSequence, ParcelBasedSequence
-from fcnn.utils.pytorch.dataset import WholeBrainCIFTI2DenseScalarDataset, HCPRegressionDataset, AEDataset
+from fcnn.utils.pytorch.dataset import (WholeBrainCIFTI2DenseScalarDataset, HCPRegressionDataset, AEDataset,
+                                        LabeledAEDataset)
 from fcnn.utils.utils import load_json
 from fcnn.utils.custom import get_metric_data_from_config
 from fcnn.models.resnet.resnet import compare_scores
@@ -34,7 +35,11 @@ def generate_hcp_filenames(directory, surface_basename_template, target_basename
                                  for hemi in hemispheres]
         else:
             surface_filenames = None
-        if target_basenames is not None:
+        if type(target_basenames) == str:
+            metric_filenames = os.path.join(subject_dir, target_basenames)
+            if "{}" in metric_filenames:
+                metric_filenames = metric_filenames.format(subject_id)
+        elif target_basenames is not None:
             metric_filenames = [os.path.join(subject_dir, mbn.format(subject_id)) for mbn in target_basenames]
         else:
             metric_filenames = None
@@ -108,6 +113,8 @@ def main():
         if "package" in config and config["package"] == "pytorch":
             if config["sequence"] == "AEDataset":
                 sequence_class = AEDataset
+            elif config["sequence"] == "LabeledAEDataset":
+                sequence_class = LabeledAEDataset
             else:
                 sequence_class = WholeBrainCIFTI2DenseScalarDataset
         else:

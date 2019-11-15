@@ -120,7 +120,7 @@ def whole_brain_scalar_predictions(model_filename, subject_ids, hcp_dir, output_
 def whole_brain_autoencoder_predictions(model_filename, subject_ids, hcp_dir, output_dir, feature_basenames,
                                         model_name, n_features, window, criterion_name, package="keras",
                                         n_gpus=1, n_workers=1, batch_size=1, model_kwargs=None, n_outputs=None,
-                                        sequence_kwargs=None):
+                                        sequence_kwargs=None, sequence=None):
     from .scripts.run_trial import generate_hcp_filenames
     filenames = generate_hcp_filenames(directory=hcp_dir, surface_basename_template=None, target_basenames=None,
                                        feature_basenames=feature_basenames, subject_ids=subject_ids, hemispheres=None)
@@ -137,7 +137,8 @@ def whole_brain_autoencoder_predictions(model_filename, subject_ids, hcp_dir, ou
                                                     n_workers=n_workers,
                                                     batch_size=batch_size,
                                                     model_kwargs=model_kwargs,
-                                                    sequence_kwargs=sequence_kwargs)
+                                                    sequence_kwargs=sequence_kwargs,
+                                                    sequence=sequence)
     else:
         raise ValueError("Predictions not yet implemented for {}".format(package))
 
@@ -212,11 +213,14 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
 def pytorch_whole_brain_autoencoder_predictions(model_filename, model_name, n_features, filenames, window,
                                                 criterion_name, prediction_dir=None, output_csv=None, reference=None,
                                                 n_gpus=1, n_workers=1, batch_size=1, model_kwargs=None, n_outputs=None,
-                                                sequence_kwargs=None, spacing=None):
+                                                sequence_kwargs=None, spacing=None, sequence=None):
     from .train.pytorch import build_or_load_model, load_criterion
     from .utils.pytorch.dataset import AEDataset
     import torch
     from nilearn.image import new_img_like
+
+    if sequence is None:
+        sequence = AEDataset
 
     if model_kwargs is None:
         model_kwargs = dict()
@@ -230,13 +234,13 @@ def pytorch_whole_brain_autoencoder_predictions(model_filename, model_name, n_fe
     basename = os.path.basename(model_filename).split(".")[0]
     if prediction_dir and not output_csv:
         output_csv = os.path.join(prediction_dir, str(basename) + "_prediction_scores.csv")
-    dataset = AEDataset(filenames=filenames, window=window, spacing=spacing, batch_size=1, **sequence_kwargs)
+    dataset = sequence(filenames=filenames, window=window, spacing=spacing, batch_size=1, **sequence_kwargs)
     criterion = load_criterion(criterion_name, n_gpus=n_gpus)
     results = list()
     print("Dataset: ", len(dataset))
     with torch.no_grad():
         for idx in range(len(dataset)):
-            image = dataset.get_image(idx)
+            image, target = dataset.get_image(idx)
             subject_id = dataset.filenames[idx][-1]
             data = np.moveaxis(image.get_data(), -1, 0)
             x = torch.from_numpy(data[np.newaxis]).float()

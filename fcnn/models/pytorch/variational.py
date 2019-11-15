@@ -57,6 +57,8 @@ class ConvolutionalAutoEncoder(nn.Module):
         self.final_convolution = conv1x1x1(in_planes=base_width, out_planes=n_features, stride=1)
         if activation == "sigmoid":
             self.activation = nn.Sigmoid()
+        elif activation == "softmax":
+            self.activation = nn.Softmax(dim=1)
         else:
             self.activation = None
 
@@ -134,3 +136,8 @@ class VariationalAutoEncoder(ConvolutionalAutoEncoder):
             x = self.activation(x)
         return x, mu, logvar
 
+
+class LabeledVariationalAutoEncoder(VariationalAutoEncoder):
+    def __init__(self, *args, n_outputs=None, base_width=32, **kwargs):
+        super().__init__(*args, n_outputs=n_outputs, base_width=base_width, **kwargs)
+        self.final_convolution = conv1x1x1(in_planes=base_width, out_planes=n_outputs, stride=1)

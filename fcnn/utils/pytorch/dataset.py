@@ -4,7 +4,7 @@ import numpy as np
 
 
 from ..sequences import (WholeBrainRegressionSequence, HCPRegressionSequence, nib_load_files, get_metric_data,
-                         WholeBrainAutoEncoder)
+                         WholeBrainAutoEncoder, WholeBrainLabeledAutoEncoder)
 
 
 class WholeBrainCIFTI2DenseScalarDataset(WholeBrainRegressionSequence, Dataset):
@@ -46,7 +46,20 @@ class AEDataset(WholeBrainAutoEncoder, Dataset):
 
     def __getitem__(self, idx):
         item = self.epoch_filenames[idx]
-        feature_filename = item[0]
-        x, y = self.resample_input(feature_filename)
+        x, y = self.resample_input(item)
         return (torch.from_numpy(np.moveaxis(np.asarray(x), -1, 0)).float(),
                 torch.from_numpy(np.moveaxis(np.asarray(y), -1, 0)).float())
+
+
+class LabeledAEDataset(WholeBrainLabeledAutoEncoder, Dataset):
+    def __init__(self, *args, batch_size=1, shuffle=False, metric_names=None, **kwargs):
+        super().__init__(*args, batch_size=batch_size, shuffle=shuffle, metric_names=metric_names, **kwargs)
+
+    def __len__(self):
+        return len(self.epoch_filenames)
+
+    def __getitem__(self, idx):
+        item = self.epoch_filenames[idx]
+        x, y = self.resample_input(item)
+        return (torch.from_numpy(np.moveaxis(np.asarray(x), -1, 0)).float(),
+                torch.from_numpy(np.moveaxis(np.asarray(y), -1, 0)).byte())

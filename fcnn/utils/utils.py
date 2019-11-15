@@ -132,3 +132,21 @@ def hist_match(source, template):
     interp_t_values = np.interp(s_quantiles, t_quantiles, t_values)
 
     return interp_t_values[bin_idx].reshape(oldshape)
+
+
+def compile_one_hot_encoding(data, n_labels, labels=None, dtype=np.int8):
+    """
+    Translates a label map into a set of binary labels.
+    :param data: numpy array containing the label map with shape: (n_samples, 1, ...).
+    :param n_labels: number of labels.
+    :param labels: integer values of the labels.
+    :return: binary numpy array of shape: (n_samples, n_labels, ...)
+    """
+    new_shape = [data.shape[0], n_labels] + list(data.shape[2:])
+    y = np.zeros(new_shape, dtype=dtype)
+    for label_index in range(n_labels):
+        if labels is not None:
+            y[:, label_index][data[:, 0] == labels[label_index]] = 1
+        else:
+            y[:, label_index][data[:, 0] == (label_index + 1)] = 1
+    return y

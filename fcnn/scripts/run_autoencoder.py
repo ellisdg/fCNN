@@ -3,6 +3,7 @@ import os
 from fcnn.utils.utils import load_json
 from fcnn.predict import whole_brain_autoencoder_predictions
 from fcnn.scripts.run_trial import load_subject_ids
+from fcnn.utils.pytorch.dataset import LabeledAEDataset, AEDataset
 
 
 def main():
@@ -39,6 +40,12 @@ def main():
     else:
         sequence_kwargs = dict()
 
+    if "sequence" in config:
+        if config["sequence"] == "LabeledAEDataset":
+            sequence = LabeledAEDataset
+        else:
+            sequence = AEDataset
+
     return whole_brain_autoencoder_predictions(model_filename=model_filename,
                                                subject_ids=config['validation'],
                                                hcp_dir=machine_config["directory"],
@@ -53,7 +60,8 @@ def main():
                                                batch_size=config['validation_batch_size'],
                                                n_workers=machine_config["n_workers"],
                                                model_kwargs=model_kwargs,
-                                               sequence_kwargs=sequence_kwargs)
+                                               sequence_kwargs=sequence_kwargs,
+                                               sequence=sequence)
 
 
 if __name__ == '__main__':

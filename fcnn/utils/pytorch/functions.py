@@ -23,3 +23,16 @@ def vae_loss(predicted_x, mu, logvar, x, recon_loss=mse_loss, divergence_loss=kl
     loss_recon = recon_loss(predicted_x, x)
     loss_kl = divergence_loss(mu, logvar, x.numel()/x.shape[0])
     return recon_weight * loss_recon + kl_weight * loss_kl
+
+
+def dice_loss(input, target, smooth=1.):
+    iflat = input.view(-1).float()
+    tflat = target.view(-1).float()
+    intersection = (iflat * tflat).sum()
+
+    return 1 - ((2. * intersection + smooth)/(iflat.sum() + tflat.sum() + smooth))
+
+
+def vae_dice_loss(predicted, mu, logvar, target, loss=dice_loss, divergence_loss=kl_loss, weight=1, kl_weight=1):
+    return vae_loss(predicted_x=predicted, mu=mu, logvar=logvar, x=target, recon_loss=loss,
+                    divergence_loss=divergence_loss, recon_weight=weight, kl_weight=kl_weight)

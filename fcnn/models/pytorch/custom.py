@@ -1,6 +1,6 @@
 from torch import nn
 
-from fcnn.models.pytorch.variational import VariationalAutoEncoder
+from fcnn.models.pytorch.variational import VariationalAutoEncoder, LabeledVariationalAutoEncoder
 from .decoder import BasicDecoder, Decoder1D
 from .resnet import conv1x1x1, ResNet, BasicBlock
 

@@ -18,7 +18,7 @@ export PYTHONPATH=/home/aizenberg/dgellis/fCNN:/home/aizenberg/dgellis/3DUnetCNN
 TRIAL=${1}
 CONFIG=/home/aizenberg/dgellis/fCNN/data/${TRIAL}_config.json
 HCC_CONFIG=/home/aizenberg/dgellis/fCNN/data/hcc_v100_2gpu_32gb_config.json
-MODEL=/work/aizenberg/dgellis/fCNN/model_${TRIAL}.pt
+MODEL=/work/aizenberg/dgellis/fCNN/model_${TRIAL}.h5
 LOG=/work/aizenberg/dgellis/fCNN/log_${TRIAL}.csv
 
 /home/aizenberg/dgellis/.conda/envs/fcnn-1.12/bin/python /home/aizenberg/dgellis/fCNN/fcnn/scripts/run_trial.py ${CONFIG} ${MODEL} ${LOG} ${HCC_CONFIG}

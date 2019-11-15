@@ -116,7 +116,8 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
     if "flatten_y" in config and config["flatten_y"]:
         collate_fn = collate_flatten
     else:
-        collate_fn = None
+        from torch.utils.data.dataloader import default_collate
+        collate_fn = default_collate
 
     # 4. Create datasets
     training_dataset = sequence_class(filenames=config['training_filenames'],

@@ -150,3 +150,10 @@ def compile_one_hot_encoding(data, n_labels, labels=None, dtype=np.int8):
         else:
             y[:, label_index][data[:, 0] == (label_index + 1)] = 1
     return y
+
+
+def convert_one_hot_to_label_map(one_hot_encoding, labels, axis=1):
+    label_map = np.argmax(one_hot_encoding, axis=axis)
+    for index, label in enumerate(labels):
+        label_map[label_map == index] = label
+    return label_map

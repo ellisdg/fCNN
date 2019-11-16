@@ -120,9 +120,10 @@ def whole_brain_scalar_predictions(model_filename, subject_ids, hcp_dir, output_
 def whole_brain_autoencoder_predictions(model_filename, subject_ids, hcp_dir, output_dir, feature_basenames,
                                         model_name, n_features, window, criterion_name, package="keras",
                                         n_gpus=1, n_workers=1, batch_size=1, model_kwargs=None, n_outputs=None,
-                                        sequence_kwargs=None, sequence=None):
+                                        sequence_kwargs=None, sequence=None, target_basenames=None):
     from .scripts.run_trial import generate_hcp_filenames
-    filenames = generate_hcp_filenames(directory=hcp_dir, surface_basename_template=None, target_basenames=None,
+    filenames = generate_hcp_filenames(directory=hcp_dir, surface_basename_template=None,
+                                       target_basenames=target_basenames,
                                        feature_basenames=feature_basenames, subject_ids=subject_ids, hemispheres=None)
     if package == "pytorch":
         pytorch_whole_brain_autoencoder_predictions(model_filename=model_filename,
@@ -215,7 +216,7 @@ def pytorch_whole_brain_autoencoder_predictions(model_filename, model_name, n_fe
                                                 n_gpus=1, n_workers=1, batch_size=1, model_kwargs=None, n_outputs=None,
                                                 sequence_kwargs=None, spacing=None, sequence=None):
     from .train.pytorch import build_or_load_model, load_criterion
-    from .utils.pytorch.dataset import AEDataset
+    from .utils.pytorch.dataset import AEDataset, LabeledAEDataset
     import torch
     from nilearn.image import new_img_like
 
@@ -240,12 +241,13 @@ def pytorch_whole_brain_autoencoder_predictions(model_filename, model_name, n_fe
     print("Dataset: ", len(dataset))
     with torch.no_grad():
         for idx in range(len(dataset)):
-            image, target = dataset.get_image(idx)
-            subject_id = dataset.filenames[idx][-1]
-            data = np.moveaxis(image.get_data(), -1, 0)
-            x = torch.from_numpy(data[np.newaxis]).float()
+            image, target_image = dataset.get_image(idx)
+            data, target = dataset[idx]
+            subject_id = dataset.epoch_filenames[idx][-1]
+            x = data.unsqueeze(0)
             if n_gpus > 0:
                 x = x.cuda()
+                target = target.cuda()
             try:
                 pred_x = model.test(x)
             except AttributeError:
@@ -255,15 +257,22 @@ def pytorch_whole_brain_autoencoder_predictions(model_filename, model_name, n_fe
             else:
                 mu = None
                 logvar = None
-            score = criterion(pred_x, x)
-            pred_x = np.moveaxis(pred_x.cpu().numpy(), 0, -1).squeeze()
+            score = criterion(pred_x, target.unsqueeze(0))
+            pred_x = np.moveaxis(pred_x.cpu().numpy().squeeze(), 0, -1)
             pred_image = new_img_like(ref_niimg=image,
                                       data=pred_x,
                                       affine=image.affine)
             pred_image.to_filename(os.path.join(prediction_dir,
                                                 "_".join([subject_id,
                                                           basename,
-                                                          os.path.basename(dataset.filenames[idx][0])])))
+                                                          os.path.basename(dataset.epoch_filenames[idx][0])])))
+            t_image = new_img_like(ref_niimg=target_image,
+                                   data=np.moveaxis(target.cpu().numpy().squeeze(), 0, -1))
+            t_image.to_filename(os.path.join(prediction_dir,
+                                             "_".join(["target",
+                                                       subject_id,
+                                                       basename,
+                                                       os.path.basename(dataset.epoch_filenames[idx][0])])))
             results.append([subject_id, score.cpu().numpy(), mu.cpu().numpy(), logvar.cpu().numpy()])
             break
     if output_csv is not None:

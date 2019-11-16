@@ -25,7 +25,7 @@ def main():
 
     load_subject_ids(config)
 
-    if "evaluation_metric" in config:
+    if "evaluation_metric" in config and config["evaluation_metric"] is not None:
         criterion_name = config['evaluation_metric']
     else:
         criterion_name = config['loss']
@@ -61,7 +61,9 @@ def main():
                                                n_workers=machine_config["n_workers"],
                                                model_kwargs=model_kwargs,
                                                sequence_kwargs=sequence_kwargs,
-                                               sequence=sequence)
+                                               sequence=sequence,
+                                               n_outputs=config["n_outputs"],
+                                               target_basenames=config["target_basenames"])
 
 
 if __name__ == '__main__':

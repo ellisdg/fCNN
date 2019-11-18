@@ -17,7 +17,7 @@
     160
   ],
   "spacing": null,
-  "n_features": 1,
+  "n_features": 4,
   "optimizer": "Adam",
   "package": "pytorch",
   "loss": "vae_loss",

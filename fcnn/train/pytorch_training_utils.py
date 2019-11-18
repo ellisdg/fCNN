@@ -380,7 +380,7 @@ def accuracy(output, target, topk=(1,)):
 
 
 def human_readable_size(size, decimal_places=1):
-    for unit in ['','KB','MB','GB','TB']:
+    for unit in ['', 'KB', 'MB', 'GB', 'TB']:
         if size < 1024.0:
             break
         size /= 1024.0
@@ -394,3 +394,7 @@ def collate_flatten(batch, x_dim_flatten=5, y_dim_flatten=2):
     if len(y.shape) > y_dim_flatten:
         y = y.flatten(start_dim=0, end_dim=len(y.shape) - y_dim_flatten)
     return [x, y]
+
+
+def collate_5d_flatten(batch, dim_flatten=5):
+    return collate_flatten(batch, x_dim_flatten=dim_flatten, y_dim_flatten=dim_flatten)

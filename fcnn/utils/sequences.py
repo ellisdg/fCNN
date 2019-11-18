@@ -137,11 +137,19 @@ class MultiScannerSequence(SingleSiteSequence):
 
 class HCPRegressionSequence(SingleSiteSequence):
     def __init__(self, filenames, batch_size, window, spacing, metric_names, classification=None,
-                 surface_names=('CortexLeft', 'CortexRight'), **kwargs):
+                 surface_names=('CortexLeft', 'CortexRight'), normalization="zero_mean", **kwargs):
         super().__init__(filenames=filenames, batch_size=batch_size, target_labels=tuple(), window=window,
                          spacing=spacing, classification=classification, **kwargs)
         self.metric_names = metric_names
         self.surface_names = surface_names
+        if normalization == "zero_mean":
+            self.normalization_func = zero_mean_normalize_image_data
+        elif normalization == "zero_floor":
+            self.normalization_func = zero_floor_normalize_image_data
+        elif normalization == "zero_one_window":
+            self.normalization_func = zero_one_window
+        else:
+            self.normalization_func = lambda x, **kwargs: x
 
     def __getitem__(self, idx):
         return self.fetch_hcp_regression_batch(idx)
@@ -177,10 +185,14 @@ class HCPRegressionSequence(SingleSiteSequence):
             batch_y.append(y)
         return batch_x, batch_y
 
-    def select_random_vertices_and_targets(self, vertices, all_metric_data):
-        # randomly select the target vertices and corresponding values
+    def select_random_vertices(self, vertices):
         indices = np.random.choice(np.arange(vertices.shape[0]), size=self.points_per_subject, replace=False)
         random_vertices = vertices[indices]
+        return random_vertices, indices
+
+    def select_random_vertices_and_targets(self, vertices, all_metric_data):
+        # randomly select the target vertices and corresponding values
+        random_vertices, indices = self.select_random_vertices(vertices)
         random_target_values = all_metric_data[indices]
         return random_vertices, random_target_values
 
@@ -251,21 +263,12 @@ class SubjectPredictionSequence(Sequence):
 
 
 class WholeBrainRegressionSequence(HCPRegressionSequence):
-    def __init__(self, resample='linear', crop=True, augment_scale_std=0, additive_noise_std=0,
-                 normalization="zero_mean", **kwargs):
+    def __init__(self, resample='linear', crop=True, augment_scale_std=0, additive_noise_std=0, **kwargs):
         super().__init__(**kwargs)
         self.resample = resample
         self.crop = crop
         self.augment_scale_std = augment_scale_std
         self.additive_noise_std = additive_noise_std
-        if normalization == "zero_mean":
-            self.normalization_func = zero_mean_normalize_image_data
-        elif normalization == "zero_floor":
-            self.normalization_func = zero_floor_normalize_image_data
-        elif normalization == "zero_one_window":
-            self.normalization_func = zero_one_window
-        else:
-            self.normalization_func = lambda x, **kwargs: x
 
     def __len__(self):
         return int(np.ceil(np.divide(len(self.filenames) * self.iterations_per_epoch, self.batch_size)))
@@ -367,3 +370,39 @@ class WholeBrainLabeledAutoEncoder(WholeBrainAutoEncoder):
                                                            n_labels=len(self.labels),
                                                            labels=self.labels), 1, -1)
         return input_image.get_data(), target_data
+
+
+class WindowedAutoEncoder(HCPRegressionSequence):
+    def __init__(self, *args, resample="linear", additive_noise_std=0, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.additive_noise_std = additive_noise_std
+        self.resample = resample
+
+    def fetch_hcp_subject_batch(self, feature_filename, surface_filenames, metric_filenames, subject_id):
+        surfaces = nib_load_files(surface_filenames)
+        vertices = list()
+        for surface, surface_name in zip(surfaces, self.surface_names):
+            vertices.extend(extract_gifti_surface_vertices(surface, primary_anatomical_structure=surface_name))
+        random_vertices, _ = self.select_random_vertices(np.asarray(vertices))
+        return self.load_feature_data_without_metrics(feature_filename, random_vertices)
+
+    def load_feature_data_without_metrics(self, feature_filename, random_vertices):
+        batch_x = list()
+        batch_y = list()
+        feature_image = load_single_image(feature_filename, resample=self.resample, reorder=self.reorder)
+        normalized_image = self.normalize(feature_image)
+        for vertex in random_vertices:
+            x = fetch_data_for_point(vertex, normalized_image, window=self.window, flip=self.flip, spacing=self.spacing,
+                                     normalization_func=None)
+            batch_x.append(self.augment(x))
+            batch_y.append(x)
+        return batch_x, batch_y
+
+    def normalize(self, feature_image, **kwargs):
+        feature_image.get_data()[:] = self.normalization_func(feature_image.get_data(), **kwargs)
+        return feature_image
+
+    def augment(self, x):
+        if self.additive_noise_std > 0:
+            x = add_noise(x, sigma_factor=self.additive_noise_std)
+        return x

@@ -8,7 +8,7 @@ import torch.nn
 
 from ..utils.pytorch import WholeBrainCIFTI2DenseScalarDataset
 from ..models.pytorch import fetch_model_by_name
-from .pytorch_training_utils import epoch_training, epoch_validatation, collate_flatten
+from .pytorch_training_utils import epoch_training, epoch_validatation, collate_flatten, collate_5d_flatten
 from ..utils.pytorch import functions
 
 
@@ -115,6 +115,8 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
 
     if "flatten_y" in config and config["flatten_y"]:
         collate_fn = collate_flatten
+    elif "collate_fn" in config and config["collate_fn"] == "collate_5d_flatten":
+        collate_fn = collate_5d_flatten
     else:
         from torch.utils.data.dataloader import default_collate
         collate_fn = default_collate
@@ -145,7 +147,7 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
             x, y = training_dataset[index]
             if not isinstance(x, np.ndarray):
                 x = x.numpy()
-            x_image = nib.Nifti1Image(x[index], affine=np.diag(np.ones(4)))
+            x_image = nib.Nifti1Image(x[index].squeeze(), affine=np.diag(np.ones(4)))
             x_image.to_filename(model_filename.replace(".h5",
                                                        "_input_test_{}.nii.gz".format(index)))
 

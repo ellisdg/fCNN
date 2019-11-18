@@ -24,9 +24,8 @@ class VariationalBlock(nn.Module):
         return mu + eps * std
 
     def forward(self, x):
-        _x = x
-        _x = self.dense1(_x)
-        mu, logvar = torch.split(_x, self.n_features, dim=1)
+        x = self.dense1(x)
+        mu, logvar = torch.split(x, self.n_features, dim=1)
         z = self.reparameterize(mu, logvar)
         out = self.dense2(z)
         if self.return_parameters:

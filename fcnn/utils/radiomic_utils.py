@@ -22,7 +22,8 @@ def compute_affine_from_point(point, window, spacing):
     return affine
     
 
-def fetch_data_for_point(point, image, window, flip=False, interpolation='linear', spacing=None):
+def fetch_data_for_point(point, image, window, flip=False, interpolation='linear', spacing=None,
+                         normalization_func=unet3d_normalize):
     if spacing is None:
         spacing = np.asarray(image.header.get_zooms())
     affine = compute_affine_from_point(point, window, spacing)
@@ -33,7 +34,10 @@ def fetch_data_for_point(point, image, window, flip=False, interpolation='linear
     ch_first = move_channels_first(image_data)
     if flip:
         ch_first = permute_data(ch_first, random_permutation_key())
-    normalized = unet3d_normalize(ch_first)
+    if normalization_func is not None:
+        normalized = normalization_func(ch_first)
+    else:
+        normalized = ch_first
     image_data[:] = move_channels_last(normalized)
     return image_data
 

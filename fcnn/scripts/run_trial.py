@@ -5,9 +5,10 @@ import pandas as pd
 fcnn_path = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname((__file__)))))
 sys.path.append(fcnn_path)
 from fcnn.train import run_training
-from fcnn.utils.sequences import WholeBrainRegressionSequence, HCPRegressionSequence, ParcelBasedSequence
+from fcnn.utils.sequences import (WholeBrainRegressionSequence, HCPRegressionSequence, ParcelBasedSequence,
+                                  WindowedAutoEncoder)
 from fcnn.utils.pytorch.dataset import (WholeBrainCIFTI2DenseScalarDataset, HCPRegressionDataset, AEDataset,
-                                        LabeledAEDataset)
+                                        LabeledAEDataset, WindowedAEDataset)
 from fcnn.utils.utils import load_json
 from fcnn.utils.custom import get_metric_data_from_config
 from fcnn.models.resnet.resnet import compare_scores
@@ -119,7 +120,10 @@ def main():
                 sequence_class = WholeBrainCIFTI2DenseScalarDataset
         else:
             sequence_class = WholeBrainRegressionSequence
-
+    elif config["sequence"] == "WindowedAutoEncoder":
+        sequence_class = WindowedAutoEncoder
+    elif config["sequence"] == "WindowedAEDataset":
+        sequence_class = WindowedAEDataset
     elif "_pb_" in os.path.basename(config_filename):
         sequence_class = ParcelBasedSequence
         config["sequence_kwargs"]["parcellation_template"] = os.path.join(

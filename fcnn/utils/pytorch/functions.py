@@ -36,3 +36,8 @@ def dice_loss(input, target, smooth=1.):
 def vae_dice_loss(predicted, mu, logvar, target, loss=dice_loss, divergence_loss=kl_loss, weight=1, kl_weight=1):
     return vae_loss(predicted_x=predicted, mu=mu, logvar=logvar, x=target, recon_loss=loss,
                     divergence_loss=divergence_loss, recon_weight=weight, kl_weight=kl_weight)
+
+
+def vae_l1_loss(predicted, mu, logvar, target, loss=l1_loss, divergence_loss=kl_loss, weight=1, kl_weight=1):
+    return vae_loss(predicted_x=predicted, mu=mu, logvar=logvar, x=target, recon_loss=loss,
+                    divergence_loss=divergence_loss, recon_weight=weight, kl_weight=kl_weight)

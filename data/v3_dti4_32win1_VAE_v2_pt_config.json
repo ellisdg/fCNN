@@ -5,18 +5,18 @@
     "CortexRight"
   ],
   "surface_basename_template": "T1w/fsaverage_LR32k/{subject_id}.{hemi}.white.32k_fs_LR.surf.gii",
-  "feature_basenames": "T1w/T1w_acpc_dc_restore_brain.nii.gz",
+  "feature_basenames": "T1w/Diffusion/dti.nii.gz",
   "target_basenames": null,
   "hemispheres": [
     "L",
     "R"
   ],
   "window": [
-    64,
-    64,
-    64
+    32,
+    32,
+    32
   ],
-  "spacing": [0.5, 0.5, 0.5],
+  "spacing": [1, 1, 1],
   "n_features": 1,
   "optimizer": "Adam",
   "package": "pytorch",
@@ -25,9 +25,9 @@
   "custom_loss": true,
   "regularized": false,
   "vae": true,
-  "points_per_subject": 30,
+  "points_per_subject": 200,
   "reorder": false,
-  "validation_points_per_subject": 100,
+  "validation_points_per_subject": 400,
   "save_best_only": false,
   "n_epochs": 2000,
   "min_learning_rate": 1e-08,
@@ -35,17 +35,17 @@
   "decay_factor": 0.5,
   "early_stopping_patience": 100,
   "flip": false,
-  "batch_size": 300,
-  "validation_batch_size": 300,
+  "batch_size": 2000,
+  "validation_batch_size": 2000,
   "collate_fn": "collate_5d_flatten",
   "initial_learning_rate": 1e-04,
   "model_name": "VariationalAutoEncoder",
   "model_kwargs": {
     "base_width":  32,
     "encoder_blocks": [2, 2, 2, 4],
-    "vae_features": 64,
+    "vae_features": 16,
     "decoder_mirrors_encoder": true,
-    "input_shape": [64, 64, 64],
+    "input_shape": [32, 32, 32],
     "activation": null
   },
   "skip_validation": false,

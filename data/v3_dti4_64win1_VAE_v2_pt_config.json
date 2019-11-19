@@ -5,7 +5,7 @@
     "CortexRight"
   ],
   "surface_basename_template": "T1w/fsaverage_LR32k/{subject_id}.{hemi}.white.32k_fs_LR.surf.gii",
-  "feature_basenames": "T1w/T1w_acpc_dc_restore_brain.nii.gz",
+  "feature_basenames": "T1w/Diffusion/dti.nii.gz",
   "target_basenames": null,
   "hemispheres": [
     "L",
@@ -16,7 +16,7 @@
     64,
     64
   ],
-  "spacing": [0.5, 0.5, 0.5],
+  "spacing": [1, 1, 1],
   "n_features": 1,
   "optimizer": "Adam",
   "package": "pytorch",

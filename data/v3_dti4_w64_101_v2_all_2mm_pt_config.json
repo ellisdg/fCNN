@@ -45,7 +45,7 @@
   "flip": false,
   "batch_size": 400,
   "validation_batch_size": 400,
-  "initial_learning_rate": 2e-04,
+  "initial_learning_rate": 1e-03,
   "model_name": "resnet_101",
   "model_kwargs": {},
   "skip_validation": false,

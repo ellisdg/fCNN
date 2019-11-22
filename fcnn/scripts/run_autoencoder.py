@@ -6,18 +6,18 @@ from fcnn.scripts.run_trial import load_subject_ids
 from fcnn.utils.pytorch.dataset import LabeledAEDataset, AEDataset
 
 
-def main():
-    config_filename = sys.argv[1]
+def main(args):
+    config_filename = args[1]
     print("Config: ", config_filename)
     config = load_json(config_filename)
-    model_filename = sys.argv[2]
+    model_filename = args[2]
     print("Model: ", model_filename)
 
-    machine_config_filename = sys.argv[3]
+    machine_config_filename = args[3]
     print("Machine config: ", machine_config_filename)
     machine_config = load_json(machine_config_filename)
 
-    output_directory = os.path.abspath(sys.argv[4])
+    output_directory = os.path.abspath(args[4])
     print("Output Directory:", output_directory)
 
     if not os.path.exists(output_directory):
@@ -45,6 +45,8 @@ def main():
             sequence = LabeledAEDataset
         else:
             sequence = AEDataset
+    else:
+        sequence = None
 
     return whole_brain_autoencoder_predictions(model_filename=model_filename,
                                                subject_ids=config['validation'],
@@ -67,4 +69,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv)

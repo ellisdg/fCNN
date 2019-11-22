@@ -25,7 +25,13 @@ def build_or_load_model(model_name, model_filename, n_features, n_outputs, n_gpu
     elif n_gpus > 0:
         model = model.cuda()
     if os.path.exists(model_filename):
-        model.load_state_dict(torch.load(model_filename))
+        try:
+            model.load_state_dict(torch.load(model_filename))
+        except RuntimeError as error:
+            if n_gpus > 1:
+                model.module.load_state_dict(torch.load(model_filename))
+            else:
+                raise error
     return model
 
 

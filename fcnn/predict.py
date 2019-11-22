@@ -5,71 +5,135 @@ import pandas as pd
 from keras.models import load_model
 from .utils.utils import load_json
 from .utils.sequences import SubjectPredictionSequence
+from .utils.pytorch.dataset import HCPSubjectDataset
 from .utils.hcp import new_cifti_scalar_like, get_metric_data
+from .scripts.run_trial import generate_hcp_filenames, load_subject_ids
 
 
-def predict_subject(model, feature_filename, surface_filenames, surface_names, metric_names, output_filenames,
-                    batch_size=50, window=(64, 64, 64), flip=False, spacing=(1, 1, 1), use_multiprocessing=False,
-                    workers=1, max_queue_size=10, overwrite=False):
-    for surface_filename, surface_name, output_filename in zip(surface_filenames, surface_names, output_filenames):
-        if overwrite or not os.path.exists(output_filename):
-            generator = SubjectPredictionSequence(feature_filename=feature_filename,
-                                                  surface_filename=surface_filename,
-                                                  surface_name=surface_name,
-                                                  batch_size=batch_size,
-                                                  window=window,
-                                                  flip=flip,
-                                                  spacing=spacing)
-            prediction = model.predict_generator(generator,
-                                                 use_multiprocessing=use_multiprocessing,
-                                                 workers=workers,
-                                                 max_queue_size=max_queue_size,
-                                                 verbose=1)
-            gifti_image = nib.gifti.GiftiImage()
-            image_metadata = {'AnatomicalStructurePrimary': surface_name}
-            gifti_image.meta.from_dict(image_metadata)
-            for col, metric_name in enumerate(metric_names):
-                metadata = {'Name': metric_name}
-                darray = nib.gifti.GiftiDataArray(data=prediction[:, col], meta=metadata)
-                gifti_image.add_gifti_data_array(darray)
-            gifti_image.to_filename(output_filename)
+def predict_data_loader(model, data_loader):
+    import torch
+    predictions = list()
+    with torch.no_grad():
+        for batch_x in data_loader:
+            predictions.extend(model(batch_x).cpu().numpy())
+    return np.asarray(predictions)
+
+
+def predict_generator(model, generator, use_multiprocessing=False, n_workers=1, max_queue_size=8, verbose=1,
+                      package="keras", batch_size=1):
+    if package == "pytorch":
+        from torch.utils.data import DataLoader
+
+        loader = DataLoader(generator, batch_size=batch_size, shuffle=False, num_workers=n_workers)
+        if verbose:
+            print("Loader: ", len(loader), "  Batch_size: ", batch_size, "  Dataset: ", len(generator))
+        return predict_data_loader(model, loader)
+
+    else:
+        return model.predict_generator(generator, use_multiprocessing=use_multiprocessing, workers=n_workers,
+                                       max_queue_size=max_queue_size, verbose=verbose)
+
+
+def predict_subject(model, feature_filename, surface_filenames, surface_names, metric_names, output_filename,
+                    reference_filename, batch_size=50, window=(64, 64, 64), flip=False, spacing=(1, 1, 1),
+                    use_multiprocessing=False, workers=1, max_queue_size=10, overwrite=True,
+                    generator=SubjectPredictionSequence, package="keras"):
+    if overwrite or not os.path.exists(output_filename):
+        generator = generator(feature_filename=feature_filename, surface_filenames=surface_filenames,
+                              surface_names=surface_names, batch_size=batch_size, window=window, flip=flip,
+                              spacing=spacing, reference_metric_filename=reference_filename)
+        prediction = predict_generator(model, generator, use_multiprocessing=use_multiprocessing, n_workers=workers,
+                                       max_queue_size=max_queue_size, verbose=1, batch_size=batch_size,
+                                       package=package)
+        output_image = new_cifti_scalar_like(np.moveaxis(prediction, 1, 0), scalar_names=metric_names,
+                                             structure_names=surface_names,
+                                             reference_cifti=nib.load(reference_filename), almost_equals_decimals=0)
+        output_image.to_filename(output_filename)
 
 
 def make_predictions(config_filename, model_filename, output_directory='./', n_subjects=None, shuffle=False,
                      key='validation_filenames', use_multiprocessing=False, n_workers=1, max_queue_size=5,
-                     batch_size=50, output_replacements=('.func.gii', '.prediction.func.gii'), overwrite=False,
-                     single_subject=None):
+                     batch_size=50, overwrite=True, single_subject=None, output_task_name=None, package="keras",
+                     directory="./", n_gpus=1):
     output_directory = os.path.abspath(output_directory)
     config = load_json(config_filename)
+
+    if key not in config:
+        name = key.split("_")[0]
+        if name not in config:
+            load_subject_ids(config)
+        config[key] = generate_hcp_filenames(directory,
+                                             config['surface_basename_template'],
+                                             config['target_basenames'],
+                                             config['feature_basenames'],
+                                             config[name],
+                                             config['hemispheres'])
+
     filenames = config[key]
+
     model_basename = os.path.basename(model_filename).replace(".h5", "")
+
+    if "package" in config and config["package"] == "pytorch":
+        generator = HCPSubjectDataset
+        package = "pytorch"
+    else:
+        generator = SubjectPredictionSequence
+
+    if "model_kwargs" in config:
+        model_kwargs = config["model_kwargs"]
+    else:
+        model_kwargs = dict()
+
+    if "batch_size" in config:
+        batch_size = config["batch_size"]
+
     if single_subject is None:
-        model = load_model(model_filename)
+        if package == "pytorch":
+            from .train.pytorch import build_or_load_model
+
+            model = build_or_load_model(model_filename=model_filename, model_name=config["model_name"],
+                                        n_features=config["n_features"], n_outputs=config["n_outputs"],
+                                        n_gpus=n_gpus, **model_kwargs)
+        else:
+            model = load_model(model_filename)
     else:
         model = None
+
     if n_subjects is not None:
         if shuffle:
             np.random.shuffle(filenames)
         filenames = filenames[:n_subjects]
+
     for feature_filename, surface_filenames, metric_filenames, subject_id in filenames:
         if single_subject is None or subject_id == single_subject:
             if model is None:
-                model = load_model(model_filename)
-            output_filenames = list()
-            task = os.path.basename(metric_filenames[0]).split(".")[0]
-            for hemisphere in config['hemispheres']:
-                output_basename = "{task}.{hemi}.{model}_prediction.func.gii".format(hemi=hemisphere,
-                                                                                     model=model_basename,
-                                                                                     task=task)
-                output_filenames.append(os.path.join(output_directory, output_basename))
-            subject_metric_names = [metric_name.format(subject_id)
-                                    for metric_name in np.squeeze(config['metric_names'])]
+                if package == "pytorch":
+                    from .train.pytorch import build_or_load_model
+
+                    model = build_or_load_model(model_filename=model_filename, model_name=config["model_name"],
+                                                n_features=config["n_features"], n_outputs=config["n_outputs"],
+                                                n_gpus=n_gpus, **model_kwargs)
+                else:
+                    model = load_model(model_filename)
+            if output_task_name is None:
+                output_task_name = os.path.basename(metric_filenames[0]).split(".")[0]
+                if len(metric_filenames) > 1:
+                    output_task_name = "_".join(
+                        output_task_name.split("_")[:2] + ["ALL47"] + output_task_name.split("_")[3:])
+
+            output_basename = "{task}-{model}_prediction.dscalar.nii".format(model=model_basename,
+                                                                             task=output_task_name)
+            output_filename = os.path.join(output_directory, output_basename)
+            subject_metric_names = list()
+            for metric_list in config["metric_names"]:
+                for metric_name in metric_list:
+                    subject_metric_names.append(metric_name.format(subject_id))
             predict_subject(model,
                             feature_filename,
                             surface_filenames,
                             config['surface_names'],
                             subject_metric_names,
-                            output_filenames,
+                            output_filename=output_filename,
                             batch_size=batch_size,
                             window=np.asarray(config['window']),
                             spacing=np.asarray(config['spacing']),
@@ -77,7 +141,10 @@ def make_predictions(config_filename, model_filename, output_directory='./', n_s
                             overwrite=overwrite,
                             use_multiprocessing=use_multiprocessing,
                             workers=n_workers,
-                            max_queue_size=max_queue_size)
+                            max_queue_size=max_queue_size,
+                            reference_filename=metric_filenames[0],
+                            package=package,
+                            generator=generator)
 
 
 def predict_local_subject(model, feature_filename, surface_filename, batch_size=50, window=(64, 64, 64),
@@ -258,7 +325,7 @@ def pytorch_whole_brain_autoencoder_predictions(model_filename, model_name, n_fe
                 mu = None
                 logvar = None
             score = criterion(pred_x, target.unsqueeze(0))
-            pred_x = np.moveaxis(pred_x.cpu().numpy().squeeze(), 0, -1)
+            pred_x = np.moveaxis(pred_x.cpu().numpy(), 1, -1).squeeze()
             pred_image = new_img_like(ref_niimg=image,
                                       data=pred_x,
                                       affine=image.affine)
@@ -267,14 +334,14 @@ def pytorch_whole_brain_autoencoder_predictions(model_filename, model_name, n_fe
                                                           basename,
                                                           os.path.basename(dataset.epoch_filenames[idx][0])])))
             t_image = new_img_like(ref_niimg=target_image,
-                                   data=np.moveaxis(target.cpu().numpy().squeeze(), 0, -1))
+                                   data=np.moveaxis(target.cpu().numpy(), 1, -1).squeeze())
             t_image.to_filename(os.path.join(prediction_dir,
                                              "_".join(["target",
                                                        subject_id,
                                                        basename,
                                                        os.path.basename(dataset.epoch_filenames[idx][0])])))
             results.append([subject_id, score.cpu().numpy(), mu.cpu().numpy(), logvar.cpu().numpy()])
-            break
+
     if output_csv is not None:
         columns = ["subject_id", criterion_name, "mu", "logvar"]
         if reference is not None:

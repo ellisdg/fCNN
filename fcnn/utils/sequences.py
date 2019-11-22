@@ -135,7 +135,26 @@ class MultiScannerSequence(SingleSiteSequence):
         self.epoch_filenames = list(epoch_filenames)
 
 
-class HCPRegressionSequence(SingleSiteSequence):
+class HCPParent(object):
+    def __init__(self, surface_names, window, flip, reorder, spacing):
+        self.surface_names = surface_names
+        self.reorder = reorder
+        self.flip = flip
+        self.spacing = spacing
+        self.window = window
+
+    def extract_vertices(self, surface_filenames, metrics):
+        # extract the vertices
+        surfaces = nib_load_files(surface_filenames)
+        vertices = list()
+        for surface, surface_name in zip(surfaces, self.surface_names):
+            vertices_index = get_vertices_from_scalar(metrics[0], brain_structure_name=surface_name)
+            surface_vertices = extract_gifti_surface_vertices(surface, primary_anatomical_structure=surface_name)
+            vertices.extend(surface_vertices[vertices_index])
+        return np.asarray(vertices)
+
+
+class HCPRegressionSequence(SingleSiteSequence, HCPParent):
     def __init__(self, filenames, batch_size, window, spacing, metric_names, classification=None,
                  surface_names=('CortexLeft', 'CortexRight'), normalization="zero_mean", **kwargs):
         super().__init__(filenames=filenames, batch_size=batch_size, target_labels=tuple(), window=window,
@@ -164,26 +183,27 @@ class HCPRegressionSequence(SingleSiteSequence):
             batch_y.extend(_y)
         return np.asarray(batch_x), np.asarray(batch_y)
 
-    def fetch_hcp_subject_batch(self, feature_filename, surface_filenames, metric_filenames, subject_id):
-        metrics, all_metric_data = self.load_metric_data(metric_filenames, subject_id)
-        vertices = self.extract_vertices(surface_filenames, metrics)
-        random_vertices, random_target_values = self.select_random_vertices_and_targets(vertices, all_metric_data)
-        return self.load_feature_data(feature_filename, random_vertices, random_target_values)
-
     def load_metric_data(self, metric_filenames, subject_id):
         metrics = nib_load_files(metric_filenames)
         all_metric_data = get_metric_data(metrics, self.metric_names, self.surface_names, subject_id)
         return metrics, all_metric_data
 
-    def load_feature_data(self, feature_filename, random_vertices, random_target_values):
+    def load_feature_data(self, feature_filename, vertices, target_values):
         batch_x = list()
         batch_y = list()
         feature_image = load_single_image(feature_filename, reorder=self.reorder)
-        for vertex, y in zip(random_vertices, random_target_values):
-            x = fetch_data_for_point(vertex, feature_image, window=self.window, flip=self.flip, spacing=self.spacing)
+        for vertex, y in zip(vertices, target_values):
+            x = fetch_data_for_point(vertex, feature_image, window=self.window, flip=self.flip,
+                                     spacing=self.spacing)
             batch_x.append(x)
             batch_y.append(y)
         return batch_x, batch_y
+
+    def fetch_hcp_subject_batch(self, feature_filename, surface_filenames, metric_filenames, subject_id):
+        metrics, all_metric_data = self.load_metric_data(metric_filenames, subject_id)
+        vertices = self.extract_vertices(surface_filenames, metrics)
+        random_vertices, random_target_values = self.select_random_vertices_and_targets(vertices, all_metric_data)
+        return self.load_feature_data(feature_filename, random_vertices, random_target_values)
 
     def select_random_vertices(self, vertices):
         indices = np.random.choice(np.arange(vertices.shape[0]), size=self.points_per_subject, replace=False)
@@ -195,16 +215,6 @@ class HCPRegressionSequence(SingleSiteSequence):
         random_vertices, indices = self.select_random_vertices(vertices)
         random_target_values = all_metric_data[indices]
         return random_vertices, random_target_values
-
-    def extract_vertices(self, surface_filenames, metrics):
-        # extract the vertices
-        surfaces = nib_load_files(surface_filenames)
-        vertices = list()
-        for surface, surface_name in zip(surfaces, self.surface_names):
-            vertices_index = get_vertices_from_scalar(metrics[0], brain_structure_name=surface_name)
-            surface_vertices = extract_gifti_surface_vertices(surface, primary_anatomical_structure=surface_name)
-            vertices.extend(surface_vertices[vertices_index])
-        return np.asarray(vertices)
 
 
 class ParcelBasedSequence(HCPRegressionSequence):
@@ -232,22 +242,14 @@ class ParcelBasedSequence(HCPRegressionSequence):
         return parcellation
 
 
-class SubjectPredictionSequence(Sequence):
-    def __init__(self, feature_filename, surface_filename, surface_name, batch_size=50, window=(64, 64, 64), flip=False,
-                 spacing=(1, 1, 1)):
+class SubjectPredictionSequence(HCPParent, Sequence):
+    def __init__(self, feature_filename, surface_filenames, surface_names, reference_metric_filename,
+                 batch_size=50, window=(64, 64, 64), flip=False, spacing=(1, 1, 1), reorder=False):
+        super().__init__(surface_names=surface_names, window=window, flip=flip, reorder=reorder, spacing=spacing)
         self.feature_image = load_image(feature_filename)
-        if ".gii" in surface_filename:
-            surface = nib.load(surface_filename)
-            self.vertices = extract_gifti_surface_vertices(surface, primary_anatomical_structure=surface_name)
-        elif ".vtk" in surface_filename:
-            surface = read_polydata(surface_filename)
-            self.vertices = extract_polydata_vertices(surface)
-        else:
-            raise RuntimeError("Uknown file type: ", surface_filename)
+        self.reference_metric = nib.load(reference_metric_filename)
+        self.vertices = self.extract_vertices(surface_filenames=surface_filenames, metrics=[self.reference_metric])
         self.batch_size = batch_size
-        self.window = window
-        self.flip = flip
-        self.spacing = spacing
 
     def __len__(self):
         return int(np.ceil(np.divide(len(self.vertices), self.batch_size)))

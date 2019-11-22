@@ -31,8 +31,4 @@ if __name__ == '__main__':
                      n_subjects=n_subjects,
                      output_directory=output_directory,
                      overwrite=overwrite,
-                     output_replacements=('.func.gii',
-                                          '.{}_prediction.func.gii'.format(model_basename.replace(".h5",
-                                                                                                  '').replace(".pt",
-                                                                                                              ""))),
                      **multiprocessing_config)

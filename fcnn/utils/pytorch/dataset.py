@@ -4,7 +4,8 @@ import numpy as np
 
 
 from ..sequences import (WholeBrainRegressionSequence, HCPRegressionSequence, nib_load_files, get_metric_data,
-                         WholeBrainAutoEncoder, WholeBrainLabeledAutoEncoder, WindowedAutoEncoder)
+                         WholeBrainAutoEncoder, WholeBrainLabeledAutoEncoder, WindowedAutoEncoder,
+                         SubjectPredictionSequence, fetch_data_for_point)
 
 
 class WholeBrainCIFTI2DenseScalarDataset(WholeBrainRegressionSequence, Dataset):
@@ -35,6 +36,24 @@ class HCPRegressionDataset(HCPRegressionSequence, Dataset):
     def __getitem__(self, idx):
         x, y = self.fetch_hcp_subject_batch(*self.epoch_filenames[idx])
         return torch.from_numpy(np.moveaxis(np.asarray(x), -1, 1)).float(), torch.from_numpy(np.asarray(y)).float()
+
+
+class HCPSubjectDataset(SubjectPredictionSequence):
+    def __init__(self, *args, batch_size=None, **kwargs):
+        if batch_size is not None:
+            print("Ignoring the set batch_size")
+        super().__init__(*args, batch_size=1, **kwargs)
+
+    def __getitem__(self, idx):
+        x = self.fetch_data_for_index(idx)
+        return torch.from_numpy(np.moveaxis(np.asarray(x), -1, 0)).float()
+
+    def __len__(self):
+        return len(self.vertices)
+
+    def fetch_data_for_index(self, idx):
+        return fetch_data_for_point(self.vertices[idx], self.feature_image, window=self.window, flip=self.flip,
+                                    spacing=self.spacing)
 
 
 class AEDataset(WholeBrainAutoEncoder, Dataset):

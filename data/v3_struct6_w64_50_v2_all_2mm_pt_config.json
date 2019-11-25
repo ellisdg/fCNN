@@ -46,7 +46,7 @@
   "early_stopping_patience": 50,
   "save_best_only": false,
   "flip": false,
-  "model_name": "resnet_101",
+  "model_name": "resnet_50",
   "model_kwargs": {},
   "skip_validation": false,
   "iterations_per_epoch": 5,

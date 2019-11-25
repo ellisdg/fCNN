@@ -42,7 +42,7 @@ def combine_images(images, axis=0, resample_unequal_affines=False, interpolation
 def main():
     config = load_json(os.path.join(os.path.dirname(os.path.dirname(__file__)),
                                     "data",
-                                    "t1t2dti4_wb_18_LS_config.json"))
+                                    "t1t2_wb_18_LS_config.json"))
     system_config = load_json(os.path.join(os.path.dirname(os.path.dirname(__file__)),
                                            "data",
                                            "hcc_p100_config.json"))
@@ -52,7 +52,7 @@ def main():
         pool.map(func, subject_ids)
 
 
-def write_image(subject_id, system_config, config, overwrite=False):
+def write_image(subject_id, system_config, config, overwrite=True):
     subject_dir = os.path.join(system_config['directory'], subject_id)
     output_filename = os.path.join(subject_dir, "T1w", "T1T2w_acpc_dc_restore_brain.nii.gz")
     print(output_filename)

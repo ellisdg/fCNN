@@ -145,6 +145,7 @@ def make_predictions(config_filename, model_filename, output_directory='./', n_s
                             reference_filename=metric_filenames[0],
                             package=package,
                             generator=generator)
+            output_task_name = None
 
 
 def predict_local_subject(model, feature_filename, surface_filename, batch_size=50, window=(64, 64, 64),

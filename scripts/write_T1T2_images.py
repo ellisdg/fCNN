@@ -57,22 +57,15 @@ def main():
 
 def write_image(subject_id, system_config, config, overwrite=False):
     subject_dir = os.path.join(system_config['directory'], subject_id)
-    output_filename = os.path.join(subject_dir, "T1w", "struct6_1.25_normalized.nii.gz")
+    output_filename = os.path.join(subject_dir, "T1w", "T1T2w_acpc_dc_restore_brain.nii.gz")
     print(output_filename)
     if overwrite or not os.path.exists(output_filename):
-        mask_filename = os.path.join(subject_dir, "T1w", "brainmask_fs.nii.gz")
-        mask_image = nib.load(mask_filename)
         feature_filenames = [os.path.join(subject_dir, fbn) for fbn in config["feature_basenames"]]
         feature_images = [nib.load(fn) for fn in feature_filenames][::-1]
         image = combine_images(feature_images,
                                axis=3,
-                               resample_unequal_affines=True,
+                               resample_unequal_affines=False,
                                interpolation="continuous")
-        resampled_mask = resample_to_img(mask_image, image, interpolation="nearest")
-        crop_affine, crop_shape = crop_img(resampled_mask, return_affine=True, pad=False)
-        reordered_affine = reorder_affine(crop_affine, crop_shape)
-        image = resample(image, reordered_affine, crop_shape, interpolation="continuous")
-        image = image.__class__(zero_mean_normalize_image_data(image.get_data()), image.affine)
         image.to_filename(output_filename)
 
 

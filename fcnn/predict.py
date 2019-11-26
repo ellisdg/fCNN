@@ -116,13 +116,15 @@ def make_predictions(config_filename, model_filename, output_directory='./', n_s
                 else:
                     model = load_model(model_filename)
             if output_task_name is None:
-                output_task_name = os.path.basename(metric_filenames[0]).split(".")[0]
+                _output_task_name = os.path.basename(metric_filenames[0]).split(".")[0]
                 if len(metric_filenames) > 1:
-                    output_task_name = "_".join(
-                        output_task_name.split("_")[:2] + ["ALL47"] + output_task_name.split("_")[3:])
+                    _output_task_name = "_".join(
+                        _output_task_name.split("_")[:2] + ["ALL47"] + _output_task_name.split("_")[3:])
+            else:
+                _output_task_name = output_task_name
 
             output_basename = "{task}-{model}_prediction.dscalar.nii".format(model=model_basename,
-                                                                             task=output_task_name)
+                                                                             task=_output_task_name)
             output_filename = os.path.join(output_directory, output_basename)
             subject_metric_names = list()
             for metric_list in config["metric_names"]:
@@ -145,7 +147,6 @@ def make_predictions(config_filename, model_filename, output_directory='./', n_s
                             reference_filename=metric_filenames[0],
                             package=package,
                             generator=generator)
-            output_task_name = None
 
 
 def predict_local_subject(model, feature_filename, surface_filename, batch_size=50, window=(64, 64, 64),

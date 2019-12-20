@@ -38,7 +38,7 @@ class ConvolutionalAutoEncoder(nn.Module):
     def __init__(self, input_shape=None, n_features=1, base_width=32, encoder_blocks=None, decoder_blocks=None,
                  feature_dilation=2, downsampling_stride=2, interpolation_mode="trilinear", encoder=MyronenkoEncoder,
                  decoder=MyronenkoDecoder, n_outputs=None, layer_widths=None, decoder_mirrors_encoder=False,
-                 activation=None):
+                 activation=None, use_transposed_convolutions=False):
         super(ConvolutionalAutoEncoder, self).__init__()
         if encoder_blocks is None:
             encoder_blocks = [1, 2, 2, 4]
@@ -52,7 +52,8 @@ class ConvolutionalAutoEncoder(nn.Module):
             decoder_blocks = [1] * (len(encoder_blocks) - 1)
         self.decoder = decoder(base_width=base_width, layer_blocks=decoder_blocks,
                                upsampling_scale=downsampling_stride, feature_reduction_scale=feature_dilation,
-                               upsampling_mode=interpolation_mode, layer_widths=layer_widths)
+                               upsampling_mode=interpolation_mode, layer_widths=layer_widths,
+                               use_transposed_convolutions=use_transposed_convolutions)
         self.final_convolution = conv1x1x1(in_planes=base_width, out_planes=n_features, stride=1)
         if activation == "sigmoid":
             self.activation = nn.Sigmoid()
@@ -76,7 +77,7 @@ class MyronenkoVariationalLayer(nn.Module):
                  align_corners_upsampling=False):
         super(MyronenkoVariationalLayer, self).__init__()
         self.in_conv = conv_block(in_planes=in_features, planes=reduced_features, stride=conv_stride)
-        self.reduced_shape = tuple(np.asarray((reduced_features, *np.divide(input_shape, 2)), dtype=np.int))
+        self.reduced_shape = tuple(np.asarray((reduced_features, *np.divide(input_shape, conv_stride)), dtype=np.int))
         self.in_size = np.prod(self.reduced_shape, dtype=np.int)
         self.var_block = VariationalBlock(in_size=self.in_size, out_size=self.in_size, n_features=latent_features)
         self.relu = nn.ReLU(inplace=True)
@@ -98,7 +99,7 @@ class VariationalAutoEncoder(ConvolutionalAutoEncoder):
                  input_shape=None, n_features=1, base_width=32, encoder_blocks=None, decoder_blocks=None,
                  feature_dilation=2, downsampling_stride=2, interpolation_mode="trilinear", encoder=MyronenkoEncoder,
                  decoder=MyronenkoDecoder, n_outputs=None, layer_widths=None, decoder_mirrors_encoder=False,
-                 activation=None):
+                 activation=None, use_transposed_convolutions=False, var_layer_stride=2):
         super(VariationalAutoEncoder, self).__init__(input_shape=input_shape, n_features=n_features,
                                                      base_width=base_width, encoder_blocks=encoder_blocks,
                                                      decoder_blocks=decoder_blocks, feature_dilation=feature_dilation,
@@ -106,7 +107,8 @@ class VariationalAutoEncoder(ConvolutionalAutoEncoder):
                                                      interpolation_mode=interpolation_mode, encoder=encoder,
                                                      decoder=decoder, n_outputs=n_outputs, layer_widths=layer_widths,
                                                      decoder_mirrors_encoder=decoder_mirrors_encoder,
-                                                     activation=activation)
+                                                     activation=activation,
+                                                     use_transposed_convolutions=use_transposed_convolutions)
         if vae_features is not None:
             depth = len(encoder_blocks) - 1
             n_latent_feature_maps = base_width * (feature_dilation ** depth)
@@ -115,7 +117,8 @@ class VariationalAutoEncoder(ConvolutionalAutoEncoder):
                                                input_shape=latent_image_shape,
                                                reduced_features=n_reduced_latent_feature_maps,
                                                latent_features=vae_features,
-                                               upsampling_mode=interpolation_mode)
+                                               upsampling_mode=interpolation_mode,
+                                               conv_stride=var_layer_stride)
 
     def forward(self, x):
         x = self.encoder(x)

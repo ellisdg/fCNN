@@ -36,7 +36,7 @@ class BasicDecoder(nn.Module):
 class MyronenkoDecoder(nn.Module):
     def __init__(self, base_width=32, layer_blocks=None, layer=MyronenkoLayer, block=MyronenkoResidualBlock,
                  upsampling_scale=2, feature_reduction_scale=2, upsampling_mode="trilinear", align_corners=False,
-                 layer_widths=None):
+                 layer_widths=None, use_transposed_convolutions=False, kernal_size=3):
         super(MyronenkoDecoder, self).__init__()
         if layer_blocks is None:
             layer_blocks = [1, 1, 1]
@@ -51,10 +51,16 @@ class MyronenkoDecoder(nn.Module):
             else:
                 out_width = base_width * (feature_reduction_scale ** depth)
                 in_width = out_width * feature_reduction_scale
-            self.pre_upsampling_blocks.append(resnet.conv1x1x1(in_width, out_width, stride=1))
-            self.upsampling_blocks.append(partial(nn.functional.interpolate, scale_factor=upsampling_scale,
-                                                  mode=upsampling_mode, align_corners=align_corners))
-            self.layers.append(layer(n_blocks=n_blocks, block=block, in_planes=out_width, planes=out_width))
+            if use_transposed_convolutions:
+                self.pre_upsampling_blocks.append(resnet.conv1x1x1(in_width, out_width, stride=1))
+                self.upsampling_blocks.append(partial(nn.functional.interpolate, scale_factor=upsampling_scale,
+                                                      mode=upsampling_mode, align_corners=align_corners))
+            else:
+                self.pre_upsampling_blocks.append(nn.Sequential())
+                self.upsampling_blocks.append(nn.ConvTranspose3d(in_width, out_width, kernel_size=kernal_size,
+                                                                 stride=upsampling_scale, padding=1))
+            self.layers.append(layer(n_blocks=n_blocks, block=block, in_planes=out_width, planes=out_width,
+                                     kernal_size=kernal_size))
 
     def forward(self, x):
         for pre, up, lay in zip(self.pre_upsampling_blocks, self.upsampling_blocks, self.layers):
@@ -67,8 +73,9 @@ class MyronenkoDecoder(nn.Module):
 class MirroredDecoder(nn.Module):
     def __init__(self, base_width=32, layer_blocks=None, layer=MyronenkoLayer, block=MyronenkoResidualBlock,
                  upsampling_scale=2, feature_reduction_scale=2, upsampling_mode="trilinear", align_corners=False,
-                 layer_widths=None):
+                 layer_widths=None, use_transposed_convolutions=False, kernal_size=3):
         super(MirroredDecoder, self).__init__()
+        self.use_transposed_convolutions = use_transposed_convolutions
         if layer_blocks is None:
             layer_blocks = [1, 1, 1, 1]
         self.layers = nn.ModuleList()
@@ -82,11 +89,17 @@ class MirroredDecoder(nn.Module):
             else:
                 out_width = int(base_width * (feature_reduction_scale ** (depth - 1)))
                 in_width = out_width * feature_reduction_scale
-            self.layers.append(layer(n_blocks=n_blocks, block=block, in_planes=in_width, planes=in_width))
+            self.layers.append(layer(n_blocks=n_blocks, block=block, in_planes=in_width, planes=in_width,
+                                     kernal_size=kernal_size))
             if depth != 0:
-                self.pre_upsampling_blocks.append(resnet.conv1x1x1(in_width, out_width, stride=1))
-                self.upsampling_blocks.append(partial(nn.functional.interpolate, scale_factor=upsampling_scale,
-                                                      mode=upsampling_mode, align_corners=align_corners))
+                if self.use_transposed_convolutions:
+                    self.pre_upsampling_blocks.append(resnet.conv1x1x1(in_width, out_width, stride=1))
+                    self.upsampling_blocks.append(partial(nn.functional.interpolate, scale_factor=upsampling_scale,
+                                                          mode=upsampling_mode, align_corners=align_corners))
+                else:
+                    self.pre_upsampling_blocks.append(nn.Sequential())
+                    self.upsampling_blocks.append(nn.ConvTranspose3d(in_width, out_width, kernel_size=kernal_size,
+                                                                     stride=upsampling_scale, padding=1))
 
     def forward(self, x):
         for pre, up, lay in zip(self.pre_upsampling_blocks, self.upsampling_blocks, self.layers[:-1]):

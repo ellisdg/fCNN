@@ -1,0 +1,65 @@
+{
+  "subjects_filename": "data/subjects_v3.json",
+  "surface_names": [
+    "CortexLeft",
+    "CortexRight"
+  ],
+  "surface_basename_template": null,
+  "feature_basenames": "T1w/T1w_acpc_dc_restore_brain.nii.gz",
+  "target_basenames": null,
+  "hemispheres": [
+    "L",
+    "R"
+  ],
+  "window": [
+    160,
+    192,
+    160
+  ],
+  "spacing": null,
+  "n_features": 1,
+  "optimizer": "Adam",
+  "package": "pytorch",
+  "loss": "vae_l1_loss",
+  "evaluation_metric": "L1Loss",
+  "custom_loss": true,
+  "regularized": false,
+  "vae": true,
+  "points_per_subject": 1,
+  "reorder": false,
+  "validation_points_per_subject": 1,
+  "save_best_only": false,
+  "n_epochs": 2000,
+  "min_learning_rate": 1e-08,
+  "decay_patience": 20,
+  "decay_factor": 0.5,
+  "early_stopping_patience": 50,
+  "flip": false,
+  "batch_size": 2,
+  "validation_batch_size": 2,
+  "initial_learning_rate": 1e-04,
+  "model_name": "VariationalAutoEncoder",
+  "model_kwargs": {"base_width":  32,
+    "encoder_blocks": [2, 2, 2, 2, 2, 2],
+    "decoder_mirrors_encoder": true,
+    "input_shape": [160, 192, 160],
+    "activation": null,
+    "vae_features": 128,
+    "var_layer_stride": 1,
+    "n_reduced_latent_feature_maps" : 1028,
+    "use_transposed_convlutions": true
+  },
+  "skip_validation": false,
+  "iterations_per_epoch": 1,
+  "n_outputs": 1,
+  "sequence": "AEDataset",
+  "n_dense_layers": 1,
+  "freeze_bias": false,
+  "metric_names": null,
+  "sequence_kwargs": {
+    "normalization": "zero_one_window",
+    "crop": true,
+    "resample": "linear"
+  },
+  "additional_training_args": {}
+}

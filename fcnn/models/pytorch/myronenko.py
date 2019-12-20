@@ -4,7 +4,7 @@ from fcnn.models.pytorch.resnet import conv3x3x3, conv1x1x1
 
 
 class MyronenkoConvolutionBlock(nn.Module):
-    def __init__(self, in_planes, planes, stride=1, norm_layer=None, norm_groups=8):
+    def __init__(self, in_planes, planes, stride=1, norm_layer=None, norm_groups=8, kernal_size=3):
         super(MyronenkoConvolutionBlock, self).__init__()
         self.norm_groups = norm_groups
         if norm_layer is None:
@@ -13,7 +13,7 @@ class MyronenkoConvolutionBlock(nn.Module):
             self.norm_layer = norm_layer
         self.norm1 = self.create_norm_layer(in_planes)
         self.relu = nn.ReLU(inplace=True)
-        self.conv = conv3x3x3(in_planes, planes, stride)
+        self.conv = conv3x3x3(in_planes, planes, stride, kernal_size=kernal_size)
 
     def forward(self, x):
         x = self.norm1(x)
@@ -29,12 +29,12 @@ class MyronenkoConvolutionBlock(nn.Module):
 
 
 class MyronenkoResidualBlock(nn.Module):
-    def __init__(self, in_planes, planes, stride=1, norm_layer=None, norm_groups=8):
+    def __init__(self, in_planes, planes, stride=1, norm_layer=None, norm_groups=8, kernal_size=3):
         super(MyronenkoResidualBlock, self).__init__()
         self.conv1 = MyronenkoConvolutionBlock(in_planes=in_planes, planes=planes, stride=stride, norm_layer=norm_layer,
-                                               norm_groups=norm_groups)
+                                               norm_groups=norm_groups, kernal_size=kernal_size)
         self.conv2 = MyronenkoConvolutionBlock(in_planes=planes, planes=planes, stride=stride, norm_layer=norm_layer,
-                                               norm_groups=norm_groups)
+                                               norm_groups=norm_groups, kernal_size=kernal_size)
         if in_planes != planes:
             self.sample = conv1x1x1(in_planes, planes)
         else:
@@ -55,13 +55,13 @@ class MyronenkoResidualBlock(nn.Module):
 
 
 class MyronenkoLayer(nn.Module):
-    def __init__(self, n_blocks, block, in_planes, planes, *args, dropout=None, **kwargs):
+    def __init__(self, n_blocks, block, in_planes, planes, *args, dropout=None, kernal_size=3, **kwargs):
         super(MyronenkoLayer, self).__init__()
         self.block = block
         self.n_blocks = n_blocks
         self.blocks = nn.ModuleList()
         for i in range(n_blocks):
-            self.blocks.append(block(in_planes, planes, *args, **kwargs))
+            self.blocks.append(block(in_planes, planes, *args, kernal_size=kernal_size, **kwargs))
             in_planes = planes
         if dropout is not None:
             self.dropout = nn.Dropout3d(dropout, inplace=True)
@@ -78,7 +78,7 @@ class MyronenkoLayer(nn.Module):
 
 class MyronenkoEncoder(nn.Module):
     def __init__(self, n_features, base_width=32, layer_blocks=None, layer=MyronenkoLayer, block=MyronenkoResidualBlock,
-                 feature_dilation=2, downsampling_stride=2, dropout=0.2, layer_widths=None):
+                 feature_dilation=2, downsampling_stride=2, dropout=0.2, layer_widths=None, kernal_size=3):
         super(MyronenkoEncoder, self).__init__()
         if layer_blocks is None:
             layer_blocks = [1, 2, 2, 4]
@@ -95,9 +95,10 @@ class MyronenkoEncoder(nn.Module):
             else:
                 layer_dropout = None
             self.layers.append(layer(n_blocks=n_blocks, block=block, in_planes=in_width, planes=out_width,
-                                     dropout=layer_dropout))
+                                     dropout=layer_dropout, kernal_size=kernal_size))
             if i != len(layer_blocks) - 1:
-                self.downsampling_convolutions.append(conv3x3x3(out_width, out_width, stride=downsampling_stride))
+                self.downsampling_convolutions.append(conv3x3x3(out_width, out_width, stride=downsampling_stride,
+                                                                kernal_size=kernal_size))
             in_width = out_width
 
     def forward(self, x):

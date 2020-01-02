@@ -47,7 +47,7 @@
     "vae_features": 512,
     "var_layer_stride": 1,
     "n_reduced_latent_feature_maps" : 1028,
-    "use_transposed_convolutions": true
+    "use_transposed_convolutions": false
   },
   "skip_validation": false,
   "iterations_per_epoch": 1,

@@ -55,7 +55,7 @@
       "{}_tfMRI_MOTOR_level2_LF_hp200_s2"],
   "sequence_kwargs": {
     "normalization": "foreground_zero_mean",
-    "target_normalization": "foreground_zero_mean",
+    "target_normalization": null,
     "crop": true,
     "resample": "linear"
   },

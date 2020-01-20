@@ -445,7 +445,9 @@ class WholeVolumeSupervisedRegressionSequence(WholeBrainAutoEncoder):
         self.target_normalization_func = normalization_name_to_function(target_normalization)
 
     def load_target_image(self, feature_image, input_filenames, target_index=None):
-        cifti_target_image = nib.load(input_filenames[self.target_index])
+        target_image_filename = input_filenames[self.target_index]
+        print(target_image_filename)
+        cifti_target_image = nib.load(target_image_filename)
         image_data = extract_cifti_volumetric_data(cifti_image=cifti_target_image,
                                                    map_names=self.metric_names,
                                                    subject_id=input_filenames[self.subject_id_index])

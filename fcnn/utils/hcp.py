@@ -134,6 +134,7 @@ def create_metric_masked_surface(surface, metric):
 
 
 def extract_cifti_volumetric_data(cifti_image, map_names, subject_id=None, model_axis=1):
+    map_names = list(map_names)
     if subject_id is not None:
         for i, map_name in enumerate(list(map_names)):
             map_names[i] = map_name.format(subject_id)

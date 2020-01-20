@@ -51,7 +51,12 @@ def foreground_zero_mean_normalize_image_data(data, channel_dim=4, background_va
     data = np.copy(data)
     if data.ndim == channel_dim or data.shape[channel_dim] == 1:
         # only 1 channel, so the std and mean calculations are straight forward
-        return np.divide(data - data.mean(), data.std())
+        foreground_mask = np.abs(data) > (background_value + tolerance)
+        foreground = data[foreground_mask]
+        mean = foreground.mean()
+        std = foreground.std()
+        data[foreground_mask] = np.divide(foreground - mean, std)
+        return data
     else:
         # std and mean need to be calculated for each channel in the 4th dimension
         for channel in range(data.shape[channel_dim]):

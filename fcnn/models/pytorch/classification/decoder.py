@@ -110,7 +110,10 @@ class MirroredDecoder(nn.Module):
             out_width = self.layer_widths[depth]
             in_width = self.layer_widths[depth + 1]
         else:
-            out_width = int(self.base_width * (self.feature_reduction_scale ** (depth - 1)))
+            if depth > 0:
+                out_width = int(self.base_width * (self.feature_reduction_scale ** (depth - 1)))
+            else:
+                out_width = self.base_width
             in_width = out_width * self.feature_reduction_scale
         return in_width, out_width
 

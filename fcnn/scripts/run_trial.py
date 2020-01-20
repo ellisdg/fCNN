@@ -11,7 +11,7 @@ from fcnn.utils.pytorch.dataset import (WholeBrainCIFTI2DenseScalarDataset, HCPR
                                         LabeledAEDataset, WindowedAEDataset)
 from fcnn.utils.utils import load_json
 from fcnn.utils.custom import get_metric_data_from_config
-from fcnn.models.resnet.resnet import compare_scores
+from fcnn.models.keras.resnet.resnet import compare_scores
 
 
 def wrapped_partial(func, *args, **kwargs):

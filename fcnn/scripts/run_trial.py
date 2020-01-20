@@ -5,8 +5,10 @@ import pandas as pd
 fcnn_path = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname((__file__)))))
 sys.path.append(fcnn_path)
 from fcnn.train import run_training
+from fcnn.utils import sequences as keras_sequences
 from fcnn.utils.sequences import (WholeBrainRegressionSequence, HCPRegressionSequence, ParcelBasedSequence,
                                   WindowedAutoEncoder)
+from fcnn.utils.pytorch import dataset as pytorch_datasets
 from fcnn.utils.pytorch.dataset import (WholeBrainCIFTI2DenseScalarDataset, HCPRegressionDataset, AEDataset,
                                         LabeledAEDataset, WindowedAEDataset)
 from fcnn.utils.utils import load_json
@@ -110,7 +112,12 @@ def main():
     else:
         directory = "."
 
-    if "_wb_" in os.path.basename(config_filename):
+    if "sequence" in config:
+        try:
+            sequence_class = getattr(keras_sequences, config["sequence"])
+        except AttributeError as error:
+            sequence_class = getattr(pytorch_datasets, config["sequence"])
+    elif "_wb_" in os.path.basename(config_filename):
         if "package" in config and config["package"] == "pytorch":
             if config["sequence"] == "AEDataset":
                 sequence_class = AEDataset

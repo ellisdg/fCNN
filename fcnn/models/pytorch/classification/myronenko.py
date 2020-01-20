@@ -1,6 +1,5 @@
 from torch import nn as nn
-
-from fcnn.models.pytorch.resnet import conv3x3x3, conv1x1x1
+from .resnet import conv3x3x3, conv1x1x1
 
 
 class MyronenkoConvolutionBlock(nn.Module):

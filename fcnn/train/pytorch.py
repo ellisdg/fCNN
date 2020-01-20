@@ -153,9 +153,14 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
             x, y = training_dataset[index]
             if not isinstance(x, np.ndarray):
                 x = x.numpy()
+                y = y.numpy
             x_image = nib.Nifti1Image(x[index].squeeze(), affine=np.diag(np.ones(4)))
             x_image.to_filename(model_filename.replace(".h5",
                                                        "_input_test_{}.nii.gz".format(index)))
+            if len(y.shape) >= 3:
+                y_image = nib.Nifti1Image(y[index].squeeze(), affine=np.diag(np.ones(4)))
+                y_image.to_filename(model_filename.replace(".h5",
+                                                           "_target_test_{}.nii.gz".format(index)))
 
     if 'skip_validation' in config and config['skip_validation']:
         validation_loader = None

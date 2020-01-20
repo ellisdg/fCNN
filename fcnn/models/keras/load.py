@@ -1,5 +1,5 @@
 from keras.models import load_model as keras_load_model
-from fcnn.models.resnet.resnet import sensitivity, specificity, j_stat, compare_scores
+from .resnet.resnet import sensitivity, specificity, j_stat, compare_scores
 
 
 def load_model(filename, custom_objects={'sensitivity': sensitivity, 'specificity': specificity, 'j_stat': j_stat,

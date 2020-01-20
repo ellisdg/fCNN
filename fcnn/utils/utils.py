@@ -47,6 +47,24 @@ def zero_mean_normalize_image_data(data, axis=(0, 1, 2)):
     return np.divide(data - data.mean(axis=axis), data.std(axis=axis))
 
 
+def foreground_zero_mean_normalize_image_data(data, channel_dim=4, background_value=0, tolerance=1e-5):
+    data = np.copy(data)
+    if data.ndim == channel_dim or data.shape[channel_dim] == 1:
+        # only 1 channel, so the std and mean calculations are straight forward
+        return np.divide(data - data.mean(), data.std())
+    else:
+        # std and mean need to be calculated for each channel in the 4th dimension
+        for channel in range(data.shape[channel_dim]):
+            channel_data = data[..., channel]
+            channel_mask = np.abs(channel_data) > (background_value + tolerance)
+            channel_foreground = channel_data[channel_mask]
+            channel_mean = channel_foreground.mean()
+            channel_std = channel_foreground.std()
+            channel_data[channel_mask] = np.divide(channel_foreground - channel_mean, channel_std)
+            data[..., channel] = channel_data
+        return data
+
+
 def zero_floor_normalize_image_data(data, axis=(0, 1, 2), floor_percentile=1, floor=0):
     floor_threshold = np.percentile(data, floor_percentile, axis=axis)
     if data.ndim != len(axis):
@@ -157,3 +175,7 @@ def convert_one_hot_to_label_map(one_hot_encoding, labels, axis=1):
     for index, label in enumerate(labels):
         label_map[label_map == index] = label
     return label_map
+
+
+def copy_image(image):
+    return image.__class__(np.copy(image.dataobj), image.affine)

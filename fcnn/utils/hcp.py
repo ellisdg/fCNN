@@ -131,3 +131,22 @@ def create_metric_masked_surface(surface, metric):
     for new_idx, idx in enumerate(vert_indices):
         masked_faces[masked_faces == idx] = new_idx
     return new_surface_like([masked_vertices, masked_faces], surface)
+
+
+def extract_cifti_volumetric_data(cifti_image, map_names, subject_id=None, model_axis=1):
+    if subject_id is not None:
+        for i, map_name in enumerate(list(map_names)):
+            map_names[i] = map_name.format(subject_id)
+    data = get_nibabel_data(cifti_image)
+    all_map_names = extract_cifti_scalar_map_names(cifti_image)
+    mask = np.in1d(all_map_names, map_names)
+    data = np.swapaxes(data[mask], 0, -1)
+    model_axis = cifti_image.header.get_axis(model_axis)
+    volume_data = np.zeros(model_axis.volume_shape + (data.shape[-1],))
+    for voxel, values in zip(model_axis.voxel, data):
+        volume_data[tuple(voxel)] = values
+    return volume_data
+
+
+def get_nibabel_data(cifti_object):
+    return cifti_object.get_fdata()

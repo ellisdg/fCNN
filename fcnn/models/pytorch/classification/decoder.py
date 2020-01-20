@@ -77,18 +77,19 @@ class MirroredDecoder(nn.Module):
         super(MirroredDecoder, self).__init__()
         self.use_transposed_convolutions = use_transposed_convolutions
         if layer_blocks is None:
-            layer_blocks = [1, 1, 1, 1]
+            self.layer_blocks = [1, 1, 1, 1]
+        else:
+            self.layer_blocks = layer_blocks
         self.layers = nn.ModuleList()
         self.pre_upsampling_blocks = nn.ModuleList()
         self.upsampling_blocks = list()
-        for i, n_blocks in enumerate(layer_blocks):
-            depth = len(layer_blocks) - (i + 1)
-            if layer_widths is not None:
-                out_width = layer_widths[depth]
-                in_width = layer_widths[depth + 1]
-            else:
-                out_width = int(base_width * (feature_reduction_scale ** (depth - 1)))
-                in_width = out_width * feature_reduction_scale
+        self.base_width = base_width
+        self.feature_reduction_scale = feature_reduction_scale
+        self.layer_widths = layer_widths
+        for i, n_blocks in enumerate(self.layer_blocks):
+            depth = len(self.layer_blocks) - (i + 1)
+            in_width, out_width = self.calculate_layer_widths(depth)
+
             self.layers.append(layer(n_blocks=n_blocks, block=block, in_planes=in_width, planes=in_width,
                                      kernal_size=kernal_size))
             if depth != 0:
@@ -100,6 +101,15 @@ class MirroredDecoder(nn.Module):
                     self.pre_upsampling_blocks.append(nn.Sequential())
                     self.upsampling_blocks.append(nn.ConvTranspose3d(in_width, out_width, kernel_size=kernal_size,
                                                                      stride=upsampling_scale, padding=1))
+
+    def calculate_layer_widths(self, depth):
+        if self.layer_widths is not None:
+            out_width = self.layer_widths[depth]
+            in_width = self.layer_widths[depth + 1]
+        else:
+            out_width = int(self.base_width * (self.feature_reduction_scale ** (depth - 1)))
+            in_width = out_width * self.feature_reduction_scale
+        return in_width, out_width
 
     def forward(self, x):
         for pre, up, lay in zip(self.pre_upsampling_blocks, self.upsampling_blocks, self.layers[:-1]):

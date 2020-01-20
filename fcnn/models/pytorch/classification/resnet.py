@@ -5,7 +5,8 @@ import torch.nn as nn
 
 
 __all__ = ['ResNet', 'resnet_18', 'resnet_34', 'resnet_50', 'resnet_101',
-           'resnet_152', 'resnext_50_32x4d', 'resnext_101_32x8d']
+           'resnet_152', 'resnext_50_32x4d', 'resnext_101_32x8d', 'conv3x3x3',
+           'conv1x1x1']
 
 
 def conv3x3x3(in_planes, out_planes, stride=1, groups=1, dilation=1, kernal_size=3):

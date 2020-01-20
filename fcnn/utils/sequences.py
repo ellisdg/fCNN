@@ -3,7 +3,7 @@ import numpy as np
 import nibabel as nib
 from keras.utils import Sequence
 from nilearn.image import new_img_like
-from unet3d.utils.nilearn_custom_utils.nilearn_utils import crop_img, reorder_affine
+from .nilearn_custom_utils.nilearn_utils import crop_img, reorder_affine
 from unet3d.utils.utils import resize_affine, resample
 from unet3d.augment import scale_affine, add_noise
 from unet3d.data import combine_images
@@ -278,12 +278,14 @@ class SubjectPredictionSequence(HCPParent, Sequence):
 
 
 class WholeBrainRegressionSequence(HCPRegressionSequence):
-    def __init__(self, resample='linear', crop=True, augment_scale_std=0, additive_noise_std=0, **kwargs):
+    def __init__(self, resample='linear', crop=True, cropping_pad_width=1, augment_scale_std=0, additive_noise_std=0,
+                 **kwargs):
         super().__init__(**kwargs)
         self.resample = resample
         self.crop = crop
         self.augment_scale_std = augment_scale_std
         self.additive_noise_std = additive_noise_std
+        self.cropping_pad_width = 1
 
     def __len__(self):
         return int(np.ceil(np.divide(len(self.filenames) * self.iterations_per_epoch, self.batch_size)))
@@ -307,7 +309,7 @@ class WholeBrainRegressionSequence(HCPRegressionSequence):
         if self.reorder:
             affine = reorder_affine(affine, shape)
         if self.crop:
-            affine, shape = crop_img(feature_image, return_affine=True, pad=True)
+            affine, shape = crop_img(feature_image, return_affine=True, pad=self.cropping_pad_width)
         if self.augment_scale_std:
             scale = np.random.normal(1, self.augment_scale_std, 3)
             affine = scale_affine(affine, shape, scale)
@@ -446,7 +448,6 @@ class WholeVolumeSupervisedRegressionSequence(WholeBrainAutoEncoder):
 
     def load_target_image(self, feature_image, input_filenames, target_index=None):
         target_image_filename = input_filenames[self.target_index]
-        print(target_image_filename)
         cifti_target_image = nib.load(target_image_filename)
         image_data = extract_cifti_volumetric_data(cifti_image=cifti_target_image,
                                                    map_names=self.metric_names,

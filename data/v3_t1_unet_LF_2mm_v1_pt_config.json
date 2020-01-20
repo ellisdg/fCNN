@@ -57,7 +57,8 @@
     "normalization": "foreground_zero_mean",
     "target_normalization": null,
     "crop": true,
-    "resample": "linear"
+    "resample": "linear",
+    "cropping_pad_width": 6
   },
   "additional_training_args": {}
 }

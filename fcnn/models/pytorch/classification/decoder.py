@@ -82,7 +82,10 @@ class MirroredDecoder(nn.Module):
             self.layer_blocks = layer_blocks
         self.layers = nn.ModuleList()
         self.pre_upsampling_blocks = nn.ModuleList()
-        self.upsampling_blocks = list()
+        if use_transposed_convolutions:
+            self.upsampling_blocks = nn.ModuleList()
+        else:
+            self.upsampling_blocks = list()
         self.base_width = base_width
         self.feature_reduction_scale = feature_reduction_scale
         self.layer_widths = layer_widths
@@ -94,13 +97,13 @@ class MirroredDecoder(nn.Module):
                                      kernal_size=kernal_size))
             if depth != 0:
                 if self.use_transposed_convolutions:
-                    self.pre_upsampling_blocks.append(resnet.conv1x1x1(in_width, out_width, stride=1))
-                    self.upsampling_blocks.append(partial(nn.functional.interpolate, scale_factor=upsampling_scale,
-                                                          mode=upsampling_mode, align_corners=align_corners))
-                else:
                     self.pre_upsampling_blocks.append(nn.Sequential())
                     self.upsampling_blocks.append(nn.ConvTranspose3d(in_width, out_width, kernel_size=kernal_size,
                                                                      stride=upsampling_scale, padding=1))
+                else:
+                    self.pre_upsampling_blocks.append(resnet.conv1x1x1(in_width, out_width, stride=1))
+                    self.upsampling_blocks.append(partial(nn.functional.interpolate, scale_factor=upsampling_scale,
+                                                          mode=upsampling_mode, align_corners=align_corners))
 
     def calculate_layer_widths(self, depth):
         if self.layer_widths is not None:

@@ -230,9 +230,9 @@ def epoch_training(train_loader, model, criterion, optimizer, epoch, n_gpus=None
                     print("Max memory cached (device {}):".format(i_gpu),
                           human_readable_size(torch.cuda.max_memory_cached(i_gpu)))
 
-        print(model)
-        print(images)
-        print(target)
+        print(batch_size)
+        print(images.shape)
+        print(target.shape)
         loss, batch_size = batch_loss(model, images, target, criterion, n_gpus=n_gpus, regularized=regularized,
                                       vae=vae)
         print(loss)

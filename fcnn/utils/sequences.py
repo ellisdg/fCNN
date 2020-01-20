@@ -285,7 +285,7 @@ class WholeBrainRegressionSequence(HCPRegressionSequence):
         self.crop = crop
         self.augment_scale_std = augment_scale_std
         self.additive_noise_std = additive_noise_std
-        self.cropping_pad_width = 1
+        self.cropping_pad_width = cropping_pad_width
 
     def __len__(self):
         return int(np.ceil(np.divide(len(self.filenames) * self.iterations_per_epoch, self.batch_size)))

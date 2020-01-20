@@ -42,6 +42,8 @@ def generate_hcp_filenames(directory, surface_basename_template, target_basename
             metric_filenames = os.path.join(subject_dir, target_basenames)
             if "{}" in metric_filenames:
                 metric_filenames = metric_filenames.format(subject_id)
+            if not os.path.exists(metric_filenames):
+                continue
         elif target_basenames is not None:
             metric_filenames = [os.path.join(subject_dir, mbn.format(subject_id)) for mbn in target_basenames]
         else:

@@ -4,9 +4,9 @@ import numpy as np
 import torch.nn as nn
 import torch
 
-from fcnn.models.pytorch.decoder import MyronenkoDecoder, MirroredDecoder
-from fcnn.models.pytorch.myronenko import MyronenkoEncoder, MyronenkoConvolutionBlock
-from fcnn.models.pytorch.resnet import conv1x1x1
+from fcnn.models.pytorch.classification.decoder import MyronenkoDecoder, MirroredDecoder
+from fcnn.models.pytorch.classification.myronenko import MyronenkoEncoder, MyronenkoConvolutionBlock
+from fcnn.models.pytorch.classification.resnet import conv1x1x1
 
 
 class VariationalBlock(nn.Module):

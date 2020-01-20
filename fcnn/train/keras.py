@@ -2,8 +2,8 @@ import os
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, CSVLogger
 import keras
 import nibabel as nib
-from fcnn.models.load import load_model
-from fcnn.models.build import build_model
+from fcnn.models.keras.load import load_model
+from fcnn.models.keras.build import build_model
 import numpy as np
 from fcnn.utils.sequences import HCPRegressionSequence
 

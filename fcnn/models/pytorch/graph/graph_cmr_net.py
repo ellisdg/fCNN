@@ -11,7 +11,7 @@ import torch.nn as nn
 
 from .graph_cmr_layers import GraphResBlock, GraphLinear
 from .utils import load_surface, AdjacencyMatrixWrapper
-from ..resnet import resnet_18
+from ..classification.resnet import resnet_18
 
 
 class GraphCMR(nn.Module):

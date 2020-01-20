@@ -21,6 +21,7 @@ class UNetDecoder(MirroredDecoder):
         in_width, out_width = super().calculate_layer_widths(depth=depth)
         if depth != len(self.layer_blocks) - 1:
             in_width += out_width
+        print("{}:".format(depth), in_width, out_width)
         return in_width, out_width
 
     def forward(self, inputs):

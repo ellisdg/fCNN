@@ -345,7 +345,7 @@ class WholeBrainAutoEncoder(WholeBrainRegressionSequence):
         if self.reorder:
             affine = reorder_affine(affine, shape)
         if self.crop:
-            affine, shape = crop_img(feature_image, return_affine=True, pad=True)
+            affine, shape = crop_img(feature_image, return_affine=True, pad=self.cropping_pad_width)
         if self.augment_scale_std:
             scale = np.random.normal(1, self.augment_scale_std, 3)
             affine = scale_affine(affine, shape, scale)

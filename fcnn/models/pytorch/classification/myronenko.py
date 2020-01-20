@@ -98,6 +98,7 @@ class MyronenkoEncoder(nn.Module):
             if i != len(layer_blocks) - 1:
                 self.downsampling_convolutions.append(conv3x3x3(out_width, out_width, stride=downsampling_stride,
                                                                 kernal_size=kernal_size))
+            print("Encoder {}:".format(i), in_width, out_width)
             in_width = out_width
 
     def forward(self, x):

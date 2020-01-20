@@ -450,7 +450,8 @@ class WholeVolumeSupervisedRegressionSequence(WholeBrainAutoEncoder):
                                                    map_names=self.metric_names,
                                                    subject_id=input_filenames[self.subject_id_index])
         image_data = self.target_normalization_func(image_data)
-        return new_img_like(ref_niimg=feature_image, data=image_data, affine=cifti_target_image.affine)
+        return new_img_like(ref_niimg=feature_image, data=image_data,
+                            affine=cifti_target_image.header.get_axis(1).affine)
 
     def resample_input(self, input_filenames, normalize=True):
         input_image, target_image = self.resample_image(input_filenames,

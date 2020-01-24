@@ -67,7 +67,7 @@ def main():
 
 def write_struct6_image(subject_id, hcp_dir, feature_basenames, channels_to_normalize, overwrite=False,
                         normalize_func=zero_one_window, output_channels=None, crop=False):
-    subject_dir = os.path.join(hcp_dir, subject_id)
+    subject_dir = os.path.join(hcp_dir, str(subject_id))
     output_filename = os.path.join(subject_dir, "T1w", "struct6_normalized.nii.gz")
     print(output_filename)
     if overwrite or not os.path.exists(output_filename):

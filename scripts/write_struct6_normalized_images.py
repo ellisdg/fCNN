@@ -60,13 +60,18 @@ def main():
                    overwrite=True,
                    output_channels=(((2, 3), "T1w/Diffusion/md.nii.gz"),
                                     ((3, 6), "T1w/Diffusion/fa.nii.gz"),
-                                    ((2, 6), "T1w/Diffusion/dti_normalized.nii.gz")))
+                                    ((2, 6), "T1w/Diffusion/dti_normalized.nii.gz")),
+                   normalization_kwargs={"floor_percentile": 25,
+                                         "ceiling_percentile": 100})
     with Pool(16) as pool:
         pool.map(func, subject_ids)
 
 
 def write_struct6_image(subject_id, hcp_dir, feature_basenames, channels_to_normalize, overwrite=False,
-                        normalize_func=zero_one_window, output_channels=None, crop=False):
+                        normalize_func=zero_one_window, output_channels=None, crop=False,
+                        normalization_kwargs=None):
+    if normalization_kwargs is None:
+        normalization_kwargs = dict()
     subject_dir = os.path.join(hcp_dir, str(subject_id))
     output_filename = os.path.join(subject_dir, "T1w", "struct6_normalized.nii.gz")
     print(output_filename)
@@ -89,7 +94,7 @@ def write_struct6_image(subject_id, hcp_dir, feature_basenames, channels_to_norm
         for channel, normalize in zip(range(image.shape[3]), channels_to_normalize):
             data = image_data[..., channel]
             if normalize:
-                data = normalize_func(data)
+                data = normalize_func(data, **normalization_kwargs)
             image_data_list.append(data)
         image_data = np.moveaxis(np.asarray(image_data_list), 0, 3)
         image = image.__class__(image_data, image.affine)

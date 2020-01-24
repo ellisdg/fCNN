@@ -72,7 +72,7 @@ def write_struct6_image(subject_id, hcp_dir, feature_basenames, channels_to_norm
     print(output_filename)
     if overwrite or not os.path.exists(output_filename):
         feature_filenames = [os.path.join(subject_dir, fbn) for fbn in feature_basenames]
-        feature_images = [nib.load(fn) for fn in feature_filenames][::-1]
+        feature_images = [nib.load(fn) for fn in feature_filenames]
         image = combine_images(feature_images,
                                axis=3,
                                resample_unequal_affines=True,
@@ -91,12 +91,13 @@ def write_struct6_image(subject_id, hcp_dir, feature_basenames, channels_to_norm
             if normalize:
                 data = normalize_func(data)
             image_data_list.append(data)
-        image_data = np.asarray(image_data_list)
+        image_data = np.moveaxis(np.asarray(image_data_list), 0, 3)
         image = image.__class__(image_data, image.affine)
         image.to_filename(output_filename)
         if output_channels is not None:
             for (start, stop), basename in output_channels:
                 output_channel_filename = os.path.join(subject_dir, basename)
+                print(output_channel_filename)
                 if overwrite or os.path.exists(output_channel_filename):
                     image.__class__(np.squeeze(image_data[..., start:stop]),
                                     image.affine).to_filename(output_channel_filename)

@@ -55,7 +55,7 @@ def main():
 
     func = partial(write_struct6_image,
                    hcp_dir=system_config['directory'],
-                   config=feature_basenames,
+                   feature_basenames=feature_basenames,
                    channels_to_normalize=channels_to_normalize,
                    overwrite=False,
                    output_channels=(((2, 3), "T1w/Diffusion/md.nii.gz"),

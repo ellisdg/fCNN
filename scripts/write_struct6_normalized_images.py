@@ -62,7 +62,7 @@ def main():
                                     ((3, 6), "T1w/Diffusion/fa.nii.gz"),
                                     ((2, 6), "T1w/Diffusion/dti_normalized.nii.gz")),
                    normalization_kwargs={"floor_percentile": 25,
-                                         "ceiling_percentile": 100})
+                                         "ceiling_percentile": 99.9})
     with Pool(16) as pool:
         pool.map(func, subject_ids)
 

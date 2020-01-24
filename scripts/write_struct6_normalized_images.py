@@ -76,14 +76,14 @@ def write_struct6_image(subject_id, hcp_dir, feature_basenames, channels_to_norm
         image = combine_images(feature_images,
                                axis=3,
                                resample_unequal_affines=True,
-                               interpolation="continuous")
+                               interpolation="linear")
         if crop:
             mask_filename = os.path.join(subject_dir, "T1w", "brainmask_fs.nii.gz")
             mask_image = nib.load(mask_filename)
             resampled_mask = resample_to_img(mask_image, image, interpolation="nearest")
             crop_affine, crop_shape = crop_img(resampled_mask, return_affine=True, pad=False)
             reordered_affine = reorder_affine(crop_affine, crop_shape)
-            image = resample(image, reordered_affine, crop_shape, interpolation="continuous")
+            image = resample(image, reordered_affine, crop_shape, interpolation="linear")
         image_data = image.get_fdata()
         image_data_list = list()
         for channel, normalize in zip(range(image.shape[3]), channels_to_normalize):

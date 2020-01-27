@@ -18,6 +18,11 @@ def main(args):
         output_basename = str(args[5])
     except IndexError:
         output_basename = ""
+    make_average_cifti(config=config, directory=directory, subset=subset, output_directory=output_directory,
+                       output_basename=output_basename)
+
+
+def make_average_cifti(config, directory, output_directory, subset, output_basename):
     if subset not in config and "subjects_filename" in config:
         subjects_config = load_json(config["subjects_filename"])
         subject_ids = subjects_config[subset]

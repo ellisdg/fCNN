@@ -41,7 +41,7 @@ def make_average_cifti_volume(config, directory, output_directory, subset, outpu
         subject_ids = config[subset]
 
     target_basenames = config["target_basenames"]
-    if type(target_basenames) == str:
+    if type(target_basenames) != list:
         target_basenames = [target_basenames]
     for target_basename in target_basenames:
         make_average_cifti_volume_for_target(target_basename, output_directory, output_basename, subset, subject_ids,

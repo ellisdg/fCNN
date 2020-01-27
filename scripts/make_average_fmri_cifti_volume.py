@@ -31,6 +31,10 @@ def make_average_cifti_volume(config, directory, output_directory, subset, outpu
     if reference_volume is None:
         reference_volume = "/work/aizenberg/dgellis/tools/HCPpipelines/global/templates/MNI152_T1_2mm.nii.gz"
     if subset not in config and "subjects_filename" in config:
+        if os.path.exists(config["subjects_filename"]):
+            subjects_config_filename = config["subjects_filename"]
+        else:
+            subjects_config_filename = os.path.join(os.path.dirname(__file__), "..", config["subjects_filename"])
         subjects_config = load_json(config["subjects_filename"])
         subject_ids = subjects_config[subset]
     else:

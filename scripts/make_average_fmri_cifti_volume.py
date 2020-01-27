@@ -27,7 +27,23 @@ def run_command(cmd):
     subprocess.call(cmd)
 
 
-def make_average_cifti_volume(config, directory, output_directory, subset, output_basename, reference_volume=None):
+def compute_average_image(image_filenames, output_filename):
+    import nibabel as nib
+    data = None
+    ref_image = None
+    for fn in image_filenames:
+        image = nib.load(fn)
+        if data is None:
+            data = image.get_fdata()/len(image_filenames)
+            ref_image = image
+        else:
+            data[:] += image.get_fdata()/len(image_filenames)
+    average = ref_image.__class__(data=data, affine=ref_image.affine)
+    average.to_filename(output_filename)
+
+
+def make_average_cifti_volume(config, directory, output_directory, subset, output_basename, reference_volume=None,
+                              overwrite=False):
     if reference_volume is None:
         reference_volume = "/work/aizenberg/dgellis/tools/HCPpipelines/global/templates/MNI152_T1_2mm.nii.gz"
     if subset not in config and "subjects_filename" in config:
@@ -45,31 +61,32 @@ def make_average_cifti_volume(config, directory, output_directory, subset, outpu
         target_basenames = [target_basenames]
     for target_basename in target_basenames:
         make_average_cifti_volume_for_target(target_basename, output_directory, output_basename, subset, subject_ids,
-                                             directory, reference_volume)
+                                             directory, reference_volume, overwrite=overwrite)
 
 
 def make_average_cifti_volume_for_target(target_basename, output_directory, output_basename, subset, subject_ids,
-                                         directory, reference_volume):
+                                         directory, reference_volume, overwrite=False):
     output_filename = os.path.join(output_directory,
                                    output_basename + os.path.basename(target_basename.format(subset)))
-    cifti_avg_cmd = ["wb_command", "-cifti-average", output_filename]
+    image_filenames = list()
     for subject_id in subject_ids:
         subject_id = str(subject_id)
 
         input_volume = os.path.join(directory, subject_id, target_basename.format(subject_id))
         nifti_volume = input_volume.replace(".volume.dscalar", "")
-        convert_cmd = ["wb_command", "-cifti-convert", "-to-nifti", input_volume, nifti_volume]
-        run_command(convert_cmd)
+        convert_cmd = ["wb_command", "-cifti-separate", input_volume, "COLUMN", "-volume-all", nifti_volume]
+        if overwrite or not os.path.exists(nifti_volume):
+            run_command(convert_cmd)
 
         warpfield = os.path.join(directory, subject_id, "MNINonLinear", "xfms", "acpc_dc2standard.nii.gz")
         output_volume = nifti_volume.replace("T1w", "MNINonLinear").replace(".nii", "_resampled.nii")
-        cifti_resample_cmd = ["wb_command", "-volume-warpfield-resample", nifti_volume, warpfield, reference_volume,
-                              "TRILINEAR", output_volume, "-fnirt", reference_volume]
-        run_command(cifti_resample_cmd)
+        resample_cmd = ["wb_command", "-volume-warpfield-resample", nifti_volume, warpfield, reference_volume,
+                        "TRILINEAR", output_volume, "-fnirt", reference_volume]
+        if overwrite or not os.path.exists(output_volume):
+            run_command(resample_cmd)
 
-        cifti_avg_cmd.append("-cifti")
-        cifti_avg_cmd.append(output_volume)
-    run_command(cifti_avg_cmd)
+        image_filenames.append(output_volume)
+    compute_average_image(image_filenames, output_filename)
 
 
 if __name__ == "__main__":

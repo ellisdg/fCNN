@@ -73,19 +73,20 @@ def make_average_cifti_volume_for_target(target_basename, output_directory, outp
         subject_id = str(subject_id)
 
         input_volume = os.path.join(directory, subject_id, target_basename.format(subject_id))
-        nifti_volume = input_volume.replace(".volume.dscalar", "")
-        convert_cmd = ["wb_command", "-cifti-separate", input_volume, "COLUMN", "-volume-all", nifti_volume]
-        if overwrite or not os.path.exists(nifti_volume):
-            run_command(convert_cmd)
+        if os.path.exists(input_volume):
+            nifti_volume = input_volume.replace(".volume.dscalar", "")
+            convert_cmd = ["wb_command", "-cifti-separate", input_volume, "COLUMN", "-volume-all", nifti_volume]
+            if overwrite or not os.path.exists(nifti_volume):
+                run_command(convert_cmd)
 
-        warpfield = os.path.join(directory, subject_id, "MNINonLinear", "xfms", "acpc_dc2standard.nii.gz")
-        output_volume = nifti_volume.replace("T1w", "MNINonLinear").replace(".nii", "_resampled.nii")
-        resample_cmd = ["wb_command", "-volume-warpfield-resample", nifti_volume, warpfield, reference_volume,
-                        "TRILINEAR", output_volume, "-fnirt", reference_volume]
-        if overwrite or not os.path.exists(output_volume):
-            run_command(resample_cmd)
+            warpfield = os.path.join(directory, subject_id, "MNINonLinear", "xfms", "acpc_dc2standard.nii.gz")
+            output_volume = nifti_volume.replace("T1w", "MNINonLinear").replace(".nii", "_resampled.nii")
+            resample_cmd = ["wb_command", "-volume-warpfield-resample", nifti_volume, warpfield, reference_volume,
+                            "TRILINEAR", output_volume, "-fnirt", reference_volume]
+            if overwrite or not os.path.exists(output_volume):
+                run_command(resample_cmd)
 
-        image_filenames.append(output_volume)
+            image_filenames.append(output_volume)
     compute_average_image(image_filenames, output_filename)
 
 

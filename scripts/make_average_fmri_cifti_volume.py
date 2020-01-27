@@ -35,7 +35,7 @@ def make_average_cifti_volume(config, directory, output_directory, subset, outpu
             subjects_config_filename = config["subjects_filename"]
         else:
             subjects_config_filename = os.path.join(os.path.dirname(__file__), "..", config["subjects_filename"])
-        subjects_config = load_json(config["subjects_filename"])
+        subjects_config = load_json(subjects_config_filename)
         subject_ids = subjects_config[subset]
     else:
         subject_ids = config[subset]

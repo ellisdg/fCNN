@@ -24,10 +24,13 @@ def main(args):
     else:
         subject_ids = config[subset]
 
+    output_directory = os.path.dirname(average_filename)
+    basename_basename = os.path.basename(basename)
+    output_template = os.path.join(output_directory, basename_basename).format(subset)
     compute_error_metrics(average_filename=average_filename, directory=directory, subject_ids=subject_ids,
                           basename=basename,
-                          output_mae_filename=average_filename.replace(".nii", "_mae.csv"),
-                          output_mse_filename=average_filename.replace(".nii", "_mse.csv"))
+                          output_mae_filename=output_template.replace(".nii", "_mae.csv"),
+                          output_mse_filename=output_template.replace(".nii", "_mse.csv"))
 
 
 def compute_error_metrics(average_filename, subject_ids, directory, basename, output_mae_filename, output_mse_filename,

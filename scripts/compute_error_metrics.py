@@ -41,7 +41,7 @@ def compute_error_metrics(average_filename, subject_ids, directory, basename, ou
     mse_rows = list()
     index = list()
     for subject_id in subject_ids:
-        fn = os.path.join(directory, subject_id, basename)
+        fn = os.path.join(directory, subject_id, basename.format(subject_id))
         if os.path.exists(fn):
             index.append(subject_id)
             error_filename = fn.replace(".nii", "_error.nii")

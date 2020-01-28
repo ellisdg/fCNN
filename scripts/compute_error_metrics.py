@@ -52,7 +52,7 @@ def compute_error_metrics(average_filename, subject_ids, directory, basename, ou
             if overwrite or not os.path.exists(error_filename):
                 image = nib.load(fn)
                 error_data = image.get_fdata() - average_image.get_fdata()
-                error_image = image.__class__(data=error_data, affine=image.affine)
+                error_image = image.__class__(error_data, affine=image.affine)
                 error_image.to_filename(error_filename)
             else:
                 error_image = nib.load(error_filename)

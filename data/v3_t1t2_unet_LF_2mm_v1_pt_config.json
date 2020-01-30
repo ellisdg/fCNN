@@ -17,7 +17,7 @@
     144
   ],
   "spacing": null,
-  "n_features": 1,
+  "n_features": 2,
   "optimizer": "Adam",
   "package": "pytorch",
   "loss": "MSELoss",

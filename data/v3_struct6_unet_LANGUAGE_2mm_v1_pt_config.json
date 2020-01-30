@@ -6,7 +6,7 @@
   ],
   "surface_basename_template": null,
   "feature_basenames": "T1w/struct6_normalized.nii.gz",
-  "target_basenames": "T1w/Results/tfMRI_MOTOR/tfMRI_MOTOR_hp200_s2_level2.feat/{}_tfMRI_MOTOR_level2_zstat_hp200_s2.volume.dscalar.nii",
+  "target_basenames": "T1w/Results/tfMRI_LANGUAGE/tfMRI_LANGUAGE_hp200_s2_level2.feat/{}_tfMRI_LANGUAGE_level2_zstat_hp200_s2.volume.dscalar.nii",
   "hemispheres": [
     "L",
     "R"

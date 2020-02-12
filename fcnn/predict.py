@@ -89,7 +89,7 @@ def make_predictions(config_filename, model_filename, output_directory='./', n_s
 
     if single_subject is None:
         if package == "pytorch":
-            from .train.pytorch import build_or_load_model
+            from fcnn.models.pytorch.build import build_or_load_model
 
             model = build_or_load_model(model_filename=model_filename, model_name=config["model_name"],
                                         n_features=config["n_features"], n_outputs=config["n_outputs"],
@@ -108,7 +108,7 @@ def make_predictions(config_filename, model_filename, output_directory='./', n_s
         if single_subject is None or subject_id == single_subject:
             if model is None:
                 if package == "pytorch":
-                    from .train.pytorch import build_or_load_model
+                    from fcnn.models.pytorch.build import build_or_load_model
 
                     model = build_or_load_model(model_filename=model_filename, model_name=config["model_name"],
                                                 n_features=config["n_features"], n_outputs=config["n_outputs"],
@@ -217,7 +217,8 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
                                            criterion_name, metric_names, surface_names, prediction_dir=None,
                                            output_csv=None, reference=None, n_gpus=1, n_workers=1, batch_size=1,
                                            model_kwargs=None):
-    from .train.pytorch import build_or_load_model, load_criterion
+    from .train.pytorch import load_criterion
+    from fcnn.models.pytorch.build import build_or_load_model
     from .utils.pytorch.dataset import WholeBrainCIFTI2DenseScalarDataset
     import torch
     from torch.utils.data import DataLoader
@@ -284,7 +285,8 @@ def pytorch_whole_brain_autoencoder_predictions(model_filename, model_name, n_fe
                                                 criterion_name, prediction_dir=None, output_csv=None, reference=None,
                                                 n_gpus=1, n_workers=1, batch_size=1, model_kwargs=None, n_outputs=None,
                                                 sequence_kwargs=None, spacing=None, sequence=None):
-    from .train.pytorch import build_or_load_model, load_criterion
+    from .train.pytorch import load_criterion
+    from fcnn.models.pytorch.build import build_or_load_model
     from .utils.pytorch.dataset import AEDataset, LabeledAEDataset
     import torch
     from nilearn.image import new_img_like

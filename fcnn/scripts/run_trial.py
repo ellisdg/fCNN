@@ -30,6 +30,8 @@ def generate_hcp_filenames(directory, surface_basename_template, target_basename
         subject_dir = os.path.join(directory, subject_id)
         if type(feature_basenames) == str:
             feature_filenames = os.path.join(subject_dir, feature_basenames)
+            if not os.path.exists(feature_filenames):
+                continue
         else:
             feature_filenames = [os.path.join(subject_dir, fbn) for fbn in feature_basenames]
         if surface_basename_template is not None:

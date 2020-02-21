@@ -115,7 +115,11 @@ def compute_dti(image, bvals, bvecs, brainmask):
 def process_dti(subject_directory, output_basename='dti.nii.gz', overwrite=False, dti_compute_func=compute_dti):
     dti_output_filename = os.path.join(subject_directory, 'T1w', 'Diffusion', output_basename)
     if overwrite or not os.path.exists(dti_output_filename):
-        image, bvals, bvecs, brainmask = load_dmri_data(subject_directory)
+        try:
+            image, bvals, bvecs, brainmask = load_dmri_data(subject_directory)
+        except FileNotFoundError as error:
+            print(error)
+            return
         tenfit = dti_compute_func(image, bvals, bvecs, brainmask)
         dti_data = np.concatenate((tenfit.md[..., None], tenfit.color_fa), axis=3)
         dti_image = new_img_like(image, dti_data)

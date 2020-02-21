@@ -7,8 +7,9 @@
 #SBATCH --output=/work/aizenberg/dgellis/fCNN/logs/job.%J.out
 
 module load anaconda
-source activate dti
+conda activate dti
 
 OUTPUT="$(which python)"
 echo "${OUTPUT}"
+export PYTHONPATH=/home/aizenberg/dgellis/fCNN:/home/aizenberg/dgellis/3DUnetCNN:${PYTHONPATH}
 /home/aizenberg/dgellis/.conda/envs/dti/bin/python ${3} ${1} ${2}

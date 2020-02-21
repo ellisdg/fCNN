@@ -107,11 +107,19 @@ def compute_dti(image, bvals, bvecs, brainmask):
                                           target_img=image,
                                           interpolation='nearest')
     dwi_masked_data = np.zeros(data.shape)
-    mask_index = brainmask_resampled.get_data() > 0
+    mask_index = brainmask_resampled.get_fdata() > 0
     dwi_masked_data[mask_index] = data[mask_index]
     tenmodel = dti.TensorModel(gtab)
     tenfit = tenmodel.fit(dwi_masked_data)
     return tenfit
+
+
+def process_dti(subject_directory, output_basename='dti.nii.gz', overwrite=False, dti_compute_func=compute_dti):
+    dti_output_filename = os.path.join(subject_directory, 'T1w', 'Diffusion', output_basename)
+    if overwrite or not os.path.exists(dti_output_filename):
+        image, bvals, bvecs, brainmask = load_dmri_data(subject_directory)
+        dti_image = dti_compute_func(image, bvals, bvecs, brainmask)
+        dti_image.to_filename(dti_output_filename)
 
 
 def process_multi_b_value_dti(subject_directory, output_basename='dti_12.nii.gz', overwrite=False):
@@ -123,8 +131,5 @@ def process_multi_b_value_dti(subject_directory, output_basename='dti_12.nii.gz'
 
 
 def process_random_direction_dti(subject_directory, output_basename='dti_lowq.nii.gz', overwrite=False):
-    dti_output_filename = os.path.join(subject_directory, 'T1w', 'Diffusion', output_basename)
-    if overwrite or not os.path.exists(dti_output_filename):
-        image, bvals, bvecs, brainmask = load_dmri_data(subject_directory)
-        dti_image = random_direction_dti(image, bvals, bvecs, brainmask)
-        dti_image.to_filename(dti_output_filename)
+    return process_dti(subject_directory=subject_directory, output_basename=output_basename, overwrite=overwrite,
+                       dti_compute_func=random_direction_dti)

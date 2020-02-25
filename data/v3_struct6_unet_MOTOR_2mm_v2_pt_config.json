@@ -47,7 +47,7 @@
   },
   "skip_validation": false,
   "iterations_per_epoch": 1,
-  "n_outputs": 1,
+  "n_outputs": 13,
   "sequence": "WholeVolumeSupervisedRegressionDataset",
   "n_dense_layers": null,
   "freeze_bias": false,

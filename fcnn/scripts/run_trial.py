@@ -66,6 +66,14 @@ def load_bias(bias_filename):
     return np.fromfile(os.path.join(fcnn_path, bias_filename))
 
 
+def load_sequence(sequence_name):
+    try:
+        sequence_class = getattr(keras_sequences, sequence_name)
+    except AttributeError as error:
+        sequence_class = getattr(pytorch_datasets, sequence_name)
+    return sequence_class
+
+
 def main():
     import nibabel as nib
     nib.imageglobals.logger.level = 40
@@ -77,6 +85,10 @@ def main():
         package = config["package"]
     else:
         package = "keras"
+
+    if not config["n_ouputs"] == len(config["n_metrics"]):
+        raise ValueError("n_outputs set to {}, but number of metrics is {}.".format(config["n_outputs"],
+                                                                                    config["metric_names"]))
 
     model_filename = sys.argv[2]
     print("Model: ", model_filename)
@@ -117,10 +129,7 @@ def main():
         directory = "."
 
     if "sequence" in config:
-        try:
-            sequence_class = getattr(keras_sequences, config["sequence"])
-        except AttributeError as error:
-            sequence_class = getattr(pytorch_datasets, config["sequence"])
+        sequence_class = load_sequence(config["sequence"])
     elif "_wb_" in os.path.basename(config_filename):
         if "package" in config and config["package"] == "pytorch":
             if config["sequence"] == "AEDataset":

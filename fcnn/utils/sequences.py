@@ -321,6 +321,14 @@ class WholeBrainRegressionSequence(HCPRegressionSequence):
 
 
 class WholeBrainAutoEncoder(WholeBrainRegressionSequence):
+    def __init__(self, *args, target_resample=None, target_index=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if target_resample is None:
+            self.target_resample = self.resample
+        else:
+            self.target_resample = target_resample
+        self.target_index = target_index
+
     def __getitem__(self, idx):
         x_batch = list()
         y_batch = list()
@@ -373,7 +381,10 @@ class WholeBrainAutoEncoder(WholeBrainRegressionSequence):
         return target_image
 
     def get_image(self, idx, normalize=True):
-        input_image, target_image = self.resample_image(self.epoch_filenames[idx], normalize=normalize)
+        input_image, target_image = self.resample_image(self.epoch_filenames[idx],
+                                                        normalize=normalize,
+                                                        target_resample=self.target_resample,
+                                                        target_index=self.target_index)
         return input_image, target_image
 
 
@@ -437,12 +448,7 @@ class WindowedAutoEncoder(HCPRegressionSequence):
 class WholeVolumeSupervisedRegressionSequence(WholeBrainAutoEncoder):
     def __init__(self, *args, target_normalization=None, target_resample=None, target_index=2,
                  subject_id_index=3, **kwargs):
-        super().__init__(*args, **kwargs)
-        if target_resample is None:
-            self.target_resample = self.resample
-        else:
-            self.target_resample = target_resample
-        self.target_index = target_index
+        super().__init__(*args, target_index=target_index, target_resample=target_resample, **kwargs)
         self.subject_id_index = subject_id_index
         self.target_normalization_func = normalization_name_to_function(target_normalization)
 

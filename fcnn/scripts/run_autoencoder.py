@@ -2,22 +2,17 @@ import sys
 import os
 from fcnn.utils.utils import load_json
 from fcnn.predict import whole_brain_autoencoder_predictions
-from fcnn.scripts.run_trial import load_subject_ids
-from fcnn.utils.pytorch.dataset import LabeledAEDataset, AEDataset
+from fcnn.scripts.run_trial import load_subject_ids, load_sequence
 
 
-def main(args):
-    config_filename = args[1]
+def main(config_filename, model_filename, machine_config_filename, output_directory, subject_key="validation"):
     print("Config: ", config_filename)
     config = load_json(config_filename)
-    model_filename = args[2]
     print("Model: ", model_filename)
 
-    machine_config_filename = args[3]
     print("Machine config: ", machine_config_filename)
     machine_config = load_json(machine_config_filename)
 
-    output_directory = os.path.abspath(args[4])
     print("Output Directory:", output_directory)
 
     if not os.path.exists(output_directory):
@@ -37,19 +32,19 @@ def main(args):
 
     if "sequence_kwargs" in config:
         sequence_kwargs = config["sequence_kwargs"]
+        for key in ["augment_scale_std", "additive_noise_std"]:
+            if key in sequence_kwargs:
+                sequence_kwargs[key] = None
     else:
         sequence_kwargs = dict()
 
     if "sequence" in config:
-        if config["sequence"] == "LabeledAEDataset":
-            sequence = LabeledAEDataset
-        else:
-            sequence = AEDataset
+        sequence = load_sequence(config["sequence"])
     else:
         sequence = None
 
     return whole_brain_autoencoder_predictions(model_filename=model_filename,
-                                               subject_ids=config['validation'],
+                                               subject_ids=config[subject_key],
                                                hcp_dir=machine_config["directory"],
                                                output_dir=output_directory,
                                                feature_basenames=config["feature_basenames"],
@@ -65,8 +60,10 @@ def main(args):
                                                sequence_kwargs=sequence_kwargs,
                                                sequence=sequence,
                                                n_outputs=config["n_outputs"],
-                                               target_basenames=config["target_basenames"])
+                                               target_basenames=config["target_basenames"],
+                                               metric_names=config["metric_names"])
 
 
 if __name__ == '__main__':
-    main(sys.argv)
+    main(config_filename=sys.argv[1], model_filename=sys.argv[2], machine_config_filename=sys.argv[3],
+         output_directory=sys.argv[4])

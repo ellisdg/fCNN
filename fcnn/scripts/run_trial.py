@@ -86,7 +86,7 @@ def main():
     else:
         package = "keras"
 
-    if not config["n_outputs"] == len(config["metrics"]):
+    if not config["n_outputs"] == len(config["metric_names"]):
         raise ValueError("n_outputs set to {}, but number of metrics is {}.".format(config["n_outputs"],
                                                                                     config["metric_names"]))
 

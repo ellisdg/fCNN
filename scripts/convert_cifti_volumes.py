@@ -55,7 +55,7 @@ def prep_cifti_volumes(subjects, directory, target_basename, basename, metric_na
     for subject_id in subjects:
         cifti_volume = os.path.join(directory, subject_id, target_basename.format(subject_id))
         nifti_volume = cifti_volume.replace(".volume.dscalar.nii", ".nii.gz")
-        nifti_labels = cifti_volume.replace(".nii", ".labels.txt").replace(".gz", "")
+        nifti_labels = cifti_volume.replace(".nii", ".labels.nii")
         if overwrite or not os.path.exists(nifti_volume) or not os.path.exists(nifti_labels):
             convert_cifti_volume(cifti_volume, nifti_volume, output_labels=nifti_labels, crop=crop)
         output_volume = nifti_volume.replace(".nii", "_{}.nii".format(basename))

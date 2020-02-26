@@ -72,7 +72,7 @@ def slice_nifti_volume(input_volume, input_labels, target_labels, output_volume)
 
 
 def slice_volume(volume, labels, target_labels):
-    data = volume.dataobj
+    data = np.asarray(volume.dataobj)
     mask = np.in1d(labels, target_labels)
     return volume.__class__(dataobj=data[..., mask], affine=volume.affine)
 

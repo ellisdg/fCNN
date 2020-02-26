@@ -67,8 +67,7 @@ def prep_cifti_volumes(subjects, directory, target_basename, basename, metric_na
 
 def slice_nifti_volume(input_volume, input_labels, target_labels, output_volume):
     volume = nib.load(input_volume)
-    labels = read_labels(input_labels)
-    sliced_volume = slice_volume(volume, labels, target_labels)
+    sliced_volume = slice_volume(volume, input_labels, target_labels)
     sliced_volume.to_filename(output_volume)
 
 

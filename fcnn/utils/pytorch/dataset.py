@@ -85,7 +85,8 @@ class LabeledAEDataset(WholeBrainLabeledAutoEncoder, Dataset):
                 torch.from_numpy(np.moveaxis(np.asarray(y), -1, 0)).byte())
 
 
-class WholeVolumeCiftiSupervisedRegressionDataset(WholeVolumeCiftiSupervisedRegressionSequence, LabeledAEDataset):
+class WholeVolumeSupervisedRegressionDataset(WholeVolumeSupervisedRegressionSequence,
+                                             LabeledAEDataset):
     def __init__(self, *args, batch_size=1, shuffle=False, **kwargs):
         super().__init__(*args, batch_size=batch_size, shuffle=shuffle, **kwargs)
 
@@ -96,8 +97,8 @@ class WholeVolumeCiftiSupervisedRegressionDataset(WholeVolumeCiftiSupervisedRegr
                 torch.from_numpy(np.moveaxis(np.asarray(y), -1, 0)).float())
 
 
-class WholeVolumeSupervisedRegressionDataset(WholeVolumeSupervisedRegressionSequence,
-                                             WholeVolumeCiftiSupervisedRegressionDataset):
+class WholeVolumeCiftiSupervisedRegressionDataset(WholeVolumeCiftiSupervisedRegressionSequence,
+                                                  WholeVolumeSupervisedRegressionSequence):
     pass
 
 

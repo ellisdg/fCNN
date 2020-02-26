@@ -55,14 +55,15 @@ def compute_average_image(image_filenames, output_filename):
 def prep_cifti_volumes(subjects, directory, target_basename, basename, metric_names, overwrite=False, crop=True):
     for subject_id in subjects:
         cifti_volume = os.path.join(directory, subject_id, target_basename.format(subject_id))
-        nifti_volume = cifti_volume.replace(".volume.dscalar.nii", ".nii.gz")
-        if overwrite or not os.path.exists(nifti_volume):
-            convert_cifti_volume(cifti_volume, nifti_volume, crop=crop)
-        output_volume = nifti_volume.replace(".nii", "_{}.nii".format(basename))
-        if overwrite or not os.path.exists(output_volume):
-            nifti_labels = read_labels(cifti_volume)
-            target_labels = [name.format(subject_id) for name in metric_names]
-            slice_nifti_volume(nifti_volume, nifti_labels, target_labels, output_volume)
+        if os.path.exists(cifti_volume):
+            nifti_volume = cifti_volume.replace(".volume.dscalar.nii", ".nii.gz")
+            if overwrite or not os.path.exists(nifti_volume):
+                convert_cifti_volume(cifti_volume, nifti_volume, crop=crop)
+            output_volume = nifti_volume.replace(".nii", "_{}.nii".format(basename))
+            if overwrite or not os.path.exists(output_volume):
+                nifti_labels = read_labels(cifti_volume)
+                target_labels = [name.format(subject_id) for name in metric_names]
+                slice_nifti_volume(nifti_volume, nifti_labels, target_labels, output_volume)
 
 
 def slice_nifti_volume(input_volume, input_labels, target_labels, output_volume):

@@ -340,7 +340,10 @@ class WholeBrainAutoEncoder(WholeBrainRegressionSequence):
         return np.asarray(x_batch), np.asarray(y_batch)
 
     def resample_input(self, input_filenames, normalize=True):
-        input_image, target_image = self.resample_image(input_filenames, normalize=normalize)
+        input_image, target_image = self.resample_image(input_filenames,
+                                                        normalize=normalize,
+                                                        target_resample=self.target_resample,
+                                                        target_index=self.target_index)
         return get_nibabel_data(input_image), get_nibabel_data(target_image)
 
     def resample_image(self, input_filenames, normalize=True, feature_index=0, target_index=None, target_resample=None):
@@ -446,11 +449,28 @@ class WindowedAutoEncoder(HCPRegressionSequence):
 
 
 class WholeVolumeSupervisedRegressionSequence(WholeBrainAutoEncoder):
+    def __init__(self, *args, target_normalization=None, target_resample=None, target_index=2, **kwargs):
+        super().__init__(*args, target_index=target_index, target_resample=target_resample, **kwargs)
+        self.normalize_target = target_normalization is not None
+        self.target_normalization_func = normalization_name_to_function(target_normalization)
+
+    def load_target_image(self, feature_image, input_filenames, target_index=None):
+        target_image_filename = input_filenames[self.target_index]
+        target_image = nib.load(target_image_filename)
+        if self.normalize_target:
+            image_data = self.target_normalization_func(target_image.get_fdata())
+            return new_img_like(ref_niimg=feature_image, data=image_data,
+                                affine=target_image.header.affine)
+        else:
+            return target_image
+
+
+class WholeVolumeCiftiSupervisedRegressionSequence(WholeVolumeSupervisedRegressionSequence):
     def __init__(self, *args, target_normalization=None, target_resample=None, target_index=2,
                  subject_id_index=3, **kwargs):
-        super().__init__(*args, target_index=target_index, target_resample=target_resample, **kwargs)
+        super().__init__(*args, target_index=target_index, target_resample=target_resample,
+                         target_normalization=target_normalization, **kwargs)
         self.subject_id_index = subject_id_index
-        self.target_normalization_func = normalization_name_to_function(target_normalization)
 
     def load_target_image(self, feature_image, input_filenames, target_index=None):
         target_image_filename = input_filenames[self.target_index]
@@ -461,10 +481,3 @@ class WholeVolumeSupervisedRegressionSequence(WholeBrainAutoEncoder):
         image_data = self.target_normalization_func(image_data)
         return new_img_like(ref_niimg=feature_image, data=image_data,
                             affine=cifti_target_image.header.get_axis(1).affine)
-
-    def resample_input(self, input_filenames, normalize=True):
-        input_image, target_image = self.resample_image(input_filenames,
-                                                        normalize=normalize,
-                                                        target_resample=self.target_resample,
-                                                        target_index=self.target_index)
-        return get_nibabel_data(input_image), get_nibabel_data(target_image)

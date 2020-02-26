@@ -1,12 +1,12 @@
 {
-  "subjects_filename": "data/subjects_v3.json",
+  "subjects_filename": "data/subjects_v4.json",
   "surface_names": [
     "CortexLeft",
     "CortexRight"
   ],
   "surface_basename_template": null,
   "feature_basenames": "T1w/struct6_normalized.nii.gz",
-  "target_basenames": "T1w/Results/tfMRI_LANGUAGE/tfMRI_LANGUAGE_hp200_s2_level2.feat/{}_tfMRI_LANGUAGE_level2_zstat_hp200_s2.volume.dscalar.nii",
+  "target_basenames": "T1w/Results/tfMRI_MOTOR/tfMRI_MOTOR_hp200_s2_level2.feat/{}_tfMRI_MOTOR_level2_zstat_hp200_s2_TAVOR.nii.gz",
   "hemispheres": [
     "L",
     "R"
@@ -47,14 +47,24 @@
   },
   "skip_validation": false,
   "iterations_per_epoch": 1,
-  "n_outputs": 3,
-  "sequence": "WholeVolumeCiftiSupervisedRegressionDataset",
+  "n_outputs": 13,
+  "sequence": "WholeVolumeSupervisedRegressionDataset",
   "n_dense_layers": null,
   "freeze_bias": false,
   "metric_names": [
-      "{}_tfMRI_LANGUAGE_level2_STORY_hp200_s2",
-      "{}_tfMRI_LANGUAGE_level2_MATH_hp200_s2",
-      "{}_tfMRI_LANGUAGE_level2_MATH-STORY_hp200_s2"],
+      "{}_tfMRI_MOTOR_level2_CUE_hp200_s2",
+      "{}_tfMRI_MOTOR_level2_LF_hp200_s2",
+      "{}_tfMRI_MOTOR_level2_LH_hp200_s2",
+      "{}_tfMRI_MOTOR_level2_RF_hp200_s2",
+      "{}_tfMRI_MOTOR_level2_RH_hp200_s2",
+      "{}_tfMRI_MOTOR_level2_T_hp200_s2",
+      "{}_tfMRI_MOTOR_level2_AVG_hp200_s2",
+      "{}_tfMRI_MOTOR_level2_CUE-AVG_hp200_s2",
+      "{}_tfMRI_MOTOR_level2_LF-AVG_hp200_s2",
+      "{}_tfMRI_MOTOR_level2_LH-AVG_hp200_s2",
+      "{}_tfMRI_MOTOR_level2_RF-AVG_hp200_s2",
+      "{}_tfMRI_MOTOR_level2_RH-AVG_hp200_s2",
+      "{}_tfMRI_MOTOR_level2_T-AVG_hp200_s2"],
   "sequence_kwargs": {
     "normalization": null,
     "target_normalization": null,

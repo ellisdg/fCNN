@@ -316,12 +316,13 @@ def pytorch_whole_brain_autoencoder_predictions(model_filename, model_name, n_fe
     with torch.no_grad():
         for idx in range(len(dataset)):
             image, target_image = dataset.get_image(idx)
-            data, target = dataset[idx]
+            x, y = dataset[idx]
             subject_id = dataset.epoch_filenames[idx][-1]
-            x = data.unsqueeze(0)
+            x = x.unsqueeze(0)
+            y = y.unsqueeze(0)
             if n_gpus > 0:
                 x = x.cuda()
-                target = target.cuda()
+                y = y.cuda()
             try:
                 pred_x = model.test(x)
             except AttributeError:
@@ -333,7 +334,7 @@ def pytorch_whole_brain_autoencoder_predictions(model_filename, model_name, n_fe
             else:
                 mu = None
                 logvar = None
-            score = criterion(pred_x, target.unsqueeze(0)).cpu().numpy()
+            score = criterion(pred_x, y).cpu().numpy()
             pred_x = np.moveaxis(pred_x.cpu().numpy(), 1, -1).squeeze()
             pred_image = new_img_like(ref_niimg=image,
                                       data=pred_x,
@@ -342,8 +343,11 @@ def pytorch_whole_brain_autoencoder_predictions(model_filename, model_name, n_fe
                                                 "_".join([subject_id,
                                                           basename,
                                                           os.path.basename(dataset.epoch_filenames[idx][0])])))
+            y = y.cpu().numpy()
+            y = np.moveaxis(y, 1, -1).squeeze()
             t_image = new_img_like(ref_niimg=target_image,
-                                   data=np.moveaxis(target.cpu().numpy(), 1, -1).squeeze())
+                                   data=y,
+                                   affine=target_image.affine)
             t_image.to_filename(os.path.join(prediction_dir,
                                              "_".join(["target",
                                                        subject_id,

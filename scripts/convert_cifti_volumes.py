@@ -4,6 +4,7 @@ import sys
 import os
 import nibabel as nib
 import numpy as np
+from fcnn.utils.hcp import extract_cifti_scalar_map_names
 
 
 def load_json(filename):
@@ -55,11 +56,11 @@ def prep_cifti_volumes(subjects, directory, target_basename, basename, metric_na
     for subject_id in subjects:
         cifti_volume = os.path.join(directory, subject_id, target_basename.format(subject_id))
         nifti_volume = cifti_volume.replace(".volume.dscalar.nii", ".nii.gz")
-        nifti_labels = cifti_volume.replace(".nii", ".labels.nii")
-        if overwrite or not os.path.exists(nifti_volume) or not os.path.exists(nifti_labels):
-            convert_cifti_volume(cifti_volume, nifti_volume, output_labels=nifti_labels, crop=crop)
+        if overwrite or not os.path.exists(nifti_volume):
+            convert_cifti_volume(cifti_volume, nifti_volume, crop=crop)
         output_volume = nifti_volume.replace(".nii", "_{}.nii".format(basename))
         if overwrite or not os.path.exists(output_volume):
+            nifti_labels = read_labels(cifti_volume)
             target_labels = [name.format(subject_id) for name in metric_names]
             slice_nifti_volume(nifti_volume, nifti_labels, target_labels, output_volume)
 
@@ -77,17 +78,16 @@ def slice_volume(volume, labels, target_labels):
     return volume.__class__(dataobj=data[..., mask], affine=volume.affine)
 
 
-def read_labels(input_labels):
-    raise NotImplementedError(input_labels)
+def read_labels(cifti_volume):
+    return extract_cifti_scalar_map_names(nib.load(cifti_volume))
 
 
-def convert_cifti_volume(cifti_volume, output_volume, output_labels, direction="COLUMN", crop=True):
-    cmd = ["wb_command", "-cifti-separate", cifti_volume, direction, "-volume-all", output_volume, "-label",
-           output_labels]
+def convert_cifti_volume(cifti_volume, output_volume, direction="COLUMN", crop=True):
+    cmd = ["wb_command", "-cifti-separate", cifti_volume, direction, "-volume-all", output_volume]
     if crop:
         cmd.append("-crop")
     run_command(cmd)
-    return output_volume, output_labels
+    return output_volume
 
 
 if __name__ == "__main__":

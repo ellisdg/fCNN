@@ -100,7 +100,7 @@ class WholeVolumeSupervisedRegressionDataset(WholeVolumeSupervisedRegressionSequ
 
 
 class WholeVolumeCiftiSupervisedRegressionDataset(WholeVolumeCiftiSupervisedRegressionSequence,
-                                                  WholeVolumeSupervisedRegressionSequence):
+                                                  WholeVolumeSupervisedRegressionDataset):
     pass
 
 

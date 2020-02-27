@@ -63,14 +63,14 @@
       "{}_tfMRI_WM_level2_2BK_hp200_s2",
       "{}_tfMRI_WM_level2_0BK_hp200_s2",
       "{}_tfMRI_WM_level2_2BK-0BK_hp200_s2",
-      "{}_tfMRI_WM_level2_BODY_PLACE_hp200_s2",
-      "{}_tfMRI_WM_level2_FACE_PLACE_hp200_s2",
-      "{}_tfMRI_WM_level2_PLACE_PLACE_hp200_s2",
-      "{}_tfMRI_WM_level2_TOOL_PLACE_hp200_s2",
-      "{}_tfMRI_WM_level2_BODY-AVG_PLACE_hp200_s2",
-      "{}_tfMRI_WM_level2_FACE-AVG_PLACE_hp200_s2",
-      "{}_tfMRI_WM_level2_PLACE-AVG_PLACE_hp200_s2",
-      "{}_tfMRI_WM_level2_TOOL-AVG_PLACE_hp200_s2"
+      "{}_tfMRI_WM_level2_BODY_hp200_s2",
+      "{}_tfMRI_WM_level2_FACE_hp200_s2",
+      "{}_tfMRI_WM_level2_PLACE_hp200_s2",
+      "{}_tfMRI_WM_level2_TOOL_hp200_s2",
+      "{}_tfMRI_WM_level2_BODY-AVG_hp200_s2",
+      "{}_tfMRI_WM_level2_FACE-AVG_hp200_s2",
+      "{}_tfMRI_WM_level2_PLACE-AVG_hp200_s2",
+      "{}_tfMRI_WM_level2_TOOL-AVG_hp200_s2"
   ],
   "sequence_kwargs": {
     "normalization": null,

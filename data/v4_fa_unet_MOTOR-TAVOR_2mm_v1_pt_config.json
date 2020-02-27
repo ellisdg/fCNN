@@ -5,7 +5,7 @@
     "CortexRight"
   ],
   "surface_basename_template": null,
-  "feature_basenames": "T1w/fa.nii.gz",
+  "feature_basenames": "T1w/Diffusion/fa.nii.gz",
   "target_basenames": "T1w/Results/tfMRI_MOTOR/tfMRI_MOTOR_hp200_s2_level2.feat/{}_tfMRI_MOTOR_level2_zstat_hp200_s2_TAVOR.nii.gz",
   "hemispheres": [
     "L",

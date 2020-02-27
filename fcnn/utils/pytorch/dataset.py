@@ -85,10 +85,12 @@ class LabeledAEDataset(WholeBrainLabeledAutoEncoder, Dataset):
                 torch.from_numpy(np.moveaxis(np.asarray(y), -1, 0)).byte())
 
 
-class WholeVolumeSupervisedRegressionDataset(WholeVolumeSupervisedRegressionSequence,
-                                             LabeledAEDataset):
+class WholeVolumeSupervisedRegressionDataset(WholeVolumeSupervisedRegressionSequence, Dataset):
     def __init__(self, *args, batch_size=1, shuffle=False, **kwargs):
         super().__init__(*args, batch_size=batch_size, shuffle=shuffle, **kwargs)
+
+    def __len__(self):
+        return len(self.epoch_filenames)
 
     def __getitem__(self, idx):
         item = self.epoch_filenames[idx]

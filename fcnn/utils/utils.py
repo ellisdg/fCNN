@@ -1,3 +1,4 @@
+import sys
 import numpy as np
 import json
 
@@ -185,3 +186,22 @@ def convert_one_hot_to_label_map(one_hot_encoding, labels, axis=1):
 
 def copy_image(image):
     return image.__class__(np.copy(image.dataobj), image.affine)
+
+
+def update_progress(progress, bar_length=30, message=""):
+    status = ""
+    if isinstance(progress, int):
+        progress = float(progress)
+    if not isinstance(progress, float):
+        progress = 0
+        status = "error: progress var must be float\r\n"
+    if progress < 0:
+        progress = 0
+        status = "Halt...\r\n"
+    if progress >= 1:
+        progress = 1
+        status = "Done...\r\n"
+    block = int(round(bar_length * progress))
+    text = "\r{0}[{1}] {2:.2f}% {3}".format(message, "#" * block + "-" * (bar_length - block), progress*100, status)
+    sys.stdout.write(text)
+    sys.stdout.flush()

@@ -1,3 +1,4 @@
+import sys
 import subprocess
 import os
 import json
@@ -46,11 +47,12 @@ def download(f1, f2, include=None, exclude=None, verbose=False):
 
 
 def main():
+    task = sys.argv[1]
     # name_file = "/home/neuro-user/PycharmProjects/fCNN/scripts/DTI_names.txt"
     fcnn_dir = "/home/neuro-user/PycharmProjects/fCNN"
     # name_file = fcnn_dir + "/data/labels/MOTOR-TAVOR_name-file.txt"
     # name_file = fcnn_dir + "/data/labels/LANGUAGE-TAVOR_name-file.txt"
-    name_file = fcnn_dir + "/data/labels/WM-TAVOR_name-file.txt"
+    name_file = fcnn_dir + "/data/labels/{task}-TAVOR_name-file.txt".format(task=task)
     # method = "enclosing"
     method = "ribbon-constrained"
     directory = "/media/crane/HCP/HCP_1200"
@@ -60,11 +62,13 @@ def main():
     #                                "{subject}_tfMRI_MOTOR_level2_zstat_hp200_s2_TAVOR.nii.gz")
     # volume_template = "/home/neuro-user/PycharmProjects/fCNN/trials/predictions/v4_struct6_unet_MOTOR-TAVOR_2mm_v1_pt/{subject}_model_v4_struct6_unet_MOTOR-TAVOR_2mm_v1_pt_struct6_normalized.nii.gz"
     # volume_template = "/home/neuro-user/PycharmProjects/fCNN/trials/predictions/v4_struct6_unet_LANGUAGE_2mm_v1_pt/{subject}_model_v4_struct6_unet_LANGUAGE_2mm_v1_pt_struct6_normalized.nii.gz"
-    volume_template = "/home/neuro-user/PycharmProjects/fCNN/trials/predictions/v4_struct6_unet_WM_2mm_v1_pt/{subject}_model_v4_struct6_unet_WM_2mm_v1_pt_struct6_normalized.nii.gz"
+    # volume_template = "/home/neuro-user/PycharmProjects/fCNN/trials/predictions/v4_struct6_unet_WM_2mm_v1_pt/{subject}_model_v4_struct6_unet_WM_2mm_v1_pt_struct6_normalized.nii.gz"
+    volume_template = os.path.join(directory, "{subject}", "T1w/Results/tfMRI_{task}/tfMRI_{task}_hp200_s2_level2.feat",
+                                   "{subject}_tfMRI_{task}_level2_zstat_hp200_s2_TAVOR.nii.gz")
     config_filename = fcnn_dir + "/data/subjects_v4.json"
     subject_ids = list()
     verbose = False
-    overwrite = True
+    overwrite = False
     surface_names = ["midthickness"]
     atlas_roi_template = os.path.join(directory, "{subject}", "MNINonLinear", "fsaverage_LR32k",
                                       "{subject}.{hemi}.atlasroi.32k_fs_LR.shape.gii")
@@ -89,7 +93,7 @@ def main():
             # vol = os.path.join(directory, subject, volume_template)
             # if "{subject}" in vol:
             #    vol = vol.format(subject=subject)
-            vol = volume_template.format(subject=subject)
+            vol = volume_template.format(subject=subject, task=task)
             filename = vol.replace(".nii.gz", ".{}.dscalar.nii".format(surface_name))
             if os.path.exists(vol) and (overwrite or not os.path.exists(filename)):
                 volume_to_surface(vol, left_surf, right_surf, filename, surface_name, method=method,

@@ -1,5 +1,3 @@
-T1w
-T2w
 MD
 FA-R
 FA-G

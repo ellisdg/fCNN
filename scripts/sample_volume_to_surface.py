@@ -48,7 +48,7 @@ def download(f1, f2, include=None, exclude=None, verbose=False):
 
 def main():
     # task = sys.argv[1]
-    # name_file = "/home/neuro-user/PycharmProjects/fCNN/data/labels/DTI_name-file.txt"
+    # name_file = "/home/neuro-user/PycharmProjects/fCNN/data/labels/DTI12_name-file.txt"
     directory = sys.argv[1]
     config_filename = sys.argv[2]
     surface_template = sys.argv[3]

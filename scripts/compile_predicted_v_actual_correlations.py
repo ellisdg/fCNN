@@ -56,10 +56,11 @@ def main():
     metric_filename = sys.argv[4]
     metric_names = read_namefile(metric_filename)
     pool_size = None
-
+    subjects = list()
     for p_image_fn in all_prediction_images:
         if "target" not in p_image_fn:
             sid = os.path.basename(p_image_fn).split("_")[0]
+            subjects.append(sid)
             target_fn = os.path.join(hcp_dir, sid, target_basename.format(sid)).replace(".nii.gz",
                                                                                         ".{}.dscalar.nii").format(
                 surf_name)
@@ -76,6 +77,7 @@ def main():
                                                     pool_size=pool_size))
     update_progress(1)
     np.save(output_file, correlations)
+    np.save(output_file.replace(".npy", "_subjects.npy"), subjects)
 
 
 if __name__ == "__main__":

@@ -48,7 +48,7 @@ def download(f1, f2, include=None, exclude=None, verbose=False):
 
 def main():
     task = sys.argv[1]
-    # name_file = "/home/neuro-user/PycharmProjects/fCNN/scripts/DTI_names.txt"
+    # name_file = "/home/neuro-user/PycharmProjects/fCNN/data/labels/DTI_name-file.txt"
     fcnn_dir = "/home/neuro-user/PycharmProjects/fCNN"
     # name_file = fcnn_dir + "/data/labels/MOTOR-TAVOR_name-file.txt"
     # name_file = fcnn_dir + "/data/labels/LANGUAGE-TAVOR_name-file.txt"

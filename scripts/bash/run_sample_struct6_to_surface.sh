@@ -1,6 +1,7 @@
 #!/bin/bash
 module load awscli
-conda activate fcnn-cpu-1.7
+module load anaconda
+conda activate dti
 export PYTHONPATH=/home/aizenberg/dgellis/fCNN:$PYTHONPATH
 SurfaceName=${1}
 Method=enclosing

@@ -78,7 +78,7 @@ def main():
     volume_template = os.path.join(directory, "{subject}", volume_template)
     surface_template = os.path.join(directory, "{subject}", surface_template)
     subject_ids = list()
-    verbose = False
+    verbose = True
     overwrite = False
     # surface_names = ["midthickness"]
     # atlas_roi_template = os.path.join(directory, "{subject}", "MNINonLinear", "fsaverage_LR32k",

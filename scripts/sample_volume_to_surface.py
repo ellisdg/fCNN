@@ -56,6 +56,7 @@ def main():
     volume_template = sys.argv[5]
     name_file = sys.argv[6]
     atlas_roi_template = sys.argv[7]
+    surface_name = sys.argv[8]
     # fcnn_dir = "/home/neuro-user/PycharmProjects/fCNN"
     # name_file = fcnn_dir + "/data/labels/MOTOR-TAVOR_name-file.txt"
     # name_file = fcnn_dir + "/data/labels/LANGUAGE-TAVOR_name-file.txt"
@@ -79,7 +80,7 @@ def main():
     subject_ids = list()
     verbose = False
     overwrite = False
-    surface_names = ["midthickness"]
+    # surface_names = ["midthickness"]
     # atlas_roi_template = os.path.join(directory, "{subject}", "MNINonLinear", "fsaverage_LR32k",
     #                                   "{subject}.{hemi}.atlasroi.32k_fs_LR.shape.gii")
     with open(config_filename, "r") as op:
@@ -88,27 +89,26 @@ def main():
             subject_ids.extend(data[key])
     for i, subject in enumerate(sorted(subject_ids)):
         update_progress(i/len(subject_ids), message=str(subject))
-        for surface_name in surface_names:
-            left_surf = surface_template.format(subject=subject, hemi="L")
-            right_surf = surface_template.format(subject=subject, hemi="R")
-            left_atlas_roi = atlas_roi_template.format(subject=subject, hemi="L")
-            right_atlas_roi = atlas_roi_template.format(subject=subject, hemi="R")
-            vol = volume_template.format(subject=subject)
-            filename = vol.replace(".nii.gz", ".{}.dscalar.nii".format(surface_name))
-            if os.path.exists(vol) and (overwrite or not os.path.exists(filename)):
-                for surf, hemi in ((left_surf, "L"), (right_surf, "R")):
-                    if not os.path.exists(surf):
-                        download(os.path.join("s3://hcp-openaccess/HCP_1200/", subject,
-                                              os.path.dirname(surface_template)),
-                                 os.path.join(directory, subject, os.path.dirname(surface_template)),
-                                 verbose=verbose,
-                                 include=[os.path.basename(surf)])
-                volume_to_surface(vol, left_surf, right_surf, filename, surface_name, method=method,
-                                  name_file=name_file, verbose=verbose,
-                                  right_atlas_roi=right_atlas_roi, left_atlas_roi=left_atlas_roi)
-            elif not os.path.exists(vol):
-                if verbose:
-                    print("File does not exist:", vol)
+        left_surf = surface_template.format(subject=subject, hemi="L")
+        right_surf = surface_template.format(subject=subject, hemi="R")
+        left_atlas_roi = atlas_roi_template.format(subject=subject, hemi="L")
+        right_atlas_roi = atlas_roi_template.format(subject=subject, hemi="R")
+        vol = volume_template.format(subject=subject)
+        filename = vol.replace(".nii.gz", ".{}.dscalar.nii".format(surface_name))
+        if os.path.exists(vol) and (overwrite or not os.path.exists(filename)):
+            for surf, hemi in ((left_surf, "L"), (right_surf, "R")):
+                if not os.path.exists(surf):
+                    download(os.path.join("s3://hcp-openaccess/HCP_1200/", subject,
+                                          os.path.dirname(surface_template)),
+                             os.path.join(directory, subject, os.path.dirname(surface_template)),
+                             verbose=verbose,
+                             include=[os.path.basename(surf)])
+            volume_to_surface(vol, left_surf, right_surf, filename, surface_name, method=method,
+                              name_file=name_file, verbose=verbose,
+                              right_atlas_roi=right_atlas_roi, left_atlas_roi=left_atlas_roi)
+        elif not os.path.exists(vol):
+            if verbose:
+                print("File does not exist:", vol)
     update_progress(1)
 
 

@@ -36,6 +36,6 @@ if __name__ == '__main__':
                                  label='Validation')
         subplots[i + 1].set_title(cat.capitalize())
         subplots[i + 1].legend()
-        subplots[i + 1].set_ylim(1, 1.5)
+        # subplots[i + 1].set_ylim(1, 1.5)
 
     fig.savefig(sys.argv[2], tight_layout=True)

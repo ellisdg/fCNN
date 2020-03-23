@@ -54,7 +54,6 @@ def main():
         s, i, i_all = np.intersect1d(sub_list, all_subjects, return_indices=True)
         np.testing.assert_equal(s, all_subjects)
         correlations.append(corr[i][:, i])
-        print(corr[i][:, i].shape)
 
     # all_subjects = np.unique(subjects)
     # indices = [np.in1d(all_subjects, subs) for subs in subjects]
@@ -174,8 +173,8 @@ def main():
     d, p = ks_2samp(diag_values, extra_diag_values)
     print("D-value: {:.2f}\tp-value = {:.8f}".format(d, p))
 
-    fig, ax = plt.subplots()
-    seaborn.barplot(x=np.asanyarray(result)*100, y=names, ax=ax, color='C0')
+    fig, ax = plt.subplots(figsize=(0.5 * len(names), 8))
+    seaborn.barplot(x=np.asanyarray(result)*100, y=names, ax=ax, hue=tasks)
     ax.set_xlabel("Self vs other increase (in %)")
     seaborn.despine(ax=ax, top=True)
     fig.savefig(output_dir + "/increase_correlation_over_mean_correlation.png", bbox_inches="tight")

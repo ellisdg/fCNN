@@ -54,6 +54,7 @@ def main():
         s, i, i_all = np.intersect1d(sub_list, all_subjects, return_indices=True)
         np.testing.assert_equal(s, all_subjects)
         correlations.append(corr[i, i])
+        print(corr[i, i].shape)
 
     # all_subjects = np.unique(subjects)
     # indices = [np.in1d(all_subjects, subs) for subs in subjects]

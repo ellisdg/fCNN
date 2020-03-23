@@ -51,7 +51,7 @@ def main():
     all_subjects = reduce(np.intersect1d, subjects)
     correlations = list()
     for sub_list, corr in zip(np.copy(subjects), temp_correlations):
-        s, i, i_all = np.intersect1d(sub_list, all_subjects)
+        s, i, i_all = np.intersect1d(sub_list, all_subjects, return_indices=True)
         np.testing.assert_equal(s, all_subjects)
         correlations.append(corr[i])
 

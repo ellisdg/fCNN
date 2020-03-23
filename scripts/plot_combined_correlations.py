@@ -9,6 +9,7 @@ from scipy.stats import pearsonr, ks_2samp
 import nibabel as nib
 import numpy as np
 import sys
+from functools import reduce
 
 
 def normalize_correlation_matrix_by_axis(matrix, new_max, new_min, axis=0):
@@ -38,21 +39,28 @@ def main():
     name_files = sys.argv[2].split(",")
     output_dir = os.path.abspath(sys.argv[3])
 
-    correlations = list()
+    temp_correlations = list()
     metric_names = list()
     tasks = list()
-    # subjects = list()
+    subjects = list()
     for c_file, n_file in zip(correlation_files, name_files):
         corr = np.load(c_file)
-        # subs = np.load(c_file.replace(".npy", "_subjects.npy"))
-        # subjects.append(subs)
-        correlations.append(corr)
+        subs = np.load(c_file.replace(".npy", "_subjects.npy"))
+        subjects.append(subs)
+        temp_correlations.append(corr)
         names = read_namefile(n_file)
         metric_names.extend(names)
         task = os.path.basename(n_file).split("_")[0].replace("-TAVOR", "")
         tasks.extend([task] * len(names))
 
-    # TODO: figure out a way to put all the subject correlations in the same order
+    all_subjects = reduce(np.intersect1d, subjects)
+    correlations = list()
+    for sub_list, corr in zip(np.copy(subjects), temp_correlations):
+        s, i, i_all = np.intersect1d(sub_list, all_subjects)
+        np.testing.assert_equal(s, all_subjects)
+        correlations.append(corr[i])
+
+
     # all_subjects = np.unique(subjects)
     # indices = [np.in1d(all_subjects, subs) for subs in subjects]
     # index = np.all(indices, axis=0)
@@ -60,7 +68,7 @@ def main():
     # indices = [np.in1d(subs, included_subjects) for subs in subjects]
     # correlations = [corr[ind, ind] for corr, ind in zip(correlations, indices)]
 
-    unique_tasks = np.unique(tasks)
+    # unique_tasks = np.unique(tasks)
     correlations = np.concatenate(correlations, axis=-2)
     corr_matrices = np.asarray(correlations)[..., 0]
     vmin = corr_matrices.min()

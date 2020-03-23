@@ -53,10 +53,7 @@ def main():
     for sub_list, corr in zip(np.copy(subjects), temp_correlations):
         s, i, i_all = np.intersect1d(sub_list, all_subjects, return_indices=True)
         np.testing.assert_equal(s, all_subjects)
-        correlations.append(corr[i])
-        print(corr[i].shape)
-        print(i)
-
+        correlations.append(corr[i, i])
 
     # all_subjects = np.unique(subjects)
     # indices = [np.in1d(all_subjects, subs) for subs in subjects]

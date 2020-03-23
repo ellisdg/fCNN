@@ -173,8 +173,12 @@ def main():
     d, p = ks_2samp(diag_values, extra_diag_values)
     print("D-value: {:.2f}\tp-value = {:.8f}".format(d, p))
 
-    fig, ax = plt.subplots(figsize=(6, 0.5 * len(names)))
-    seaborn.barplot(x=np.asanyarray(result)*100, y=names, ax=ax, hue=tasks)
+    w = 6
+    width = 0.4
+    gap = 0.1
+    h = (width + gap) * len(names)
+    fig, ax = plt.subplots(figsize=(w, h))
+    seaborn.barplot(x=np.asanyarray(result)*100, y=names, ax=ax, hue=tasks, width=width)
     ax.set_xlabel("Self vs other increase (in %)")
     seaborn.despine(ax=ax, top=True)
     fig.savefig(output_dir + "/increase_correlation_over_mean_correlation.png", bbox_inches="tight")

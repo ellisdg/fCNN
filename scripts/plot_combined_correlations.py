@@ -1,12 +1,7 @@
 import seaborn
 import matplotlib.pyplot as plt
-import pandas as pd
-import glob
 import os
-from fcnn.utils.utils import load_json
-from fcnn.utils.hcp import get_metric_data, extract_cifti_scalar_data
-from scipy.stats import pearsonr, ks_2samp
-import nibabel as nib
+from scipy.stats import ks_2samp
 import numpy as np
 import sys
 from functools import reduce

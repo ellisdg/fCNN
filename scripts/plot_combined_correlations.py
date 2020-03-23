@@ -174,8 +174,8 @@ def main():
     print("D-value: {:.2f}\tp-value = {:.8f}".format(d, p))
 
     w = 6
-    width = 0.4
-    gap = 0.1
+    width = 0.2
+    gap = 0.
     h = (width + gap) * len(names)
     fig, ax = plt.subplots(figsize=(w, h))
     seaborn.barplot(x=np.asanyarray(result)*100, y=names, ax=ax, hue=tasks)

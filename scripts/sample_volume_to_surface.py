@@ -75,7 +75,8 @@ def main():
     #                                "{subject}_tfMRI_{task}_level2_zstat_hp200_s2_TAVOR.nii.gz")
     # config_filename = fcnn_dir + "/data/subjects_v4.json"
     atlas_roi_template = os.path.join(directory, "{subject}", atlas_roi_template)
-    volume_template = os.path.join(directory, "{subject}", volume_template)
+    if not os.path.isabs(volume_template):
+        volume_template = os.path.join(directory, "{subject}", volume_template)
     surface_template = os.path.join(directory, "{subject}", surface_template)
     subject_ids = list()
     verbose = False

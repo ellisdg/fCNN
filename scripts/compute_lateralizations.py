@@ -110,12 +110,13 @@ def main():
     else:
         lateralization = np.load(lateralization_file)
 
-    for task_ind in range(lateralization.shape[-1]):
+    print(lateralization.shape)
+    for task_ind, metric_name in enumerate(metric_names):
         fig, ax = plt.subplots(figsize=(18, 6))
         x = np.arange(lateralization.shape[0])
-        ind = np.argsort(lateralization[..., 1, task_ind], axis=0)
-        ax.bar(x=x, height=lateralization[..., 1, task_ind][ind], width=0.5, label="actual")
-        ax.bar(x=x + 0.5, height=lateralization[..., 0, task_ind][ind], width=0.5, label="predicted")
+        ind = np.argsort(lateralization[..., task_ind, 1], axis=0)
+        ax.bar(x=x, height=lateralization[..., task_ind, 1][ind], width=0.5, label="actual")
+        ax.bar(x=x + 0.5, height=lateralization[..., task_ind, 0][ind], width=0.5, label="predicted")
         ax.legend()
         ax.set_title(metric_names[task_ind])
         fig.savefig(output_dir + '/lateralization_{task}_{name}.png'.format(task=task, name=metric_names[task_ind]))

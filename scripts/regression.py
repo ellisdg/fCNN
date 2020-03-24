@@ -4,7 +4,6 @@ import nibabel as nib
 import numpy as np
 import sys
 from fcnn.utils.utils import load_json, update_progress
-from fcnn.scripts.run_trial import load_subject_ids
 
 
 def compute_regression_weights(x, y, normalize_=False):
@@ -29,8 +28,6 @@ def main():
     target_template = sys.argv[3]
     weights_filename_average = weights_filename.replace(".npy", "_average.npy")
     config = load_json(config_filename)
-    if key not in config:
-        load_subject_ids(config)
     subject_weights = list()
     for i, subject in enumerate(config[key]):
         update_progress(i/len(config[key]), message=str(subject))

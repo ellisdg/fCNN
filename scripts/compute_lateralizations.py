@@ -57,7 +57,7 @@ def main():
     seaborn.set_palette('muted')
     seaborn.set_style('whitegrid')
     task = sys.argv[1]
-    fcnn_dir = "/work/aizenberg/dgellis/fCNN"
+    fcnn_dir = "/home/aizenberg/dgellis/fCNN"
     config_filename = fcnn_dir + "/data/v4_struct6_unet_{task}-TAVOR_2mm_v1_pt_config.json".format(task=task)
     hcp_dir = "/work/aizenberg/dgellis/HCP/HCP_1200"
     config = load_json(config_filename)

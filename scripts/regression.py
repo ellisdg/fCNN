@@ -9,7 +9,7 @@ from fcnn.utils.utils import load_json, update_progress
 def compute_regression_weights(x, y, normalize_=False):
     model = LinearRegression(normalize=normalize_)
     model.fit(x, y)
-    return np.concatenate(model.coef_, model.intercept_, axis=0)
+    return np.concatenate([model.coef_, model.intercept_[..., None]], axis=1)
 
 
 def fetch_subject_data(subject, feature_template, target_template):

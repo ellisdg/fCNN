@@ -17,7 +17,7 @@ def fetch_subject_data(subject, feature_template, target_template):
 
 
 def fetch_data(filename):
-    return np.asarray(nib.load(filename).dataobj)
+    return np.swapaxes(np.asarray(nib.load(filename).dataobj), 0, 1)
 
 
 def main():

@@ -39,7 +39,7 @@ def main():
             pass
     update_progress(1)
     np.save(weights_filename, subject_weights)
-    np.save(np.mean(weights_filename_average, subject_weights, axis=0))
+    np.save(weights_filename_average, np.mean(subject_weights, axis=0))
 
 
 if __name__ == "__main__":

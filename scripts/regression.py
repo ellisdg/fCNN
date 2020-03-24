@@ -32,8 +32,11 @@ def main():
     subject_weights = list()
     for i, subject in enumerate(config[key]):
         update_progress(i/len(config[key]), message=str(subject))
-        x, y = fetch_subject_data(subject, feature_template, target_template)
-        subject_weights.append(compute_regression_weights(normalize(x), y, normalize_=False))
+        try:
+            x, y = fetch_subject_data(subject, feature_template, target_template)
+            subject_weights.append(compute_regression_weights(normalize(x), y, normalize_=False))
+        except FileNotFoundError:
+            pass
     update_progress(1)
     np.save(weights_filename, subject_weights)
     np.save(np.mean(weights_filename_average, subject_weights, axis=0))

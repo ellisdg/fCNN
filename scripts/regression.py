@@ -27,6 +27,7 @@ def main():
     feature_template = sys.argv[2]
     target_template = sys.argv[3]
     weights_filename_average = weights_filename.replace(".npy", "_average.npy")
+    print(config_filename)
     config = load_json(config_filename)
     subject_weights = list()
     for i, subject in enumerate(config[key]):

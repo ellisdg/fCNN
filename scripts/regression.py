@@ -22,12 +22,12 @@ def fetch_data(filename):
 
 def main():
     key = "training"
-    config_filename = sys.argv[0]
-    weights_filename = sys.argv[1]
-    feature_template = sys.argv[2]
-    target_template = sys.argv[3]
+    config_filename = sys.argv[1]
+    weights_filename = sys.argv[2]
+    feature_template = sys.argv[3]
+    target_template = sys.argv[4]
     weights_filename_average = weights_filename.replace(".npy", "_average.npy")
-    print(config_filename)
+
     config = load_json(config_filename)
     subject_weights = list()
     for i, subject in enumerate(config[key]):

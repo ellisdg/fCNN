@@ -13,7 +13,7 @@ def main():
     overwrite = True
     for folder in glob.glob("/work/aizenberg/dgellis/HCP/HCP_1200/*/T1w/Results/tfMRI*/tfMRI*s2_level1.feat/StandardVolumeStats"):
         feat_dir = os.path.dirname(folder)
-        basename = os.path.basename(feat_dir).replace("_level1.feat", "").replace("_hp", "_{}_hp")
+        basename = os.path.basename(feat_dir).replace("_level1.feat", ".nii.gz").replace("_hp", "_{}_hp")
         success = True
         for name in ("cope", "zstat"):
             output_filename = os.path.join(feat_dir, basename.format(name))

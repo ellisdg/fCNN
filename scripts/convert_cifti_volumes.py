@@ -16,8 +16,8 @@ def main(args):
     config = load_json(args[1])
     directory = os.path.abspath(args[2])
     basename = str(args[3])
-    crop = True
-    overwrite = False
+    crop = False
+    overwrite = True
     subjects_config_filename = os.path.join(os.path.dirname(__file__), "..", config["subjects_filename"])
     subjects_config = load_json(subjects_config_filename)
     target_basenames = config["target_basenames"]

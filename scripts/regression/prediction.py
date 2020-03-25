@@ -7,7 +7,7 @@ from fcnn.utils.hcp import new_cifti_scalar_exactly_like
 
 
 def predict(x, weights):
-    return np.matmul(np.concatenate([x, np.ones(x.shape[-1])], axis=-1), weights)
+    return np.matmul(np.concatenate([x, np.ones(x.shape[0])], axis=0), weights)
 
 
 def fetch_data(filename):
@@ -32,7 +32,7 @@ def main():
             target_dscalar = nib.load(target_template.format(subject=subject))
         except FileNotFoundError:
             continue
-        x = np.swapaxes(np.asarray(dscalar.dataobj), 0, 1)
+        x = np.asarray(dscalar.dataobj)
         print(x.shape)
         y = predict(normalize(x), weights)
         predicted_dscalar = new_cifti_scalar_exactly_like(y, structure_names, target_dscalar)

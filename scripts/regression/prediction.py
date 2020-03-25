@@ -7,7 +7,7 @@ from fcnn.utils.hcp import new_cifti_scalar_exactly_like
 
 
 def predict(x, weights):
-    return np.matmul(np.concatenate([x, np.ones(x.shape[0])[None]], axis=0), weights)
+    return np.matmul(np.concatenate([x, np.ones(x.shape[1])[None]], axis=0), weights)
 
 
 def fetch_data(filename):

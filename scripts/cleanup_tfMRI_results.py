@@ -10,7 +10,7 @@ def run_command(cmd):
 
 
 def main():
-    overwrite = True
+    overwrite = False
     for folder in glob.glob("/work/aizenberg/dgellis/HCP/HCP_1200/*/T1w/Results/tfMRI*/tfMRI*s2_level1.feat/StandardVolumeStats"):
         feat_dir = os.path.dirname(folder)
         basename = os.path.basename(feat_dir).replace("_level1.feat", ".nii.gz").replace("_hp", "_{}_hp")
@@ -27,8 +27,7 @@ def main():
             if not os.path.exists(output_filename):
                 success = False
         if success:
-            # shutil.rmtree(folder)
-            pass
+            shutil.rmtree(folder)
 
 
 if __name__ == "__main__":

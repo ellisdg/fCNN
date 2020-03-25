@@ -24,7 +24,6 @@ def main():
     structure_names = ["CortexLeft", "CortexRight"]
     config = load_json(config_filename)
     weights = np.load(weights_filename)
-    print(weights.shape)
     for i, subject in enumerate(config[key]):
         update_progress(i/len(config[key]), message=str(subject))
         try:
@@ -33,11 +32,9 @@ def main():
         except FileNotFoundError:
             continue
         x = np.asarray(dscalar.dataobj)
-        print(x.shape)
         y = predict(normalize(x), weights)
-        print(y.shape)
         predicted_dscalar = new_cifti_scalar_exactly_like(y, structure_names, target_dscalar)
-        output_filename = output_template.format(subject)
+        output_filename = output_template.format(subject=subject)
         predicted_dscalar.to_filename(output_filename)
 
     update_progress(1)

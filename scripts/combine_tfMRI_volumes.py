@@ -30,7 +30,7 @@ def main():
                                    "{subject}_tfMRI_{task}_level2_zstat_hp200_s2_TAVOR.nii.gz")
     for subject in subjects:
         output_filename = volume_template.format(subject=subject, task="ALL")
-        cmd = ["wb_command", "-volume-merge"]
+        cmd = ["wb_command", "-volume-merge", output_filename]
         complete = True
         for task in tasks:
             volume_filename = volume_template.format(subject=subject, task=task)

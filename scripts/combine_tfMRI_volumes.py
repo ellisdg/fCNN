@@ -18,7 +18,7 @@ def read_namefile(filename):
 
 
 def main():
-    config = load_json(sys.argv[0])
+    config = load_json(sys.argv[1])
     subjects = list()
     for key in config:
         subjects.extend(config[key])

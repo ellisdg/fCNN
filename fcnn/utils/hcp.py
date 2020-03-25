@@ -93,6 +93,13 @@ def get_metric_data(metrics, metric_names, surface_names, subject_id, stack_axis
     return np.stack(all_metric_data, axis=stack_axis)
 
 
+def new_cifti_scalar_exactly_like(array, structure_names, reference_cifti, default_value=0, almost_equals_decimals=2):
+    return new_cifti_scalar_like(array, structure_names=structure_names,
+                                 scalar_names=extract_cifti_scalar_map_names(reference_cifti),
+                                 default_value=default_value, almost_equals_decimals=almost_equals_decimals,
+                                 reference_cifti=reference_cifti)
+
+
 def new_cifti_scalar_like(array, scalar_names, structure_names, reference_cifti, default_value=0,
                           almost_equals_decimals=2):
     scalar_axis = reference_cifti.header.get_axis(0)

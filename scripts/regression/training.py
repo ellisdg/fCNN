@@ -21,6 +21,8 @@ def fetch_data(filenames):
     data = list()
     for filename in filenames:
         data.append(np.asarray(nib.load(filename).dataobj))
+    for a in data:
+        print(a.shape)
     return np.swapaxes(np.concatenate(data, axis=0), 0, 1)
 
 

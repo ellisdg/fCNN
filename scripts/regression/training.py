@@ -41,7 +41,7 @@ def fetch_data(filenames, structure_names=("CortexLeft", "CortexRight")):
             mask = np.isin(dscalar_structure_vertices, _vertices)
             print(mask.shape, mask[np.newaxis].shape, mask[..., np.newaxis].shape)
             print(dscalar.dataobj.shape)
-            dscalar_data.append(np.asarray(dscalar.dataobj)[mask[np.newaxis]])
+            dscalar_data.append(np.asarray(dscalar.dataobj)[structure_mask[np.newaxis]][mask[np.newaxis]])
         data.append(np.concatenate(dscalar_data, axis=1))
     return np.swapaxes(np.concatenate(data, axis=0), 0, 1)
 
@@ -60,6 +60,7 @@ def main():
         update_progress(i/len(config[key]), message=str(subject))
         try:
             x, y = fetch_subject_data(subject, feature_template, target_template)
+            print(x.shape, y.shape)
             subject_weights.append(compute_regression_weights(normalize(x), y, normalize_=False))
         except FileNotFoundError:
             pass

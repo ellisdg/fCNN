@@ -39,7 +39,9 @@ def fetch_data(filenames, structure_names=("CortexLeft", "CortexRight")):
             structure_mask = get_mask_from_axis(brain_model_axis, structure_name)
             dscalar_structure_vertices = brain_model_axis.vertex[structure_mask]
             mask = np.isin(dscalar_structure_vertices, _vertices)
-            dscalar_data.append(dscalar.dataobj[mask[np.newaxis]])
+            print(mask.shape, mask[np.newaxis].shape, mask[..., np.newaxis].shape)
+            print(dscalar.dataobj.shape)
+            dscalar_data.append(np.asarray(dscalar.dataobj)[mask[np.newaxis]])
         data.append(np.concatenate(dscalar_data, axis=1))
     return np.swapaxes(np.concatenate(data, axis=0), 0, 1)
 

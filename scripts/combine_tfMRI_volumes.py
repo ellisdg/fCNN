@@ -47,7 +47,7 @@ def main():
     for task in tasks:
         names.extend(read_namefile(name_filename_template.format(task=task)))
     with open(name_filename, "w") as opened_file:
-        opened_file.writelines(names)
+        opened_file.writelines("\n".join(names))
 
 
 if __name__ == "__main__":

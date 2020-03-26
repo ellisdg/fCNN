@@ -20,6 +20,7 @@ def fetch_subject_data(subject, feature_template, target_template):
 def fetch_data(filenames):
     data = list()
     for filename in filenames:
+        print(filename)
         data.append(np.asarray(nib.load(filename).dataobj))
     for a in data:
         print(a.shape)

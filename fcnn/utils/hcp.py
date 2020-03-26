@@ -3,6 +3,8 @@ import numpy as np
 
 
 def nib_load_files(filenames):
+    if type(filenames) != list:
+        filenames = [filenames]
     return [nib.load(filename) for filename in filenames]
 
 

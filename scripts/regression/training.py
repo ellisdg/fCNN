@@ -40,7 +40,6 @@ def fetch_data(filenames, target_filenames, structure_names=("CortexLeft", "Cort
             structure_mask = get_mask_from_axis(brain_model_axis, structure_name)
             dscalar_structure_vertices = brain_model_axis.vertex[structure_mask]
             mask = np.isin(dscalar_structure_vertices, _vertices)
-            print(dscalar.dataobj.shape, structure_mask.shape, mask.shape)
             dscalar_data.append(np.asarray(dscalar.dataobj)[..., structure_mask][..., mask])
         dscalar_data = np.concatenate(dscalar_data, axis=1)
         if i < len(filenames):
@@ -64,7 +63,6 @@ def main():
         update_progress(i/len(config[key]), message=str(subject))
         try:
             x, y = fetch_subject_data(subject, feature_template, target_template)
-            print(x.shape, y.shape)
             subject_weights.append(compute_regression_weights(normalize(x), y, normalize_=False))
         except FileNotFoundError:
             pass

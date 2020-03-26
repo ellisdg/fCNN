@@ -28,7 +28,7 @@ def fetch_data(filenames, structure_names=("CortexLeft", "CortexRight")):
         for structure_name in structure_names:
             dscalar_structure_vertices = get_vertices_from_scalar(dscalar, structure_name)
             if structure_name in vertices:
-                vertices[structure_name] = np.intersect1d([dscalar_structure_vertices, vertices[structure_name]])
+                vertices[structure_name] = np.intersect1d(dscalar_structure_vertices, vertices[structure_name])
             else:
                 vertices[structure_name] = dscalar_structure_vertices
     data = list()

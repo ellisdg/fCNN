@@ -15,14 +15,14 @@ def compute_regression_weights(x, y, normalize_=False):
 
 
 def fetch_subject_data(subject, feature_template, target_template):
-    return fetch_data(feature_template.format(subject=subject).split(",")), \
-           fetch_data(target_template.format(subject=subject).split(","))
+    return fetch_data(feature_template.format(subject=subject).split(","),
+                      target_template.format(subject=subject).split(","))
 
 
-def fetch_data(filenames, structure_names=("CortexLeft", "CortexRight")):
+def fetch_data(filenames, target_filenames, structure_names=("CortexLeft", "CortexRight")):
     dscalars = list()
     vertices = dict()
-    for filename in filenames:
+    for filename in filenames + target_filenames:
         dscalar = nib.load(filename)
         dscalars.append(dscalar)
         for structure_name in structure_names:
@@ -32,7 +32,8 @@ def fetch_data(filenames, structure_names=("CortexLeft", "CortexRight")):
             else:
                 vertices[structure_name] = dscalar_structure_vertices
     data = list()
-    for dscalar in dscalars:
+    target_data = list()
+    for i, dscalar in enumerate(dscalars):
         dscalar_data = list()
         for structure_name, _vertices in vertices.items():
             brain_model_axis = get_axis(dscalar, axis_index=1)
@@ -41,8 +42,12 @@ def fetch_data(filenames, structure_names=("CortexLeft", "CortexRight")):
             mask = np.isin(dscalar_structure_vertices, _vertices)
             print(dscalar.dataobj.shape, structure_mask.shape, mask.shape)
             dscalar_data.append(np.asarray(dscalar.dataobj)[..., structure_mask][..., mask])
-        data.append(np.concatenate(dscalar_data, axis=1))
-    return np.swapaxes(np.concatenate(data, axis=0), 0, 1)
+        dscalar_data = np.concatenate(dscalar_data, axis=1)
+        if i < len(filenames):
+            data.append(dscalar_data)
+        else:
+            target_data.append(dscalar_data)
+    return np.swapaxes(np.concatenate(data, axis=0), 0, 1), np.swapaxes(np.concatenate(target_data, axis=0), 0, 1)
 
 
 def main():

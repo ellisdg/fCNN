@@ -13,11 +13,15 @@ def compute_regression_weights(x, y, normalize_=False):
 
 
 def fetch_subject_data(subject, feature_template, target_template):
-    return fetch_data(feature_template.format(subject=subject)), fetch_data(target_template.format(subject=subject))
+    return fetch_data(feature_template.format(subject=subject).split(",")), \
+           fetch_data(target_template.format(subject=subject))
 
 
-def fetch_data(filename):
-    return np.swapaxes(np.asarray(nib.load(filename).dataobj), 0, 1)
+def fetch_data(filenames):
+    data = list()
+    for filename in filenames:
+        data.append(np.asarray(nib.load(filename).dataobj))
+    return np.swapaxes(np.concatenate(data, axis=0), 0, 1)
 
 
 def main():

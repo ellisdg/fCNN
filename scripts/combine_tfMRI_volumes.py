@@ -24,7 +24,7 @@ def main():
         subjects.extend(config[key])
     tasks = ["MOTOR", "LANGUAGE", "WM", "RELATIONAL", "EMOTION", "SOCIAL", "GAMBLING"]
     hcp_dir = "/work/aizenberg/dgellis/HCP/HCP_1200"
-    name_filename_template = "/home/aizenberg/dgellis/fCNN/data/labels/{task}_name-file.txt"
+    name_filename_template = "/home/aizenberg/dgellis/fCNN/data/labels/{task}-TAVOR_name-file.txt"
     volume_template = os.path.join(hcp_dir, "{subject}", "T1w", "Results", "tfMRI_{task}",
                                    "tfMRI_{task}_hp200_s2_level2.feat",
                                    "{subject}_tfMRI_{task}_level2_zstat_hp200_s2_TAVOR.nii.gz")

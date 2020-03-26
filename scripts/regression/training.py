@@ -16,7 +16,7 @@ def compute_regression_weights(x, y, normalize_=False):
 
 def fetch_subject_data(subject, feature_template, target_template):
     return fetch_data(feature_template.format(subject=subject).split(",")), \
-           fetch_data(target_template.format(subject=subject))
+           fetch_data(target_template.format(subject=subject).split(","))
 
 
 def fetch_data(filenames, structure_names=("CortexLeft", "CortexRight")):

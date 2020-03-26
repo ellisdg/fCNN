@@ -3,7 +3,9 @@ from sklearn.preprocessing import normalize
 import nibabel as nib
 import numpy as np
 import sys
+from functools import reduce
 from fcnn.utils.utils import load_json, update_progress
+from fcnn.utils.hcp import get_vertices_from_scalar, get_mask_from_axis, get_axis
 
 
 def compute_regression_weights(x, y, normalize_=False):
@@ -17,13 +19,28 @@ def fetch_subject_data(subject, feature_template, target_template):
            fetch_data(target_template.format(subject=subject))
 
 
-def fetch_data(filenames):
-    data = list()
+def fetch_data(filenames, structure_names=("CortexLeft", "CortexRight")):
+    dscalars = list()
+    vertices = dict()
     for filename in filenames:
-        print(filename)
-        data.append(np.asarray(nib.load(filename).dataobj))
-    for a in data:
-        print(a.shape)
+        dscalar = nib.load(filename)
+        dscalars.append(dscalar)
+        for structure_name in structure_names:
+            dscalar_structure_vertices = get_vertices_from_scalar(dscalar, structure_name)
+            if structure_name in vertices:
+                vertices[structure_name] = np.intersect1d([dscalar_structure_vertices, vertices[structure_name]])
+            else:
+                vertices[structure_name] = dscalar_structure_vertices
+    data = list()
+    for dscalar in dscalars:
+        dscalar_data = list()
+        for structure_name, _vertices in vertices.items():
+            brain_model_axis = get_axis(dscalar, axis_index=1)
+            structure_mask = get_mask_from_axis(brain_model_axis, structure_name)
+            dscalar_structure_vertices = brain_model_axis.vertex[structure_mask]
+            mask = np.isin(dscalar_structure_vertices, _vertices)
+            dscalar_data.append(dscalar.dataobj[mask[np.newaxis]])
+        data.append(np.concatenate(dscalar_data, axis=1))
     return np.swapaxes(np.concatenate(data, axis=0), 0, 1)
 
 

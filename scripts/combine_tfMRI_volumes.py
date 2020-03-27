@@ -42,7 +42,7 @@ def main():
                 os.makedirs(os.path.dirname(output_filename))
             run_command(cmd)
 
-    name_filename = "/work/aizenberg/dgellis/TAVOR_name-file.txt"
+    name_filename = "/work/aizenberg/dgellis/ALL-TAVOR_name-file.txt"
     names = list()
     for task in tasks:
         names.extend(read_namefile(name_filename_template.format(task=task)))

@@ -3,7 +3,6 @@ from sklearn.preprocessing import normalize
 import nibabel as nib
 import numpy as np
 import sys
-from functools import reduce
 from fcnn.utils.utils import load_json, update_progress
 from fcnn.utils.hcp import get_vertices_from_scalar, get_mask_from_axis, get_axis
 

@@ -54,7 +54,7 @@ def fetch_data(filenames, target_filenames, structure_names=("CortexLeft", "Cort
             target_data.append(dscalar_data)
             target_mask = mask
 
-    return (np.concatenate(data, axis=0), np.swapaxes(np.concatenate(target_data, axis=0), 0, 1), target_mask)
+    return np.concatenate(data, axis=0), np.swapaxes(np.concatenate(target_data, axis=0), 0, 1), target_mask
 
 
 def main():

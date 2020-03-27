@@ -88,7 +88,7 @@ def main():
 
     if not config["n_outputs"] == len(config["metric_names"]):
         raise ValueError("n_outputs set to {}, but number of metrics is {}.".format(config["n_outputs"],
-                                                                                    config["metric_names"]))
+                                                                                    len(config["metric_names"])))
 
     model_filename = sys.argv[2]
     print("Model: ", model_filename)

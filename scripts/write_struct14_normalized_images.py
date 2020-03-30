@@ -60,11 +60,11 @@ def main():
                    hcp_dir=system_config['directory'],
                    feature_basenames=feature_basenames,
                    channels_to_normalize=channels_to_normalize,
-                   overwrite=False,
+                   overwrite=True,
                    output_channels=(((2, 14), "T1w/Diffusion/dti_12_normalized.nii.gz"),),
                    normalization_kwargs={"floor_percentile": 25,
                                          "ceiling_percentile": 99.9})
-    with Pool(16) as pool:
+    with Pool(8) as pool:
         pool.map(func, subject_ids)
 
 

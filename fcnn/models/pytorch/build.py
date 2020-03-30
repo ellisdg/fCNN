@@ -68,7 +68,8 @@ def match_tensor_sizes(fixed_tensor, moving_tensor):
     for dim in range(len(moving_tensor_size)):
         if fixed_tensor_size[dim] > moving_tensor_size[dim]:
             moving_tensor = torch.cat([moving_tensor] *
-                                      int(math.ceil(fixed_tensor_size[dim] / moving_tensor_size[dim])))
+                                      int(math.ceil(fixed_tensor_size[dim] / moving_tensor_size[dim])),
+                                      dim=dim)
         if fixed_tensor_size[dim] != moving_tensor_size[dim]:
             moving_tensor = moving_tensor.narrow(dim=dim, start=0, length=fixed_tensor_size[dim])
     return moving_tensor

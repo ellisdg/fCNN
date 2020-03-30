@@ -40,6 +40,7 @@ def main():
     subjects = list()
     for c_file, n_file in zip(correlation_files, name_files):
         corr = np.load(c_file)
+        print(c_file, corr.shape)
         subs = np.load(c_file.replace(".npy", "_subjects.npy"))
         subjects.append(subs)
         temp_correlations.append(corr)

@@ -6,6 +6,8 @@
 #SBATCH --error=/work/aizenberg/dgellis/fCNN/logs/job.%J.err
 #SBATCH --output=/work/aizenberg/dgellis/fCNN/logs/job.%J.out
 TASK=${1}
+module load anaconda
+conda activate dti
 fCNNDir=/home/aizenberg/dgellis/fCNN
 export PYTHONPATH=$fCNNDir:/home/aizenberg/dgellis/3DUnetCNN:PYTHONPATH
 PDIR=/work/aizenberg/dgellis/fCNN/predictions/v4_struct6_unet_${TASK}_2mm_v1_pt

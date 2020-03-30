@@ -28,10 +28,17 @@ class MyronenkoConvolutionBlock(nn.Module):
 
 
 class MyronenkoResidualBlock(nn.Module):
-    def __init__(self, in_planes, planes, stride=1, norm_layer=None, norm_groups=8, kernal_size=3):
+    def __init__(self, in_planes, planes, stride=1, norm_layer=None, norm_groups=8, kernal_size=3,
+                 input_norm_groups=None):
         super(MyronenkoResidualBlock, self).__init__()
-        self.conv1 = MyronenkoConvolutionBlock(in_planes=in_planes, planes=planes, stride=stride, norm_layer=norm_layer,
-                                               norm_groups=norm_groups, kernal_size=kernal_size)
+        if input_norm_groups is not None:
+            self.conv1 = MyronenkoConvolutionBlock(in_planes=in_planes, planes=planes, stride=stride,
+                                                   norm_layer=norm_layer,
+                                                   norm_groups=input_norm_groups, kernal_size=kernal_size)
+        else:
+            self.conv1 = MyronenkoConvolutionBlock(in_planes=in_planes, planes=planes, stride=stride,
+                                                   norm_layer=norm_layer,
+                                                   norm_groups=norm_groups, kernal_size=kernal_size)
         self.conv2 = MyronenkoConvolutionBlock(in_planes=planes, planes=planes, stride=stride, norm_layer=norm_layer,
                                                norm_groups=norm_groups, kernal_size=kernal_size)
         if in_planes != planes:
@@ -95,7 +102,7 @@ class MyronenkoEncoder(nn.Module):
                 layer_dropout = None
             if i == 0:
                 self.layers.append(layer(n_blocks=n_blocks, block=block, in_planes=in_width, planes=out_width,
-                                         dropout=layer_dropout, kernal_size=kernal_size, norm_groups=n_features))
+                                         dropout=layer_dropout, kernal_size=kernal_size, input_norm_groups=n_features))
             else:
                 self.layers.append(layer(n_blocks=n_blocks, block=block, in_planes=in_width, planes=out_width,
                                          dropout=layer_dropout, kernal_size=kernal_size))

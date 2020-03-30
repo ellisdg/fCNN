@@ -93,8 +93,12 @@ class MyronenkoEncoder(nn.Module):
                 layer_dropout = dropout
             else:
                 layer_dropout = None
-            self.layers.append(layer(n_blocks=n_blocks, block=block, in_planes=in_width, planes=out_width,
-                                     dropout=layer_dropout, kernal_size=kernal_size))
+            if i == 0:
+                self.layers.append(layer(n_blocks=n_blocks, block=block, in_planes=in_width, planes=out_width,
+                                         dropout=layer_dropout, kernal_size=kernal_size, group_norm=n_features))
+            else:
+                self.layers.append(layer(n_blocks=n_blocks, block=block, in_planes=in_width, planes=out_width,
+                                         dropout=layer_dropout, kernal_size=kernal_size))
             if i != len(layer_blocks) - 1:
                 self.downsampling_convolutions.append(conv3x3x3(out_width, out_width, stride=downsampling_stride,
                                                                 kernal_size=kernal_size))

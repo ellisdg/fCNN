@@ -95,7 +95,7 @@ class MyronenkoEncoder(nn.Module):
                 layer_dropout = None
             if i == 0:
                 self.layers.append(layer(n_blocks=n_blocks, block=block, in_planes=in_width, planes=out_width,
-                                         dropout=layer_dropout, kernal_size=kernal_size, group_norm=n_features))
+                                         dropout=layer_dropout, kernal_size=kernal_size, norm_groups=n_features))
             else:
                 self.layers.append(layer(n_blocks=n_blocks, block=block, in_planes=in_width, planes=out_width,
                                          dropout=layer_dropout, kernal_size=kernal_size))

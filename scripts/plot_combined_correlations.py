@@ -179,7 +179,7 @@ def main():
     gap = 0.
     h = (width + gap) * len(names)
     fig, ax = plt.subplots(figsize=(w, h))
-    for i, task in enumerate(sorted(np.unique(tasks))):
+    for i, task in enumerate(np.unique(tasks)[::-1]):
         mask = np.asarray(tasks) == task
         ax.barh(np.squeeze(np.where(mask)), np.asarray(result)[mask] * 100, label=task, color="C{}".format(i))
     ax.set_yticks(np.arange(len(names)))

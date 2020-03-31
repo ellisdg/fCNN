@@ -5,6 +5,7 @@ import numpy as np
 from fcnn.utils.utils import load_json
 from fcnn.utils.hcp import extract_cifti_scalar_map_names
 import seaborn
+import pandas as pd
 import matplotlib.pyplot as plt
 import glob
 
@@ -78,9 +79,14 @@ def main():
         group_average_errors = np.load(group_average_errors_filename)
         prediction_errors = np.load(prediction_errors_filename)
 
+    rows = list()
+    for task, ga_errors, p_errors in zip(tasks, group_average_errors, prediction_errors):
+        for errors, label in zip((ga_errors, p_errors), ("Group Average", "Prediction")):
+            for error in errors:
+                rows.append([error, label, task])
+    errors_df = pd.DataFrame(rows, columns=["MAE", "Label", "Task"])
     fig, ax = plt.subplots()
-    seaborn.barplot(y=tasks, x=np.mean(group_average_errors, axis=1), label="Group Average", ax=ax, color="C0")
-    seaborn.barplot(y=tasks, x=np.mean(prediction_errors, axis=1), label="Prediction", ax=ax, color="C1")
+    seaborn.barplot(data=errors_df, x="MAE", y="Task", hue="MAE")
     fig.savefig("/work/aizenberg/dgellis/fCNN/predictions/figures/mean_average_error.png")
 
 

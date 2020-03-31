@@ -48,7 +48,7 @@ def main():
                 for key in group_average_keys:
                     for subject in config[key]:
                         cifti_filename = cifti_template.format(task=task, subject=subject)
-                        cmd.extend(["-cifit", cifti_filename])
+                        cmd.extend(["-cifti", cifti_filename])
                 run_command(cmd)
             group_average = nib.load(group_average_filename)
             # Compute error from average

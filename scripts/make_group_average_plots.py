@@ -6,6 +6,7 @@ from fcnn.utils.utils import load_json
 from fcnn.utils.hcp import extract_cifti_scalar_map_names
 import seaborn
 import matplotlib.pyplot as plt
+import glob
 
 
 def run_command(cmd):
@@ -29,7 +30,7 @@ def main():
     group_average_template = os.path.join("/work/aizenberg/dgellis/fCNN",
                                           "{subject}_tfMRI_{task}_level2_zstat_hp200_s2_TAVOR.midthickness.dscalar.nii")
     prediction_template = os.path.join("/work/aizenberg/dgellis/fCNN",
-                                       "predictions/v4_struct6_unet_{task}_2mm_v1_pt",
+                                       "predictions/v4_struct6_unet_{task}*_2mm_v1_pt",
                                        "{subject}_model_v4_struct6_unet_{task}_2mm_v1_pt_struct6_normalized.nii.gz")
 
     group_average_errors = list()
@@ -58,7 +59,7 @@ def main():
             for subject in config[test_group]:
                 cifti_filename = cifti_template.format(task=task, subject=subject)
                 cifti = nib.load(cifti_filename)
-                prediction_filename = prediction_template.format(subject=subject, task=task)
+                prediction_filename = glob.glob(prediction_template.format(subject=subject, task=task))[0]
                 predicted_cifti = nib.load(prediction_filename)
                 group_average_task_errors.append(compute_error(group_average, cifti))
                 predicted_task_errors.append(compute_error(predicted_cifti, cifti))

@@ -2,8 +2,7 @@ import subprocess
 import os
 import nibabel as nib
 import numpy as np
-from fcnn.utils.utils import load_json
-from fcnn.utils.hcp import extract_cifti_scalar_map_names
+from fcnn.utils.utils import load_json, update_progress
 import seaborn
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -82,8 +81,9 @@ def main():
     rows = list()
     for task, ga_errors, p_errors in zip(tasks, group_average_errors, prediction_errors):
         for errors, label in zip((ga_errors, p_errors), ("Group Average", "Prediction")):
-            for error in errors:
+            for i, error in enumerate(errors):
                 rows.append([error, label, task])
+                update_progress((i + 1)/len(errors), message=task + label)
     errors_df = pd.DataFrame(rows, columns=["MAE", "Label", "Task"])
     fig, ax = plt.subplots()
     seaborn.barplot(data=errors_df, x="MAE", y="Task", hue="MAE")

@@ -175,7 +175,7 @@ def main():
     print("D-value: {:.2f}\tp-value = {:.8f}".format(d, p))
 
     w = 6
-    width = 0.3
+    width = 0.4
     gap = 0.
     h = (width + gap) * len(names)
     fig, ax = plt.subplots(figsize=(w, h))

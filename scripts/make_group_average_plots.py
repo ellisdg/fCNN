@@ -15,7 +15,7 @@ def run_command(cmd):
 
 
 def compute_error(cifti1, cifti2):
-    return np.mean(np.abs(cifti1.dataobj - cifti2.dataobj))
+    return np.mean(np.abs(np.array(cifti1.dataobj) - np.array(cifti2.dataobj)))
 
 
 def main():

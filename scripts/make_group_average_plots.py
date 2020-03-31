@@ -31,7 +31,7 @@ def main():
                                           "{subject}_tfMRI_{task}_level2_zstat_hp200_s2_TAVOR.midthickness.dscalar.nii")
     prediction_template = os.path.join("/work/aizenberg/dgellis/fCNN",
                                        "predictions/v4_struct6_unet_{task}_2mm_v1_pt",
-                                       "{subject}_model_v4_struct6_unet_{task}*_2mm_v1_pt_struct6_normalized.nii.gz")
+                                       "{subject}_model_v4_struct6_unet_{task}*_2mm_v1_pt_struct6_normalized.midthickness.dscalar.nii")
 
     group_average_errors = list()
     prediction_errors = list()

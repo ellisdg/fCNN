@@ -60,8 +60,11 @@ def main():
                 cifti_filename = cifti_template.format(task=task, subject=subject)
                 cifti = nib.load(cifti_filename)
                 prediction_wildcard = prediction_template.format(subject=subject, task=task)
-                print(prediction_wildcard)
-                prediction_filename = glob.glob(prediction_wildcard)[0]
+                try:
+                    prediction_filename = glob.glob(prediction_wildcard)[0]
+                except IndexError:
+                    print(prediction_wildcard)
+                    continue
                 predicted_cifti = nib.load(prediction_filename)
                 group_average_task_errors.append(compute_error(group_average, cifti))
                 predicted_task_errors.append(compute_error(predicted_cifti, cifti))

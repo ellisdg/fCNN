@@ -179,7 +179,7 @@ def main():
     gap = 0.
     h = (width + gap) * len(names)
     fig, ax = plt.subplots(figsize=(w, h))
-    seaborn.barplot(x=np.asanyarray(result)*100, y=names, ax=ax, hue=tasks)
+    seaborn.barplot(x=np.asanyarray(result)*100, height=0.4, y=names, ax=ax, hue=tasks)
     ax.set_xlabel("Self vs other increase (in %)")
     seaborn.despine(ax=ax, top=True)
     fig.savefig(output_dir + "/increase_correlation_over_mean_correlation.png", bbox_inches="tight")

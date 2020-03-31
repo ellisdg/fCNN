@@ -29,7 +29,7 @@ def main():
     group_average_template = os.path.join("/work/aizenberg/dgellis/fCNN",
                                           "{subject}_tfMRI_{task}_level2_zstat_hp200_s2_TAVOR.midthickness.dscalar.nii")
     prediction_template = os.path.join("/work/aizenberg/dgellis/fCNN",
-                                       "/predictions/v4_struct6_unet_{task}_2mm_v1_pt",
+                                       "predictions/v4_struct6_unet_{task}_2mm_v1_pt",
                                        "{subject}_model_v4_struct6_unet_{task}_2mm_v1_pt_struct6_normalized.nii.gz")
 
     group_average_errors = list()

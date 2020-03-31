@@ -179,11 +179,11 @@ def main():
     gap = 0.
     h = (width + gap) * len(names)
     fig, ax = plt.subplots(figsize=(w, h))
-    for i, task in enumerate(np.unique(tasks)[::-1]):
-        mask = np.asarray(tasks) == task
-        ax.barh(np.squeeze(np.where(mask)), np.asarray(result)[mask] * 100, label=task, color="C{}".format(i))
+    for i, task in enumerate(np.unique(tasks)):
+        mask = np.asarray(tasks[::-1]) == task
+        ax.barh(np.squeeze(np.where(mask)), np.asarray(result)[::-1][mask] * 100, label=task, color="C{}".format(i))
     ax.set_yticks(np.arange(len(names)))
-    ax.set_yticklabels(names)
+    ax.set_yticklabels(names[::-1])
     ax.legend()
     ax.set_xlabel("Self vs other increase (in %)")
     seaborn.despine(ax=ax, top=True)

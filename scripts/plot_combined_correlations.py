@@ -70,7 +70,7 @@ def main():
     vmax = corr_matrices.max()
 
     n_plots = len(metric_names)
-    plots_per_row = 5
+    plots_per_row = 6
     n_rows = int(np.ceil(n_plots/plots_per_row))
     row_height = 4
     column_height = 4

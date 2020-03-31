@@ -58,6 +58,8 @@ def main():
             predicted_task_errors = list()
             for subject in config[test_group]:
                 cifti_filename = cifti_template.format(task=task, subject=subject)
+                if not os.path.exists(cifti_filename):
+                    continue
                 cifti = nib.load(cifti_filename)
                 prediction_wildcard = prediction_template.format(subject=subject, task=task)
                 try:

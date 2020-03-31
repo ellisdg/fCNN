@@ -76,8 +76,8 @@ def main():
         np.save(group_average_errors_filename, group_average_errors)
         np.save(prediction_errors_filename, prediction_errors)
     else:
-        group_average_errors = np.load(group_average_errors_filename)
-        prediction_errors = np.load(prediction_errors_filename)
+        group_average_errors = np.load(group_average_errors_filename, allow_pickle=True)
+        prediction_errors = np.load(prediction_errors_filename, allow_pickle=True)
 
     rows = list()
     for task, ga_errors, p_errors in zip(tasks, group_average_errors, prediction_errors):

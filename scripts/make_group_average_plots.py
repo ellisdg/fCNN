@@ -42,7 +42,7 @@ def main():
     if not os.path.exists(group_average_errors_filename) and not os.path.exists(prediction_errors_filename):
         for task in tasks:
             # make average
-            group_average_filename = group_average_template.format(subjet="v4training", task=task)
+            group_average_filename = group_average_template.format(subject="v4training", task=task)
             if not os.path.exists(group_average_filename):
                 cmd = ["wb_command", "-cifti-average", group_average_filename]
                 for key in group_average_keys:

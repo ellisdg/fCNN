@@ -5,7 +5,7 @@
     "CortexRight"
   ],
   "surface_basename_template": null,
-  "feature_basenames": "T1w/struct6_normalized.nii.gz",
+  "feature_basenames": "T1w/T1T2w_acpc_dc_restore_brain.nii.gz",
   "target_basenames": "T1w/Results/tfMRI_ALL/tfMRI_ALL_hp200_s2_level2.feat/{}_tfMRI_ALL_level2_zstat_hp200_s2_TAVOR.nii.gz",
   "hemispheres": [
     "L",

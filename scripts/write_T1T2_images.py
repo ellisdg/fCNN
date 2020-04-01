@@ -40,24 +40,24 @@ def combine_images(images, axis=0, resample_unequal_affines=False, interpolation
 
 
 def main():
-    config = load_json(os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                                    "data",
-                                    "t1t2_wb_18_LS_config.json"))
-    system_config = load_json(os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                                           "data",
-                                           "hcc_p100_config.json"))
-    subject_ids = config['validation'] + config["training"]
-    func = partial(write_image, system_config=system_config, config=config, overwrite=False)
+    config = load_json(os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "subjects_v4.json"))
+    hcp_dir = "/work/aizenberg/dgellis/HCP/HCP_1200"
+    feature_basenames = ["T1w/T1w_acpc_dc_restore_brain.nii.gz",
+                         "T1w/T2w_acpc_dc_restore_brain.nii.gz"]
+    overwrite = False
+    subject_ids = config['validation'] + config["training"] + config["test"]
+    func = partial(write_image, hcp_dir=hcp_dir, feature_basenames=feature_basenames, overwrite=overwrite)
     with Pool(16) as pool:
         pool.map(func, subject_ids)
 
 
-def write_image(subject_id, system_config, config, overwrite=True):
-    subject_dir = os.path.join(system_config['directory'], subject_id)
-    output_filename = os.path.join(subject_dir, "T1w", "T1T2w_acpc_dc_restore_brain.nii.gz")
+def write_image(subject_id, hcp_dir, feature_basenames, output_basename="T1T2w_acpc_dc_restore_brain.nii.gz",
+                overwrite=True):
+    subject_dir = os.path.join(hcp_dir, subject_id)
+    output_filename = os.path.join(subject_dir, "T1w", output_basename)
     print(output_filename)
     if overwrite or not os.path.exists(output_filename):
-        feature_filenames = [os.path.join(subject_dir, fbn) for fbn in config["feature_basenames"]]
+        feature_filenames = [os.path.join(subject_dir, fbn) for fbn in feature_basenames]
         feature_images = [nib.load(fn) for fn in feature_filenames][::-1]
         image = combine_images(feature_images,
                                axis=3,

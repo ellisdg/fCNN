@@ -86,7 +86,7 @@ def main():
                 update_progress((i + 1)/len(errors), message=task + label)
     errors_df = pd.DataFrame(rows, columns=["MAE", "Label", "Task"])
     fig, ax = plt.subplots()
-    seaborn.barplot(data=errors_df, x="MAE", y="Task", hue="MAE")
+    seaborn.barplot(data=errors_df, x="MAE", y="Task", hue="Label")
     fig.savefig("/work/aizenberg/dgellis/fCNN/predictions/figures/mean_average_error.png")
 
 

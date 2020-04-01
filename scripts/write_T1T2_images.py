@@ -55,15 +55,16 @@ def write_image(subject_id, hcp_dir, feature_basenames, output_basename="T1T2w_a
                 overwrite=True):
     subject_dir = os.path.join(hcp_dir, subject_id)
     output_filename = os.path.join(subject_dir, "T1w", output_basename)
-    print(output_filename)
     if overwrite or not os.path.exists(output_filename):
         feature_filenames = [os.path.join(subject_dir, fbn) for fbn in feature_basenames]
-        feature_images = [nib.load(fn) for fn in feature_filenames][::-1]
-        image = combine_images(feature_images,
-                               axis=3,
-                               resample_unequal_affines=False,
-                               interpolation="continuous")
-        image.to_filename(output_filename)
+        if np.all([os.path.exists(fn) for fn in feature_filenames]):
+            print(output_filename)
+            feature_images = [nib.load(fn) for fn in feature_filenames][::-1]
+            image = combine_images(feature_images,
+                                   axis=3,
+                                   resample_unequal_affines=False,
+                                   interpolation="continuous")
+            image.to_filename(output_filename)
 
 
 if __name__ == "__main__":

@@ -2,7 +2,7 @@ import seaborn
 import matplotlib.pyplot as plt
 import glob
 import os
-from fcnn.utils.utils import load_json
+from fcnn.utils.utils import load_json, update_progress
 from fcnn.utils.hcp import get_metric_data, extract_gifti_surface_vertices
 from scipy.spatial.distance import cdist
 import nibabel as nib
@@ -17,18 +17,25 @@ def average_around_index(data, surface_vertices, ind, radius=10, distance_metric
     return np.mean(data[mask])
 
 
-def compute_lateral_peak(data, surface_vertices, ind=None, radius=10, distance_metric="euclidean"):
+def compute_lateral_peak(data, surface_vertices, ind=None, radius=10, distance_metric="euclidean",
+                         return_index=False):
     assert len(data) == len(surface_vertices)
     if ind is None:
         ind = np.argmax(data)
-    return average_around_index(data, surface_vertices, ind=ind, radius=radius, distance_metric=distance_metric)
+    avg = average_around_index(data, surface_vertices, ind=ind, radius=radius, distance_metric=distance_metric)
+    if return_index:
+        return avg, ind
+    else:
+        return avg
 
 
 def compute_lateralization_index_from_loaded_data(lh_data, lh_vertices, rh_data, rh_vertices, radius=10,
                                                   distance_metric="euclidean", lh_ind=None, rh_ind=None,
                                                   return_indices=False):
-    lh_peak = compute_lateral_peak(lh_data, lh_vertices, radius=radius, distance_metric=distance_metric, ind=lh_ind)
-    rh_peak = compute_lateral_peak(rh_data, rh_vertices, radius=radius, distance_metric=distance_metric, ind=rh_ind)
+    lh_peak, lh_ind = compute_lateral_peak(lh_data, lh_vertices, radius=radius, distance_metric=distance_metric,
+                                           ind=lh_ind, return_index=True)
+    rh_peak, rh_ind = compute_lateral_peak(rh_data, rh_vertices, radius=radius, distance_metric=distance_metric,
+                                           ind=rh_ind, return_index=True)
     if return_indices:
         return lh_peak - rh_peak, (lh_ind, rh_ind)
     else:
@@ -117,7 +124,8 @@ def main():
     lateralization_file = os.path.join(prediction_dir, "lateralization.npy")
     if not os.path.exists(lateralization_file):
         lateralization = list()
-        for pred_filename, target_filename, surfs, sid in zip(prediction_images, target_images, all_surfaces, subjects):
+        for i, pred_filename, target_filename, surfs, sid in zip(np.arange(len(subjects)), prediction_images,
+                                                                 target_images, all_surfaces, subjects):
             row = list()
             pred_dscalar = nib.load(pred_filename)
             target_dscalar = nib.load(target_filename)
@@ -127,7 +135,7 @@ def main():
                 row.append(compute_lateralization_index_at_common_max(pred_dscalar, target_dscalar, lh_surface,
                                                                       rh_surface, metric_name))
             lateralization.append(row)
-
+            update_progress((i + 1)/len(subjects))
         lateralization = np.asarray(lateralization)
         np.save(lateralization_file, lateralization)
         np.save(lateralization_file.replace(".npy", "_subjects.npy"), subjects)

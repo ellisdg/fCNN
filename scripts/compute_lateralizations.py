@@ -10,24 +10,33 @@ import numpy as np
 import sys
 
 
-def compute_lateral_peak(data, surface_vertices, radius=10, distance_metric="euclidean"):
-    assert len(data) == len(surface_vertices)
-    ind = np.argmax(data)
+def average_around_index(data, surface_vertices, ind, radius=10, distance_metric="euclidean"):
     peak_point = surface_vertices[ind]
     distances = np.squeeze(cdist(surface_vertices, np.asarray([peak_point]), distance_metric))
     mask = distances <= radius
     return np.mean(data[mask])
 
 
+def compute_lateral_peak(data, surface_vertices, ind=None, radius=10, distance_metric="euclidean"):
+    assert len(data) == len(surface_vertices)
+    if ind is None:
+        ind = np.argmax(data)
+    return average_around_index(data, surface_vertices, ind=ind, radius=radius, distance_metric=distance_metric)
+
+
 def compute_lateralization_index_from_loaded_data(lh_data, lh_vertices, rh_data, rh_vertices, radius=10,
-                                                  distance_metric="euclidean"):
-    lh_peak = compute_lateral_peak(lh_data, lh_vertices, radius=radius, distance_metric=distance_metric)
-    rh_peak = compute_lateral_peak(rh_data, rh_vertices, radius=radius, distance_metric=distance_metric)
-    return lh_peak - rh_peak
+                                                  distance_metric="euclidean", lh_ind=None, rh_ind=None,
+                                                  return_indices=False):
+    lh_peak = compute_lateral_peak(lh_data, lh_vertices, radius=radius, distance_metric=distance_metric, ind=lh_ind)
+    rh_peak = compute_lateral_peak(rh_data, rh_vertices, radius=radius, distance_metric=distance_metric, ind=rh_ind)
+    if return_indices:
+        return lh_peak - rh_peak, (lh_ind, rh_ind)
+    else:
+        return lh_peak - rh_peak
 
 
 def compute_lateralization_index(dscalar, lh_surface, rh_surface, metric_name, subject_id=None, radius=10,
-                                 distance_metric="euclidean"):
+                                 distance_metric="euclidean", lh_ind=None, rh_ind=None, return_indices=False):
     lh_data = np.squeeze(get_metric_data([dscalar], [[metric_name]], surface_names=["CortexLeft"],
                                          subject_id=subject_id))
     lh_vertices = extract_gifti_surface_vertices(lh_surface, primary_anatomical_structure="CortexLeft")
@@ -35,7 +44,22 @@ def compute_lateralization_index(dscalar, lh_surface, rh_surface, metric_name, s
                                          subject_id=subject_id))
     rh_vertices = extract_gifti_surface_vertices(rh_surface, primary_anatomical_structure="CortexRight")
     return compute_lateralization_index_from_loaded_data(lh_data, lh_vertices, rh_data, rh_vertices, radius=radius,
-                                                         distance_metric=distance_metric)
+                                                         distance_metric=distance_metric, lh_ind=lh_ind, rh_ind=rh_ind,
+                                                         return_indices=return_indices)
+
+
+def compute_lateralization_index_at_common_max(dscalar1, dscalar2, lh_surface, rh_surface, metric_name, subject_id=None,
+                                               radius=10, distance_metric="euclidean"):
+    lateralization1, (lh_ind, rh_ind) = compute_lateralization_index(dscalar=dscalar1, lh_surface=lh_surface,
+                                                                     rh_surface=rh_surface, metric_name=metric_name,
+                                                                     subject_id=subject_id, radius=radius,
+                                                                     distance_metric=distance_metric,
+                                                                     return_indices=True)
+    lateralization2 = compute_lateralization_index(dscalar=dscalar2, lh_surface=lh_surface, rh_surface=rh_surface,
+                                                   metric_name=metric_name, subject_id=subject_id, radius=radius,
+                                                   distance_metric=distance_metric, return_indices=False, lh_ind=lh_ind,
+                                                   rh_ind=rh_ind)
+    return lateralization1, lateralization2
 
 
 def compute_lateralization_index_from_filenames(dscalar_filename, lh_surface_filename, rh_surface_filename, metric_name,
@@ -100,8 +124,8 @@ def main():
             lh_surface = nib.load(surfs[0])
             rh_surface = nib.load(surfs[1])
             for metric_name in metric_names:
-                row.append([compute_lateralization_index(pred_dscalar, lh_surface, rh_surface, metric_name),
-                            compute_lateralization_index(target_dscalar, lh_surface, rh_surface, metric_name)])
+                row.append(compute_lateralization_index_at_common_max(pred_dscalar, target_dscalar, lh_surface,
+                                                                      rh_surface, metric_name))
             lateralization.append(row)
 
         lateralization = np.asarray(lateralization)

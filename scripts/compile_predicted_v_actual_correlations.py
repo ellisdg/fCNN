@@ -1,9 +1,11 @@
 import sys
 import glob
 import os
+from functools import partial
+from multiprocessing import Pool
 from fcnn.utils.utils import load_json, update_progress
-from fcnn.utils.hcp import get_metric_data, extract_cifti_scalar_data
-from scipy.stats import pearsonr, ks_2samp
+from fcnn.utils.hcp import get_metric_data
+from scipy.stats import pearsonr
 import nibabel as nib
 import numpy as np
 
@@ -16,7 +18,9 @@ def read_namefile(filename):
     return names
 
 
-def compute_correlation_row(predicted_fn, target_fns, metric_names, structure_names, pool_size=None):
+def compute_correlation_row(predicted_fn, target_fns, metric_names, structure_names, pool_size=None, verbose=False):
+    if verbose:
+        print(predicted_fn)
     predicted_image = nib.load(predicted_fn)
     predicted_data = get_metric_data([predicted_image], [metric_names], structure_names, None)
     row = list()
@@ -55,7 +59,7 @@ def main():
     # metric_filename = "/home/neuro-user/PycharmProjects/fCNN/data/labels/MOTOR-TAVOR_name-file.txt"
     metric_filename = sys.argv[4]
     metric_names = read_namefile(metric_filename)
-    pool_size = None
+    pool_size = 16
     subjects = list()
     for p_image_fn in all_prediction_images:
         if "target" not in p_image_fn:
@@ -71,11 +75,17 @@ def main():
             #                                                                         surf=surf_name)) for hemi in
             #                      hemispheres])
     correlations = list()
-    for i, p_image_fn in enumerate(prediction_images):
-        update_progress(i/len(prediction_images), message=os.path.basename(p_image_fn).split("_")[0])
-        correlations.append(compute_correlation_row(p_image_fn, target_images, metric_names, structure_names,
-                                                    pool_size=pool_size))
-    update_progress(1)
+    if pool_size is not None:
+        func = partial(compute_correlation_row, pool_size=None, target_fns=target_images, metric_names=metric_names,
+                       structure_names=structure_names, verbose=True)
+        pool = Pool(pool_size)
+        correlations = pool.map(func, prediction_images)
+    else:
+        for i, p_image_fn in enumerate(prediction_images):
+            update_progress(i/len(prediction_images), message=os.path.basename(p_image_fn).split("_")[0])
+            correlations.append(compute_correlation_row(p_image_fn, target_images, metric_names, structure_names,
+                                                        pool_size=pool_size))
+        update_progress(1)
     np.save(output_file, correlations)
     np.save(output_file.replace(".npy", "_subjects.npy"), subjects)
 

@@ -381,14 +381,14 @@ class GGGM(object):
         print("Negative Gamma: shape: ", self.shape_n,
               "scale: ", self.scale_n)
         print("Gaussian: mean: ", self.mean, "variance: ", self.var)
-        print("Poitive Gamma: shape: ", self.shape_p, "scale: ", self.scale_p)
+        print("Positive Gamma: shape: ", self.shape_p, "scale: ", self.scale_p)
         mixt = self.mixt
         print("Mixture neg. gamma: ", mixt[0], "Gaussian: ", mixt[1],
               "pos. gamma: ", mixt[2])
 
     def init(self, x, mixt=None):
         """
-        initialization of the differnt parameters
+        initialization of the different parameters
 
         Parameters
         ----------
@@ -432,7 +432,7 @@ class GGGM(object):
 
     def init_fdr(self, x, dof=-1, copy=True):
         """
-        Initilization of the class based on a fdr heuristic: the
+        Initialization of the class based on a fdr heuristic: the
         probability to be in the positive component is proportional to
         the 'positive fdr' of the data.  The same holds for the
         negative part.  The point is that the gamma parts should model
@@ -454,7 +454,7 @@ class GGGM(object):
             x = x.copy()
         # positive gamma
         i = np.ravel(np.nonzero(x > 0))
-        from ..statistics.empirical_pvalue import fdr
+        from .empirical_pvalue import fdr
 
         if np.size(i) > 0:
             if dof < 0:
@@ -536,7 +536,7 @@ class GGGM(object):
         return z, L
 
     def estimate(self, x, niter=100, delta=1.e-4, bias=0, verbose=0,
-                gaussian_mix=0):
+                 gaussian_mix=0):
         """ Whole EM estimation procedure:
 
         Parameters
@@ -666,7 +666,7 @@ class GGGM(object):
         ax.plot(c, pg, 'g', linewidth=2, label='positive gamma component')
         ax.plot(c, z, 'k', linewidth=2, label='mixture distribution')
         ax.set_title('Fit of the density with a Gamma-Gaussian mixture',
-                 fontsize=12)
+                     fontsize=12)
         l = ax.legend()
         for t in l.get_texts():
             t.set_fontsize(12)

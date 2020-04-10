@@ -170,7 +170,7 @@ def main():
                                                                               metric_index]])
 
     errors_df = pd.DataFrame(df_rows, columns=["Subject", "Label", "Task", "Error"])
-    fig, ax = plt.subplots(figsize=(6, len(errors.shape[-1]) * 0.8))
+    fig, ax = plt.subplots(figsize=(6, errors.shape[-1] * 0.8))
     seaborn.barplot(data=errors_df, x="Error", y="Task", hue="Label")
     fig.savefig("/work/aizenberg/dgellis/fCNN/predictions/figures/model_comparison_mean_average_error.png")
 

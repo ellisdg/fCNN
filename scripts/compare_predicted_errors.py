@@ -59,7 +59,7 @@ def compute_subject_errors(actual_template, pred_template, other_templates, subj
         predictions.extend(other_predictions)
         metric_names = read_namefile(metric_names_template.format(task=task))
         errors.append(compute_errors(actual, predictions, metric_names))
-    return np.array(errors)
+    return np.concatenate(errors, axis=-1)
 
 
 def compute_errors_for_all_subjects(actual_template, pred_template, other_templates, tasks, group_average_filename,

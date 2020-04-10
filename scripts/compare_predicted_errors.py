@@ -105,7 +105,7 @@ def main():
     struct14_basename = struct_basename_template.format(14)
     t1t1_basename = "T1T2w_acpc_dc_restore_brain"
     prediction_template = os.path.join("/work/aizenberg/dgellis/fCNN",
-                                       "predictions/v4_struct6_unet_{task}_2mm_v1_pt",
+                                       "predictions/v4_{input_name}_unet_{task}_2mm_v1_pt",
                                        "{subject}_model_v4_{input_name}_unet_{task}_2mm_v1_pt_{input_basename}.midthickness.dscalar.nii")
 
     # The other predictions are all under the "ALL-TAVOR" task name

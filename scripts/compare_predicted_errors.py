@@ -23,8 +23,8 @@ def run_command(cmd):
     subprocess.call(cmd)
 
 
-def compute_mean_absolute_error(data1, data2):
-    return np.mean(np.abs(data1 - data2))
+def compute_mean_absolute_error(data1, data2, axis=-1):
+    return np.mean(np.abs(data1 - data2), axis=axis)
 
 
 def extract_cifti_scalar_data_for_metric_names(cifti, metric_names):
@@ -59,7 +59,7 @@ def compute_subject_errors(actual_template, pred_template, other_templates, subj
         predictions.extend(other_predictions)
         metric_names = read_namefile(metric_names_template.format(task=task))
         errors.append(compute_errors(actual, predictions, metric_names))
-    return np.concatenate(errors, axis=-1)
+    return np.array(errors)
 
 
 def compute_errors_for_all_subjects(actual_template, pred_template, other_templates, tasks, group_average_filename,

@@ -66,14 +66,16 @@ def compute_errors_for_all_subjects(actual_template, pred_template, other_templa
                                     metric_names_template, subjects):
     group_average = nib.load(group_average_filename)
     errors = list()
+    subjects_key = list()
     for subject in subjects:
         try:
             errors.append(compute_subject_errors(actual_template, pred_template, other_templates, subject, tasks,
                                                  group_average, metric_names_template))
+            subjects_key.append(subject)
         except FileNotFoundError as fnf_error:
             print(fnf_error)
     # output array shape is (n_subjects, n_predictions, n_contrasts)
-    return np.array(errors)
+    return np.array(errors), subjects_key
 
 
 def compute_group_average(output_filename, subjects, cifti_template, overwrite=False):
@@ -143,13 +145,15 @@ def main():
 
     if not os.path.exists(prediction_errors_filename):
 
-        errors = compute_errors_for_all_subjects(cifti_template, ds_prediction_template, all_templates, tasks,
-                                                 group_average_filename, metric_names_template,
-                                                 subjects_config[test_group])
+        errors, subjects = compute_errors_for_all_subjects(cifti_template, ds_prediction_template, all_templates, tasks,
+                                                           group_average_filename, metric_names_template,
+                                                           subjects_config[test_group])
 
         np.save(prediction_errors_filename, errors)
+        np.save(prediction_errors_filename.replace(".npy", "_subjects.npy"), subjects)
     else:
         errors = np.load(prediction_errors_filename)
+        subjects = np.load(prediction_errors_filename.replace(".npy", "_subjects.npy"))
 
     print(errors.shape)
 
@@ -159,7 +163,7 @@ def main():
 
     # convert the array to a dataframe that works with Seaborn
     df_rows = list()
-    for subject_index, subject in enumerate(subjects_config[test_group]):
+    for subject_index, subject in enumerate(subjects):
         for prediction_index, prediction_name in enumerate(predictions_key):
             for metric_index, metric_name in enumerate(all_metric_names):
                 df_rows.append([subject, prediction_name, metric_name, errors[subject_index, prediction_index,

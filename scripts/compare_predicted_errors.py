@@ -151,6 +151,8 @@ def main():
     else:
         errors = np.load(prediction_errors_filename)
 
+    print(errors.shape)
+
     all_metric_names = list()
     for task in tasks:
         all_metric_names.extend(read_namefile(metric_names_template.format(task=task)))

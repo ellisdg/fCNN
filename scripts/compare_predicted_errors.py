@@ -67,9 +67,11 @@ def compute_errors_for_all_subjects(actual_template, pred_template, other_templa
     group_average = nib.load(group_average_filename)
     errors = list()
     for subject in subjects:
-        errors.append(compute_subject_errors(actual_template, pred_template, other_templates, subject, tasks,
-                                             group_average, metric_names_template))
-
+        try:
+            errors.append(compute_subject_errors(actual_template, pred_template, other_templates, subject, tasks,
+                                                 group_average, metric_names_template))
+        except FileNotFoundError as fnf_error:
+            print(fnf_error)
     # output array shape is (n_subjects, n_predictions, n_contrasts)
     return np.array(errors)
 
@@ -104,7 +106,7 @@ def main():
     t1t1_basename = "T1T2w_acpc_dc_restore_brain"
     prediction_template = os.path.join("/work/aizenberg/dgellis/fCNN",
                                        "predictions/v4_struct6_unet_{task}_2mm_v1_pt",
-                                       "{subject}_model_v4_{input_name}_unet_{task}*_2mm_v1_pt_{input_basename}.midthickness.dscalar.nii")
+                                       "{subject}_model_v4_{input_name}_unet_{task}_2mm_v1_pt_{input_basename}.midthickness.dscalar.nii")
 
     # The other predictions are all under the "ALL-TAVOR" task name
     struct6_all_template = prediction_template.format(input_name="struct6", input_basename=struct6_basename,

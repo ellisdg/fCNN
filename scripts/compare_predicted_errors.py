@@ -117,6 +117,9 @@ def main():
                                                       task="ALL-TAVOR", subject="{subject}")
     all_templates = [t1t2_all_template, struct6_all_template, struct14_all_template]
 
+    ds_prediction_template = prediction_template.format(input_name="struct6", task="{task}", subject="{subject}",
+                                                        input_basename=struct6_basename)
+
     predictions_key = ["group_average", "struct6-domain-specific", "t1t2-all", "struct6-all", "struct14-all"]
 
     # It is going to be less IO to compute the errors per subject for all the task domains for that subject
@@ -140,9 +143,9 @@ def main():
 
     if not os.path.exists(prediction_errors_filename):
 
-        errors = compute_errors_for_all_subjects(cifti_template, prediction_template, all_templates, tasks,
-                                                               group_average_filename, metric_names_template,
-                                                               subjects_config[test_group])
+        errors = compute_errors_for_all_subjects(cifti_template, ds_prediction_template, all_templates, tasks,
+                                                 group_average_filename, metric_names_template,
+                                                 subjects_config[test_group])
 
         np.save(prediction_errors_filename, errors)
     else:

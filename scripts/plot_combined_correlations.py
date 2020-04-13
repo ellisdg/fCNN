@@ -5,6 +5,7 @@ from scipy.stats import ks_2samp
 import numpy as np
 import sys
 from functools import reduce
+import pandas as pd
 
 
 def normalize_correlation_matrix_by_axis(matrix, new_max, new_min, axis=0):
@@ -33,6 +34,10 @@ def main():
     correlation_files = sys.argv[1].split(",")
     name_files = sys.argv[2].split(",")
     output_dir = os.path.abspath(sys.argv[3])
+    try:
+        stats_filename = os.path.abspath(sys.argv[4])
+    except IndexError:
+        stats_filename = None
 
     temp_correlations = list()
     metric_names = list()
@@ -86,6 +91,7 @@ def main():
     # cmap = seaborn.color_palette("nipy_spectral", 1000)
     names = list()
     result = list()
+    stats = list()
     for i, (task, metric_name) in enumerate(zip(tasks, metric_names)):
         title = task + " " + metric_name
         names.append(title)
@@ -107,7 +113,9 @@ def main():
         hist_ax.set_title(title)
         hist_ax.set_xlabel("Correlation")
         hist_ax.set_ylabel("Count")
-        print(title, "D-value: {:.2f}\tp-value = {:.8f}".format(*ks_2samp(diag_values, extra_diag_values)))
+        d_value, p_value = ks_2samp(diag_values, extra_diag_values)
+        stats.append([task, metric_name, d_value, p_value])
+        print(title, "D-value: {:.2f}\tp-value = {:.8f}".format(d_value, p_value))
         result.append((diag_values.mean() - extra_diag_values.mean())/extra_diag_values.mean())
     fig.savefig(output_dir + "/correlation_matrices.png")
     hist_fig.savefig(output_dir + "/correlation_matrices_histograms.png")
@@ -133,7 +141,7 @@ def main():
     avg_fig, avg_ax = plt.subplots(figsize=(column_height, row_height))
 
     seaborn.heatmap(data=avg_corr_norm, ax=avg_ax, xticklabels=False, yticklabels=False, cbar=False, vmax=vmax, vmin=vmin,
-                     cmap=cmap)
+                    cmap=cmap)
     # seaborn.heatmap(data=avg_corr, ax=avg_ax, xticklabels=False, yticklabels=False, cmap=cmap, square=True)
     # avg_ax.set_title(task)
     avg_ax.set_ylabel("subjects (predicted)")
@@ -152,7 +160,8 @@ def main():
             cbar = False
         # seaborn.heatmap(data=corr_matrices[..., i], ax=ax, cbar=cbar, cbar_ax=cbar_ax, xticklabels=False, yticklabels=False,
         #                 cmap=cmap)
-        seaborn.heatmap(data=normalize_correlation_matrix(corr_matrices[..., i], vmax, vmin, axes=(0, 1)), ax=ax, cbar=cbar,
+        seaborn.heatmap(data=normalize_correlation_matrix(corr_matrices[..., i], vmax, vmin, axes=(0, 1)), ax=ax,
+                        cbar=cbar,
                         cbar_ax=cbar_ax, xticklabels=False, yticklabels=False,
                         vmax=vmax, vmin=vmin, cmap=cmap)
         ax.set_title(title)
@@ -172,7 +181,12 @@ def main():
     ax.legend()
     fig.savefig(output_dir + "/average_correlation_histogram.png")
     d, p = ks_2samp(diag_values, extra_diag_values)
+    stats.append(["Average", "ALL", d, p])
     print("D-value: {:.2f}\tp-value = {:.8f}".format(d, p))
+
+    if stats_filename is not None:
+        stats_df = pd.DataFrame(stats, columns=["Task", "Contrast", "D-Value", "P-Value"])
+        stats_df.to_csv(stats_filename)
 
     w = 6
     width = 0.4

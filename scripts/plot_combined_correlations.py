@@ -63,10 +63,11 @@ def main():
             correlations.append(corr[i][:, i])
         correlations = np.concatenate(correlations, axis=-2)
     else:
-        correlations = np.asarray(temp_correlations)
+        correlations = np.asarray(temp_correlations[0])
         print(correlations.shape)
         print(np.asarray(subjects).shape)
-        print()
+        print(tasks)
+        print(metric_names)
 
     # all_subjects = np.unique(subjects)
     # indices = [np.in1d(all_subjects, subs) for subs in subjects]

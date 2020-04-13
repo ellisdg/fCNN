@@ -50,9 +50,15 @@ def main():
         subjects.append(subs)
         temp_correlations.append(corr)
         names = read_namefile(n_file)
-        metric_names.extend(names)
         task = os.path.basename(n_file).split("_")[0].replace("-TAVOR", "")
-        tasks.extend([task] * len(names))
+        if task == "ALL":
+            for name in names:
+                t, n = name.split(" ")
+                tasks.append(t)
+                metric_names.append(n)
+        else:
+            tasks.extend([task] * len(names))
+            metric_names.extend(names)
 
     if len(temp_correlations) > 1:
         all_subjects = reduce(np.intersect1d, subjects)
@@ -64,10 +70,6 @@ def main():
         correlations = np.concatenate(correlations, axis=-2)
     else:
         correlations = np.asarray(temp_correlations[0])
-        print(correlations.shape)
-        print(np.asarray(subjects).shape)
-        print(tasks)
-        print(metric_names)
 
     # all_subjects = np.unique(subjects)
     # indices = [np.in1d(all_subjects, subs) for subs in subjects]

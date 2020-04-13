@@ -14,4 +14,5 @@ python /home/aizenberg/dgellis/fCNN/scripts/plot_combined_correlations.py\
 /home/aizenberg/dgellis/fCNN/data/labels/RELATIONAL-TAVOR_name-file.txt,\
 /home/aizenberg/dgellis/fCNN/data/labels/EMOTION-TAVOR_name-file.txt,\
 /home/aizenberg/dgellis/fCNN/data/labels/GAMBLING-TAVOR_name-file.txt\
- /work/aizenberg/dgellis/fCNN/predictions/figures
+ /work/aizenberg/dgellis/fCNN/predictions/figures\
+ /work/aizenberg/dgellis/fCNN/predictions/v4_struct6_unet_DomainSpecificModels_stats.csv

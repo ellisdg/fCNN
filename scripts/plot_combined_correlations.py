@@ -45,7 +45,7 @@ def main():
     subjects = list()
     for c_file, n_file in zip(correlation_files, name_files):
         corr = np.load(c_file)
-        print(c_file, corr.shape)
+        print(c_file, corr.shape, n_file)
         subs = np.load(c_file.replace(".npy", "_subjects.npy"))
         subjects.append(subs)
         temp_correlations.append(corr)
@@ -64,6 +64,9 @@ def main():
         correlations = np.concatenate(correlations, axis=-2)
     else:
         correlations = np.asarray(temp_correlations)
+        print(correlations.shape)
+        print(np.asarray(subjects).shape)
+        print()
 
     # all_subjects = np.unique(subjects)
     # indices = [np.in1d(all_subjects, subs) for subs in subjects]

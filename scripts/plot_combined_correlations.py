@@ -54,12 +54,16 @@ def main():
         task = os.path.basename(n_file).split("_")[0].replace("-TAVOR", "")
         tasks.extend([task] * len(names))
 
-    all_subjects = reduce(np.intersect1d, subjects)
-    correlations = list()
-    for sub_list, corr in zip(np.copy(subjects), temp_correlations):
-        s, i, i_all = np.intersect1d(sub_list, all_subjects, return_indices=True)
-        np.testing.assert_equal(s, all_subjects)
-        correlations.append(corr[i][:, i])
+    if len(temp_correlations) > 1:
+        all_subjects = reduce(np.intersect1d, subjects)
+        correlations = list()
+        for sub_list, corr in zip(np.copy(subjects), temp_correlations):
+            s, i, i_all = np.intersect1d(sub_list, all_subjects, return_indices=True)
+            np.testing.assert_equal(s, all_subjects)
+            correlations.append(corr[i][:, i])
+        correlations = np.concatenate(correlations, axis=-2)
+    else:
+        correlations = np.asarray(temp_correlations)
 
     # all_subjects = np.unique(subjects)
     # indices = [np.in1d(all_subjects, subs) for subs in subjects]
@@ -69,7 +73,6 @@ def main():
     # correlations = [corr[ind, ind] for corr, ind in zip(correlations, indices)]
 
     # unique_tasks = np.unique(tasks)
-    correlations = np.concatenate(correlations, axis=-2)
     corr_matrices = np.asarray(correlations)[..., 0]
     vmin = corr_matrices.min()
     vmax = corr_matrices.max()
@@ -85,10 +88,10 @@ def main():
                                                                                    n_rows*row_height),
                                        sharex=True, sharey=True)
     cbar_fig, cbar_ax = plt.subplots(figsize=(0.5, 5))
-    # cmap = seaborn.diverging_palette(220, 10, sep=1, center="light", as_cmap=True)
+    cmap = seaborn.diverging_palette(220, 10, sep=1, center="light", as_cmap=True)
     # cmap = seaborn.cubehelix_palette(n_colors=8, as_cmap=True)
     # cmap = seaborn.color_palette("cubehelix", 1000)
-    cmap = seaborn.color_palette("nipy_spectral", 1000)
+    # cmap = seaborn.color_palette("nipy_spectral", 1000)
     names = list()
     result = list()
     stats = list()

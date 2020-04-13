@@ -85,10 +85,10 @@ def main():
                                                                                    n_rows*row_height),
                                        sharex=True, sharey=True)
     cbar_fig, cbar_ax = plt.subplots(figsize=(0.5, 5))
-    cmap =  seaborn.diverging_palette(220, 10, sep=1, center="light", as_cmap=True)
+    # cmap = seaborn.diverging_palette(220, 10, sep=1, center="light", as_cmap=True)
     # cmap = seaborn.cubehelix_palette(n_colors=8, as_cmap=True)
     # cmap = seaborn.color_palette("cubehelix", 1000)
-    # cmap = seaborn.color_palette("nipy_spectral", 1000)
+    cmap = seaborn.color_palette("nipy_spectral", 1000)
     names = list()
     result = list()
     stats = list()

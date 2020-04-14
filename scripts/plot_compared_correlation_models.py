@@ -85,8 +85,7 @@ def main():
         extra_diag_values = corr_matrix[diagonal_mask == False]
         result.append((diag_values.mean() - extra_diag_values.mean())/extra_diag_values.mean())
         titles.append(title)
-    data = np.dstack([method_labels, tasks, names, titles, np.asarray(result) * 100])
-    print(data.shape)
+    data = np.squeeze(np.dstack([method_labels, tasks, names, titles, np.asarray(result) * 100]))
     df = pd.DataFrame(data, columns=["Method", "Domain", "Contrast", "Task", "Value"])
     w = 6
     width = 0.4

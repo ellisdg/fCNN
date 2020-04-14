@@ -41,3 +41,23 @@ def vae_dice_loss(predicted, mu, logvar, target, loss=dice_loss, divergence_loss
 def vae_l1_loss(predicted, mu, logvar, target, loss=l1_loss, divergence_loss=kl_loss, weight=1, kl_weight=1):
     return vae_loss(predicted_x=predicted, mu=mu, logvar=logvar, x=target, recon_loss=loss,
                     divergence_loss=divergence_loss, recon_weight=weight, kl_weight=kl_weight)
+
+
+def weighted_loss(input, target, weights, loss_func, weighted_dimension=1):
+    losses = list()
+    for index in range(input.shape[weighted_dimension]):
+        x = input.select(dim=weighted_dimension, index=index)
+        y = target.select(dim=weighted_dimension, index=index)
+        losses.append(loss_func(x, y))
+    return torch.mean(weights * losses)
+
+
+class WeightedLoss(object):
+    def __init__(self, weights, loss_func, weighted_dimension=1):
+        self.weights = weights
+        self.loss_func = loss_func
+        self.weighted_dimension = weighted_dimension
+
+    def __call__(self, input, target):
+        return weighted_loss(input=input, target=target, weights=self.weights, loss_func=self.loss_func,
+                             weighted_dimension=self.weighted_dimension)

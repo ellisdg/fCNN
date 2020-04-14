@@ -95,7 +95,7 @@ def main():
     seaborn.barplot(data=df, x="Value", y="Task", hue="Method")
     ax.set_xlabel("Self vs other increase (in %)")
     seaborn.despine(ax=ax, top=True)
-    fig.savefig(output_dir + "/{}_increase_correlation_over_mean_correlation.png".format("_".join(method_labels)),
+    fig.savefig(output_dir + "/{}_increase_correlation_over_mean_correlation.png".format("_".join(labels)),
                 bbox_inches="tight")
 
 

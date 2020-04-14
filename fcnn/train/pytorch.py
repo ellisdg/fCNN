@@ -71,6 +71,9 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
 
     criterion = load_criterion(config['loss'], n_gpus=n_gpus)
 
+    if "weights" in config and config["weights"] is not None:
+        criterion = functions.WeightedLoss(torch.tensor(config["weights"]), criterion)
+
     if "regularized" in config:
         regularized = config["regularized"]
 

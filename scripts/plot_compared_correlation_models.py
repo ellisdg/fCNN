@@ -55,12 +55,11 @@ def main():
                 t, n = name.split(" ")
                 tasks.append(t)
                 metric_names.append(n)
+                method_labels.append(label)
         else:
             tasks.extend([task] * len(names))
+            method_labels.extend([label] * len(names))
             metric_names.extend(names)
-        method_labels.append(label)
-
-    method_labels = np.asarray(method_labels)
 
     if len(temp_correlations) > 1:
         all_subjects = reduce(np.intersect1d, subjects)
@@ -86,9 +85,7 @@ def main():
         extra_diag_values = corr_matrix[diagonal_mask == False]
         result.append((diag_values.mean() - extra_diag_values.mean())/extra_diag_values.mean())
         titles.append(title)
-    data = [method_labels, tasks, names, titles, np.asarray(result) * 100]
-    for d in data:
-        print(np.asarray(d).shape)
+    data = np.dstack([method_labels, tasks, names, titles, np.asarray(result) * 100])
     df = pd.DataFrame(data, columns=["Method", "Domain", "Contrast", "Task", "Value"])
     w = 6
     width = 0.4

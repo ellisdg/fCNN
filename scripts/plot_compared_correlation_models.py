@@ -86,6 +86,7 @@ def main():
         result.append((diag_values.mean() - extra_diag_values.mean())/extra_diag_values.mean())
         titles.append(title)
     data = np.dstack([method_labels, tasks, names, titles, np.asarray(result) * 100])
+    print(data.shape)
     df = pd.DataFrame(data, columns=["Method", "Domain", "Contrast", "Task", "Value"])
     w = 6
     width = 0.4

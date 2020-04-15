@@ -48,6 +48,7 @@ def compute_mse(data1, data2):
 
 
 def g2gm_threshold(data, iterations=1000):
+    print(data.shape)
     model = GGGM()
     membership = model.estimate(data, niter=iterations)
     lower_threshold = quantile_1D(data, membership[..., 0], 0.5)
@@ -68,6 +69,7 @@ def compute_dice(x, y):
 def threshold_data_for_all_metrics(data, metric_names):
     thresholded_data = list()
     for index, metric_name in enumerate(metric_names):
+        print("Group Average:", metric_name)
         thresholded_data.append(g2gm_threshold(data[index]))
     return np.asarray(thresholded_data)
 

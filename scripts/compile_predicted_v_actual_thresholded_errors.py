@@ -30,8 +30,8 @@ def compute_errors(predicted_fn, target_fn, group_average_data_thresholded, metr
     prediction_errors = list()
     group_average_errors = list()
     for index, metric_name in enumerate(metric_names):
-        predicted_data_thresholded = g2gm_threshold(predicted_data[index])
-        target_data_thresholded = g2gm_threshold(target_data[index])
+        predicted_data_thresholded = g2gm_threshold(predicted_data[..., index])
+        target_data_thresholded = g2gm_threshold(target_data[..., index])
         predicted_dice = compute_dice(predicted_data_thresholded, target_data_thresholded)
         prediction_errors.append(predicted_dice)
         group_average_errors.append(compute_dice(target_data_thresholded,
@@ -70,7 +70,7 @@ def threshold_data_for_all_metrics(data, metric_names):
     thresholded_data = list()
     for index, metric_name in enumerate(metric_names):
         print("Group Average:", metric_name)
-        thresholded_data.append(g2gm_threshold(data[index]))
+        thresholded_data.append(g2gm_threshold(data[..., index]))
     return np.asarray(thresholded_data)
 
 

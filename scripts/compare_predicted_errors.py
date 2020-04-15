@@ -134,7 +134,7 @@ def main():
     cifti_template = cifti_template.format(subject="{subject}", task="ALL")
 
     group_average_filename = os.path.join("/work/aizenberg/dgellis/fCNN",
-                                          "v4_tfMRI_group_average_errors_level2_zstat_hp200_s2_TAVOR.midthickness.dscalar.nii")
+                                          "v4_tfMRI_group_average_level2_zstat_hp200_s2_TAVOR.midthickness.dscalar.nii")
 
     metric_names_template = "/home/aizenberg/dgellis/fCNN/data/labels/{task}-TAVOR_name-file.txt"
 

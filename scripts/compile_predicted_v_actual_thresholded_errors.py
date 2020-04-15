@@ -86,6 +86,7 @@ def main():
     all_prediction_images = glob.glob(os.path.join(prediction_dir, "*.{}.dscalar.nii".format(surf_name)))
     structure_names = ["CortexLeft", "CortexRight"]
     metric_names = read_namefile(name_file)
+    corrected_metric_names = [m.split(" ")[-1] for m in metric_names]
 
     group_average_image = nib.load(group_average_filename)
     group_average_data = get_metric_data([group_average_image], metric_names=[metric_names],

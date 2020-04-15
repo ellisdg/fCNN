@@ -87,8 +87,10 @@ def main():
     structure_names = ["CortexLeft", "CortexRight"]
     metric_names = read_namefile(name_file)
 
-    group_average_thresholded_data = threshold_data_for_all_metrics([nib.load(group_average_filename)],
-                                                                    metric_names=[metric_names])
+    group_average_image = nib.load(group_average_filename)
+    group_average_data = get_metric_data([group_average_image], metric_names=[metric_names],
+                                         surface_names=structure_names, subject_id=None)
+    group_average_thresholded_data = threshold_data_for_all_metrics(group_average_data, metric_names=metric_names)
 
     pool_size = None
     subjects = list()

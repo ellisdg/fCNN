@@ -102,10 +102,11 @@ def main():
     else:
         data = np.squeeze(np.dstack([method_labels, domains, names, titles, np.asarray(result) * 100]))
         df = pd.DataFrame(data, columns=["Method", "Domain", "Contrast", "Task", "Value"])
+
     w = 6
     width = 0.4
     gap = 0.
-    h = (width + gap) * len(names)
+    h = (width + gap) * len(df)
     fig, ax = plt.subplots(figsize=(w, h))
     seaborn.barplot(data=df, x="Value", y="Task", hue="Method")
     ax.set_xlabel("Self vs other increase (in %)")

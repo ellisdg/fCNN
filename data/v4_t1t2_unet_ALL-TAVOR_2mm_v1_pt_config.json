@@ -101,7 +101,7 @@
       "{}_tfMRI_GAMBLING_level2_PUNISH-REWARD_hp200_s2"
   ],
   "sequence_kwargs": {
-    "normalization": null,
+    "normalization": "zero_one_window",
     "target_normalization": null,
     "crop": true,
     "resample": "linear",

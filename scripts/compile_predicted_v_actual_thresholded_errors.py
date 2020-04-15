@@ -89,9 +89,10 @@ def main():
     corrected_metric_names = [m.split(" ")[-1] for m in metric_names]
 
     group_average_image = nib.load(group_average_filename)
-    group_average_data = get_metric_data([group_average_image], metric_names=[metric_names],
+    group_average_data = get_metric_data([group_average_image], metric_names=[corrected_metric_names],
                                          surface_names=structure_names, subject_id=None)
-    group_average_thresholded_data = threshold_data_for_all_metrics(group_average_data, metric_names=metric_names)
+    group_average_thresholded_data = threshold_data_for_all_metrics(group_average_data,
+                                                                    metric_names=corrected_metric_names)
 
     pool_size = None
     subjects = list()
@@ -106,13 +107,15 @@ def main():
             prediction_images.append(p_image_fn)
     errors = list()
     if pool_size is not None:
-        func = partial(compute_errors, metric_names=metric_names, structure_names=structure_names, verbose=True)
+        func = partial(compute_errors, metric_names=corrected_metric_names, structure_names=structure_names,
+                       verbose=True)
         pool = Pool(pool_size)
         errors = pool.map(func, prediction_images)
     else:
         for i, (p_image_fn, t_image_fn) in enumerate(zip(prediction_images, target_images)):
             update_progress(i/len(prediction_images), message=os.path.basename(p_image_fn).split("_")[0])
-            errors.append(compute_errors(predicted_fn=p_image_fn, target_fn=t_image_fn, metric_names=metric_names,
+            errors.append(compute_errors(predicted_fn=p_image_fn, target_fn=t_image_fn,
+                                         metric_names=corrected_metric_names,
                                          structure_names=structure_names,
                                          group_average_data_thresholded=group_average_thresholded_data))
         update_progress(1)

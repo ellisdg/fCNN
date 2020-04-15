@@ -120,7 +120,7 @@ def main():
             prediction_images.append(p_image_fn)
     errors = list()
     if pool_size is not None:
-        func = partial(mp_compute_errors, metric_names=corrected_metric_names, structure_naames=structure_names,
+        func = partial(mp_compute_errors, metric_names=corrected_metric_names, structure_names=structure_names,
                        verbose=verbose, group_average_fn=group_average_filename)
         pool = Pool(pool_size)
         errors = pool.map(func, zip(prediction_images, target_images))

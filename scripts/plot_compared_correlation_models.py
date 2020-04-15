@@ -36,9 +36,11 @@ def main():
     output_dir = os.path.abspath(sys.argv[3])
     labels = sys.argv[4].split(",")
 
+    average_per_domain = True
+
     temp_correlations = list()
     metric_names = list()
-    tasks = list()
+    domains = list()
     subjects = list()
     method_labels = list()
 
@@ -49,15 +51,15 @@ def main():
         subjects.append(subs)
         temp_correlations.append(corr)
         names = read_namefile(n_file)
-        task = os.path.basename(n_file).split("_")[0].replace("-TAVOR", "")
-        if task == "ALL":
+        domain = os.path.basename(n_file).split("_")[0].replace("-TAVOR", "")
+        if domain == "ALL":
             for name in names:
-                t, n = name.split(" ")
-                tasks.append(t)
+                d, n = name.split(" ")
+                domains.append(d)
                 metric_names.append(n)
                 method_labels.append(label)
         else:
-            tasks.extend([task] * len(names))
+            domains.extend([domain] * len(names))
             method_labels.extend([label] * len(names))
             metric_names.extend(names)
 
@@ -76,8 +78,8 @@ def main():
     names = list()
     result = list()
     titles = list()
-    for i, (task, metric_name) in enumerate(zip(tasks, metric_names)):
-        title = task + " " + metric_name
+    for i, (domain, metric_name) in enumerate(zip(domains, metric_names)):
+        title = domain + " " + metric_name
         names.append(title)
         corr_matrix = corr_matrices[..., i]
         diagonal_mask = np.diag(np.ones(corr_matrix.shape[0], dtype=bool))
@@ -85,8 +87,21 @@ def main():
         extra_diag_values = corr_matrix[diagonal_mask == False]
         result.append((diag_values.mean() - extra_diag_values.mean())/extra_diag_values.mean())
         titles.append(title)
-    data = np.squeeze(np.dstack([method_labels, tasks, names, titles, np.asarray(result) * 100]))
-    df = pd.DataFrame(data, columns=["Method", "Domain", "Contrast", "Task", "Value"])
+    if average_per_domain:
+        rows = list()
+        domains = np.asarray(domains)
+        method_labels = np.asarray(method_labels)
+        result = np.asarray(result)
+        for domain in np.unique(domains):
+            domain_mask = domains == domain
+            for method in labels:
+                method_mask = method_labels == method
+                value = result[np.logical_and(domain_mask, method_mask)].mean()
+                rows.append([method, domain, value])
+        df = pd.DataFrame(rows, columns=["Method", "Task", "Value"])
+    else:
+        data = np.squeeze(np.dstack([method_labels, domains, names, titles, np.asarray(result) * 100]))
+        df = pd.DataFrame(data, columns=["Method", "Domain", "Contrast", "Task", "Value"])
     w = 6
     width = 0.4
     gap = 0.

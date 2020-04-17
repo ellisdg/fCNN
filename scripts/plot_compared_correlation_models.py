@@ -96,7 +96,7 @@ def main():
             domain_mask = domains == domain
             for method in labels:
                 method_mask = method_labels == method
-                value = result[np.logical_and(domain_mask, method_mask)].mean()
+                value = result[np.logical_and(domain_mask, method_mask)].mean() * 100
                 rows.append([method, domain, value])
         df = pd.DataFrame(rows, columns=["Method", "Task", "Value"])
     else:
@@ -108,8 +108,9 @@ def main():
     gap = 0.
     h = (width + gap) * len(df)
     fig, ax = plt.subplots(figsize=(w, h))
-    seaborn.barplot(data=df, x="Value", y="Task", hue="Method")
+    seaborn.barplot(data=df, x="Value", y="Task", hue="Method", ax=ax)
     ax.set_xlabel("Self vs other increase (in %)")
+    ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
     seaborn.despine(ax=ax, top=True)
     fig.savefig(output_dir + "/{}_increase_correlation_over_mean_correlation.png".format("_".join(labels)),
                 bbox_inches="tight")

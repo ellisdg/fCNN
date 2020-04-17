@@ -172,7 +172,6 @@ def main():
     errors_df = pd.DataFrame(df_rows, columns=["Subject", "Label", "Task", "Error"])
     fig, ax = plt.subplots(figsize=(6, errors.shape[-1] * 0.8))
     seaborn.barplot(data=errors_df, x="Error", y="Task", hue="Label", ax=ax)
-    ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1))
     fig.savefig("/work/aizenberg/dgellis/fCNN/predictions/figures/model_comparison_mean_average_error.png",
                 bbox_inches="tight")
 

@@ -44,12 +44,12 @@ def vae_l1_loss(predicted, mu, logvar, target, loss=l1_loss, divergence_loss=kl_
 
 
 def weighted_loss(input, target, weights, loss_func, weighted_dimension=1):
-    losses = list()
+    losses = torch.zeros(input.shape[weighted_dimension])
     for index in range(input.shape[weighted_dimension]):
         x = input.select(dim=weighted_dimension, index=index)
         y = target.select(dim=weighted_dimension, index=index)
-        losses.append(loss_func(x, y))
-    return torch.mean(weights * torch.tensor(losses))
+        losses[index] = loss_func(x, y)
+    return torch.mean(weights * losses)
 
 
 class WeightedLoss(object):

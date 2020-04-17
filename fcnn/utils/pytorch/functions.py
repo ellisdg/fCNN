@@ -49,7 +49,7 @@ def weighted_loss(input, target, weights, loss_func, weighted_dimension=1):
         x = input.select(dim=weighted_dimension, index=index)
         y = target.select(dim=weighted_dimension, index=index)
         losses.append(loss_func(x, y))
-    return torch.mean(weights * losses)
+    return torch.mean(weights * torch.tensor(losses))
 
 
 class WeightedLoss(object):

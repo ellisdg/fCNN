@@ -1,7 +1,6 @@
 import seaborn
 import matplotlib.pyplot as plt
 import os
-from scipy.stats import ks_2samp
 import numpy as np
 import sys
 from functools import reduce
@@ -75,6 +74,36 @@ def main():
         correlations = np.asarray(temp_correlations[0])
 
     corr_matrices = np.asarray(correlations)[..., 0]
+    plot(corr_matrices, domains, metric_names, method_labels, labels, output_dir, average_per_domain,
+         metric_func=self_vs_other_correlation, output_filename="{}_increase_correlation_over_mean_correlation.png",
+         xlabel="Self vs other increase (in %)")
+    plot(corr_matrices, domains, metric_names, method_labels, labels, output_dir, average_per_domain,
+         metric_func=mean_diagonal, output_filename="{}_mean_correlation.png",
+         xlabel="Average correlation (mean diagonal)")
+    plot(corr_matrices, domains, metric_names, method_labels, labels, output_dir, average_per_domain,
+         metric_func=self_vs_other_correlation, output_filename="{}_normalized_mean_correlation.png",
+         xlabel="Normalized average correlation")
+
+
+def self_vs_other_correlation(corr_matrix):
+    diagonal_mask = np.diag(np.ones(corr_matrix.shape[0], dtype=bool))
+    diag_values = corr_matrix[diagonal_mask]
+    extra_diag_values = corr_matrix[diagonal_mask == False]
+    return (diag_values.mean() - extra_diag_values.mean())/extra_diag_values.mean()
+
+
+def mean_diagonal(corr_matrix):
+    diagonal_mask = np.diag(np.ones(corr_matrix.shape[0], dtype=bool))
+    return corr_matrix[diagonal_mask].mean()
+
+
+def normalized_mean_diagonal(corr_matrix):
+    return mean_diagonal(normalize_correlation_matrix(corr_matrix, new_min=0, new_max=1))
+
+
+def plot(corr_matrices, domains, metric_names, method_labels, labels, output_dir, average_per_domain=True,
+         metric_func=self_vs_other_correlation, output_filename="{}_increase_correlation_over_mean_correlation.png",
+         xlabel="Self vs other increase (in %)"):
     names = list()
     result = list()
     titles = list()
@@ -82,10 +111,7 @@ def main():
         title = domain + " " + metric_name
         names.append(title)
         corr_matrix = corr_matrices[..., i]
-        diagonal_mask = np.diag(np.ones(corr_matrix.shape[0], dtype=bool))
-        diag_values = corr_matrix[diagonal_mask]
-        extra_diag_values = corr_matrix[diagonal_mask == False]
-        result.append((diag_values.mean() - extra_diag_values.mean())/extra_diag_values.mean())
+        result.append(metric_func(corr_matrix))
         titles.append(title)
     if average_per_domain:
         rows = list()
@@ -109,10 +135,10 @@ def main():
     h = (width + gap) * len(df)
     fig, ax = plt.subplots(figsize=(w, h))
     seaborn.barplot(data=df, x="Value", y="Task", hue="Method", ax=ax)
-    ax.set_xlabel("Self vs other increase (in %)")
+    ax.set_xlabel(xlabel)
     ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
     seaborn.despine(ax=ax, top=True)
-    fig.savefig(output_dir + "/{}_increase_correlation_over_mean_correlation.png".format("_".join(labels)),
+    fig.savefig(os.path.join(output_dir, output_filename.format("_".join(labels))),
                 bbox_inches="tight")
 
 

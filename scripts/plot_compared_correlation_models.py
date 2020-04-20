@@ -81,7 +81,7 @@ def main():
          metric_func=mean_diagonal, output_filename="{}_mean_correlation.png",
          xlabel="Average correlation (mean diagonal)")
     plot(corr_matrices, domains, metric_names, method_labels, labels, output_dir, average_per_domain,
-         metric_func=self_vs_other_correlation, output_filename="{}_normalized_mean_correlation.png",
+         metric_func=normalized_mean_diagonal, output_filename="{}_normalized_mean_correlation.png",
          xlabel="Normalized average correlation")
 
 

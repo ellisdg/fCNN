@@ -42,12 +42,13 @@ def compare_data(actual, predicted, group_avg, sulc, surface_fn, metric_name, he
 
 
 def main():
-    subject = "134223"
-    contrast = "STORY"
-    input_name = "struct6"
+    subject = str(sys.argv[1])
+    contrast = str(sys.argv[2])
+    input_name = str(sys.argv[3])
 
     hcp_dir = "/work/aizenberg/dgellis/HCP/HCP_1200"
     prediction_dir = "/work/aizenberg/dgellis/fCNN/predictions/v4_{input}_unet_ALL-TAVOR_2mm_v1_pt"
+    output_dir = os.path.join("/work/aizenberg/dgellis", "fCNN", "predictions", "figures", "statmaps")
     group_avg_fn = "/work/aizenberg/dgellis/fCNN/" \
                    "v4_tfMRI_group_average_errors_level2_zstat_hp200_s2_TAVOR.midthickness.dscalar.nii".format(
         subject=subject)
@@ -79,5 +80,4 @@ def main():
                                                                                         hemi=hemi_letter))
         compare_data(actual=actual, predicted=predicted, group_avg=group_avg, sulc=sulc, surface_fn=surface_fn,
                      metric_name=contrast, subject_id=subject, hemi=hemi_full,
-                     output_template="/Users/davidellis/Box Sync/Aizenberg_Documents/TaskPrediction/figures/statmaps/"
-                     "{subject}_{task}_{method}_{hemi}_zstat_thresholded.png")
+                     output_template=os.path.join(output_dir, "{subject}_{task}_{method}_{hemi}_zstat_thresholded.png"))

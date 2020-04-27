@@ -36,6 +36,7 @@ def compare_data(actual, predicted, group_avg, sulc, surface_fn, metric_name, he
     for d, n in ((a, "actual"), (p, "predicted"), (g, "group average")):
         if output_template is not None:
             output_filename = output_template.format(subject=subject_id, task=metric_name, method=n, hemi=hemi)
+            print(output_filename)
         else:
             output_filename = None
         fig = plot_data(d, surface_fn, sulc_data, title=n, hemi=hemi, output_file=output_filename)
@@ -80,4 +81,5 @@ def main():
                                                                                         hemi=hemi_letter))
         compare_data(actual=actual, predicted=predicted, group_avg=group_avg, sulc=sulc, surface_fn=surface_fn,
                      metric_name=contrast, subject_id=subject, hemi=hemi_full,
-                     output_template=os.path.join(output_dir, "{subject}_{task}_{method}_{hemi}_zstat_thresholded.png"))
+                     output_template=os.path.join(output_dir, input_name +
+                                                  "_{subject}_{task}_{method}_{hemi}_zstat_thresholded.png"))

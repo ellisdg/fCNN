@@ -83,3 +83,7 @@ def main():
                      metric_name=contrast, subject_id=subject, hemi=hemi_full,
                      output_template=os.path.join(output_dir, input_name +
                                                   "_{subject}_{task}_{method}_{hemi}_zstat_thresholded.png"))
+
+
+if __name__ == "__main__":
+    main()

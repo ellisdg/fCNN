@@ -66,7 +66,7 @@ def main():
     predicted_fn = os.path.join(prediction_dir,
                                 "{subject}_model_{prediction}_{input}.midthickness.dscalar.nii".format(
                                     subject=subject, prediction=prediction_basename, input=input_basename))
-    sulc_fn = os.path.join(hcp_dir, subject, "T1w", "fsaverage_LR32k",
+    sulc_fn = os.path.join(hcp_dir, subject, "MNINonLinear", "fsaverage_LR32k",
                            "{subject}.sulc.32k_fs_LR.dscalar.nii".format(subject=subject))
 
     actual = nib.load(actual_fn)

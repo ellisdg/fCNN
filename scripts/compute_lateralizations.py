@@ -89,12 +89,16 @@ def main():
     seaborn.set_style('whitegrid')
     task = sys.argv[1]
     fcnn_dir = "/home/aizenberg/dgellis/fCNN"
-    config_filename = fcnn_dir + "/data/v4_struct6_unet_{task}-TAVOR_2mm_v1_pt_config.json".format(task=task)
     hcp_dir = "/work/aizenberg/dgellis/HCP/HCP_1200"
-    config = load_json(config_filename)
-    target_basename = config["target_basenames"]
     prediction_dir = sys.argv[2]
     output_dir = sys.argv[3]
+    try:
+        config_filename = sys.argv[4]
+    except IndexError:
+        config_filename = fcnn_dir + "/data/v4_struct6_unet_{task}-TAVOR_2mm_v1_pt_config.json".format(task=task)
+
+    config = load_json(config_filename)
+    target_basename = config["target_basenames"]
     all_prediction_images = glob.glob(os.path.join(prediction_dir, "*.dscalar.nii"))
     target_images = list()
     hemispheres = ["L", "R"]

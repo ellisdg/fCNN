@@ -64,7 +64,7 @@ def main():
     # metric_filename = "/home/neuro-user/PycharmProjects/fCNN/data/labels/MOTOR-TAVOR_name-file.txt"
     metric_filename = sys.argv[4]
     metric_names = read_namefile(metric_filename)
-    pool_size = 16
+    pool_size = 32
     subjects = list()
     for p_image_fn in all_prediction_images:
         if "target" not in p_image_fn:

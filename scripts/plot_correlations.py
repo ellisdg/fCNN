@@ -94,14 +94,14 @@ def main():
         ind = np.argsort(lateralization[..., 1, task_ind], axis=0)
         ax.bar(x=x, height=lateralization[..., 1, task_ind][ind], width=0.5, label="actual")
         ax.bar(x=x + 0.5, height=lateralization[..., 0, task_ind][ind], width=0.5, label="predicted")
-        ax.set_xticks(x[::int(len(x)/(fig_width * 0.5))])
         seaborn.despine(ax=ax, top=True, left=False, bottom=False, right=True)
         ax.axhline(0, color="black", linewidth=1)
         ax.set_xlabel("Subjects")
         ax.set_ylabel(r"RIGHT $\leftarrow$ Lateralization Index $\rightarrow$ LEFT")
         ax.legend()
         ax.set_title(metric_names[task_ind])
-        fig.savefig(output_dir + '/lateralization_{task}_{name}.png'.format(task=task, name=metric_names[task_ind]))
+        fig.savefig(output_dir + '/lateralization_{task}_{name}_bar.png'.format(task=task, name=metric_names[task_ind]))
+
 
     n_plots = len(config['metric_names'])
     plots_per_row = 4

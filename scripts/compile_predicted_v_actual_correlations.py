@@ -30,9 +30,14 @@ def compute_correlation_row(predicted_fn, target_fns, metric_names, structure_na
     return row
 
 
-def compute_correlation(target_fn, predicted_data, metric_names, structure_names, pool_size=None):
+def compute_correlation(target_fn, predicted_data, metric_names, structure_names, pool_size=None,
+                        fix_metric_names=True):
     target_image = nib.load(target_fn)
-    target_data = get_metric_data([target_image], [metric_names], structure_names, None)
+    if fix_metric_names:
+        target_metric_names = [metric_name.split(" ")[-1] for metric_name in metric_names]
+    else:
+        target_metric_names = metric_names
+    target_data = get_metric_data([target_image], [target_metric_names], structure_names, None)
     task_row = list()
     for i, task_name in enumerate(metric_names):
         task_row.append(pearsonr(predicted_data[..., i].flatten(), target_data[..., i].flatten()))

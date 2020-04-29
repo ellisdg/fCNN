@@ -44,8 +44,14 @@ def compute_lateralization_index_from_loaded_data(lh_data, lh_vertices, rh_data,
 
 def compute_lateralization_index(dscalar, lh_surface, rh_surface, metric_name, subject_id=None, radius=10,
                                  distance_metric="euclidean", lh_ind=None, rh_ind=None, return_indices=False):
-    lh_data = np.squeeze(get_metric_data([dscalar], [[metric_name]], surface_names=["CortexLeft"],
-                                         subject_id=subject_id))
+    try:
+        lh_data = np.squeeze(get_metric_data([dscalar], [[metric_name]], surface_names=["CortexLeft"],
+                                             subject_id=subject_id))
+    except ValueError:
+        metric_name = metric_name.split(" ")[-1]
+        lh_data = np.squeeze(get_metric_data([dscalar], [[metric_name]], surface_names=["CortexLeft"],
+                                             subject_id=subject_id))
+
     lh_vertices = extract_gifti_surface_vertices(lh_surface, primary_anatomical_structure="CortexLeft")
     rh_data = np.squeeze(get_metric_data([dscalar], [[metric_name]], surface_names=["CortexRight"],
                                          subject_id=subject_id))
@@ -143,19 +149,6 @@ def main():
         lateralization = np.asarray(lateralization)
         np.save(lateralization_file, lateralization)
         np.save(lateralization_file.replace(".npy", "_subjects.npy"), subjects)
-    else:
-        lateralization = np.load(lateralization_file)
-
-    print(lateralization.shape)
-    for task_ind, metric_name in enumerate(metric_names):
-        fig, ax = plt.subplots(figsize=(18, 6))
-        x = np.arange(lateralization.shape[0])
-        ind = np.argsort(lateralization[..., task_ind, 1], axis=0)
-        ax.bar(x=x, height=lateralization[..., task_ind, 1][ind], width=0.5, label="actual")
-        ax.bar(x=x + 0.5, height=lateralization[..., task_ind, 0][ind], width=0.5, label="predicted")
-        ax.legend()
-        ax.set_title(metric_names[task_ind])
-        fig.savefig(output_dir + '/lateralization_{task}_{name}.png'.format(task=task, name=metric_names[task_ind]))
 
 
 if __name__ == "__main__":

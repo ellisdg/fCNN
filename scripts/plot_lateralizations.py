@@ -74,12 +74,14 @@ def main():
         ax.legend()
         ax.set_title(" ".join((task, contrast)))
         fig.savefig(output_dir + '/lateralization_{task}_{name}_bar.png'.format(task=task, name=contrast))
+        plt.close(fig)
 
         fig, ax = plt.subplots()
         seaborn.regplot(x=predicted, y=actual, color="C3", ax=ax)
         ax.set_xlabel("Predicted lateralization index")
         ax.set_ylabel("Actual lateralization index")
         fig.savefig(output_dir + '/lateralization_{task}_{name}_scatter.png'.format(task=task, name=contrast))
+        plt.close(fig)
 
         correlation, p_value = pearsonr(predicted, actual)
         stats.append((task, contrast, correlation, p_value))

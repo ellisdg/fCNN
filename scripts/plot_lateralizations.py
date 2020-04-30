@@ -55,17 +55,16 @@ def main():
         tasks.extend([task] * len(names))
         contrast_names.extend(names)
 
-    print(lateralizations.shape)
-    for task_ind in range(lateralizations.shape[-1]):
+    for task_ind in range(len(tasks)):
         task = tasks[task_ind]
         contrast = contrast_names[task_ind]
         fig_width = 18
         fig_height = 6
         fig, ax = plt.subplots(figsize=(fig_width, fig_height))
         x = np.arange(lateralizations.shape[0])
-        ind = np.argsort(lateralizations[..., 1, task_ind], axis=0)
-        predicted = lateralizations[..., 1, task_ind][ind]
-        actual = lateralizations[..., 0, task_ind][ind]
+        ind = np.argsort(lateralizations[..., task_ind, 1], axis=0)
+        actual = lateralizations[..., task_ind, 1][ind]
+        predicted = lateralizations[..., task_ind, 0][ind]
         ax.bar(x=x, height=actual, width=0.5, label="actual")
         ax.bar(x=x + 0.5, height=predicted, width=0.5, label="predicted")
         seaborn.despine(ax=ax, top=True, left=False, bottom=False, right=True)

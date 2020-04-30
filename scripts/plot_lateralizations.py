@@ -55,6 +55,7 @@ def main():
         tasks.extend([task] * len(names))
         contrast_names.extend(names)
 
+    print(lateralizations.shape)
     for task_ind in range(lateralizations.shape[-1]):
         task = tasks[task_ind]
         contrast = contrast_names[task_ind]

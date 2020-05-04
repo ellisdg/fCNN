@@ -66,4 +66,4 @@ def main(config_filename, model_filename, machine_config_filename, output_direct
 
 if __name__ == '__main__':
     main(config_filename=sys.argv[1], model_filename=sys.argv[2], machine_config_filename=sys.argv[3],
-         output_directory=sys.argv[4])
+         output_directory=sys.argv[4], subject_key=sys.argv[5])

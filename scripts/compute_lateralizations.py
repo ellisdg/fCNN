@@ -97,11 +97,7 @@ def main():
     fcnn_dir = "/home/aizenberg/dgellis/fCNN"
     hcp_dir = "/work/aizenberg/dgellis/HCP/HCP_1200"
     prediction_dir = sys.argv[2]
-    output_dir = sys.argv[3]
-    try:
-        config_filename = sys.argv[4]
-    except IndexError:
-        config_filename = fcnn_dir + "/data/v4_struct6_unet_{task}-TAVOR_2mm_v1_pt_config.json".format(task=task)
+    config_filename = sys.argv[3]
 
     config = load_json(config_filename)
     target_basename = config["target_basenames"]

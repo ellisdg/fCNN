@@ -43,7 +43,7 @@ def combine_images(images, axis=0, resample_unequal_affines=False, interpolation
 
 
 def main():
-    config = load_json(os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "subjects_v3.json"))
+    config = load_json(os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "subjects_v4.json"))
     system_config = load_json(os.path.join(os.path.dirname(os.path.dirname(__file__)),
                                            "data",
                                            "hcc_p100_config.json"))

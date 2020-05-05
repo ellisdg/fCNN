@@ -77,7 +77,10 @@ def write_struct6_image(subject_id, hcp_dir, feature_basenames, channels_to_norm
     print(output_filename)
     if overwrite or not os.path.exists(output_filename):
         feature_filenames = [os.path.join(subject_dir, fbn) for fbn in feature_basenames]
-        feature_images = [nib.load(fn) for fn in feature_filenames]
+        try:
+            feature_images = [nib.load(fn) for fn in feature_filenames]
+        except FileNotFoundError:
+            return
         image = combine_images(feature_images,
                                axis=3,
                                resample_unequal_affines=True,

@@ -57,7 +57,7 @@ def main():
                    hcp_dir=system_config['directory'],
                    feature_basenames=feature_basenames,
                    channels_to_normalize=channels_to_normalize,
-                   overwrite=True,
+                   overwrite=False,
                    output_channels=(((2, 3), "T1w/Diffusion/md.nii.gz"),
                                     ((3, 6), "T1w/Diffusion/fa.nii.gz"),
                                     ((2, 6), "T1w/Diffusion/dti_normalized.nii.gz")),

@@ -62,7 +62,7 @@ def main():
         volume_template = os.path.join(directory, "{subject}", volume_template)
     surface_template = os.path.join(directory, "{subject}", surface_template)
     subject_ids = list()
-    verbose = False
+    verbose = True
     overwrite = False
 
     with open(config_filename, "r") as op:

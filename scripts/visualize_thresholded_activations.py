@@ -23,8 +23,8 @@ def g2gm_threshold(data, iterations=1000):
 def plot_data(data, surface_fn, sulc_data, title, hemi="left", output_file=None):
     data_threshold_mask = np.any(g2gm_threshold(data), axis=0)
     data_thresholded = data * data_threshold_mask
-    plot_surf_stat_map(surface_fn, data_thresholded, threshold=0.01, bg_map=sulc_data,
-                       title=title, hemi=hemi, output_file=output_file)
+    return plot_surf_stat_map(surface_fn, data_thresholded, threshold=0.01, bg_map=sulc_data,
+                              title=title, hemi=hemi, output_file=output_file)
 
 
 def compare_data(actual, predicted, group_avg, sulc, surface_fn, metric_name, hemi="left",

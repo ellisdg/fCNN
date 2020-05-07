@@ -1,4 +1,5 @@
 import sys
+import os
 import glob
 import numpy as np
 import nibabel as nib
@@ -46,7 +47,9 @@ def main():
     filenames = glob.glob(wildcard)
     for i, filename in enumerate(filenames):
         update_progress(i/len(filenames))
-        threshold_4d_nifti_volume(filename, filename.replace(".nii", "_thresholded.nii"))
+        output_filename = filename.replace(".nii", "_thresholded.nii")
+        if not os.path.exists(output_filename):
+            threshold_4d_nifti_volume(filename, output_filename)
     update_progress(1)
 
 

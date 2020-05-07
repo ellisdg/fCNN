@@ -47,8 +47,6 @@ def download(f1, f2, include=None, exclude=None, verbose=False):
 
 
 def main():
-    # task = sys.argv[1]
-    # name_file = "/home/neuro-user/PycharmProjects/fCNN/data/labels/DTI12_name-file.txt"
     directory = sys.argv[1]
     config_filename = sys.argv[2]
     surface_template = sys.argv[3]
@@ -57,23 +55,7 @@ def main():
     name_file = sys.argv[6]
     atlas_roi_template = sys.argv[7]
     surface_name = sys.argv[8]
-    # fcnn_dir = "/home/neuro-user/PycharmProjects/fCNN"
-    # name_file = fcnn_dir + "/data/labels/MOTOR-TAVOR_name-file.txt"
-    # name_file = fcnn_dir + "/data/labels/LANGUAGE-TAVOR_name-file.txt"
-    # name_file = fcnn_dir + "/data/labels/{task}-TAVOR_name-file.txt".format(task=task)
-    # method = "enclosing"
-    # method = "ribbon-constrained"
-    # directory = "/media/crane/HCP/HCP_1200"
-    # surface_template = "T1w/fsaverage_LR32k/{}.{}.{}.32k_fs_LR.surf.gii"
-    # volume_template = "T1w/Diffusion/dti_12.nii.gz"
-    # volume_template = os.path.join(directory, "{subject}", "T1w/Results/tfMRI_MOTOR/tfMRI_MOTOR_hp200_s2_level2.feat",
-    #                                "{subject}_tfMRI_MOTOR_level2_zstat_hp200_s2_TAVOR.nii.gz")
-    # volume_template = "/home/neuro-user/PycharmProjects/fCNN/trials/predictions/v4_struct6_unet_MOTOR-TAVOR_2mm_v1_pt/{subject}_model_v4_struct6_unet_MOTOR-TAVOR_2mm_v1_pt_struct6_normalized.nii.gz"
-    # volume_template = "/home/neuro-user/PycharmProjects/fCNN/trials/predictions/v4_struct6_unet_LANGUAGE_2mm_v1_pt/{subject}_model_v4_struct6_unet_LANGUAGE_2mm_v1_pt_struct6_normalized.nii.gz"
-    # volume_template = "/home/neuro-user/PycharmProjects/fCNN/trials/predictions/v4_struct6_unet_WM_2mm_v1_pt/{subject}_model_v4_struct6_unet_WM_2mm_v1_pt_struct6_normalized.nii.gz"
-    # volume_template = os.path.join(directory, "{subject}", "T1w/Results/tfMRI_{task}/tfMRI_{task}_hp200_s2_level2.feat",
-    #                                "{subject}_tfMRI_{task}_level2_zstat_hp200_s2_TAVOR.nii.gz")
-    # config_filename = fcnn_dir + "/data/subjects_v4.json"
+
     atlas_roi_template = os.path.join(directory, "{subject}", atlas_roi_template)
     if not os.path.isabs(volume_template):
         volume_template = os.path.join(directory, "{subject}", volume_template)
@@ -81,9 +63,7 @@ def main():
     subject_ids = list()
     verbose = False
     overwrite = False
-    # surface_names = ["midthickness"]
-    # atlas_roi_template = os.path.join(directory, "{subject}", "MNINonLinear", "fsaverage_LR32k",
-    #                                   "{subject}.{hemi}.atlasroi.32k_fs_LR.shape.gii")
+
     with open(config_filename, "r") as op:
         data = json.load(op)
         for key in data:

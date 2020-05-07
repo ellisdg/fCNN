@@ -37,7 +37,7 @@ def threshold_4d_volume(data, threshold_func=g2gm_threshold, **threshold_kwargs)
 
 def threshold_4d_nifti_volume(filename, output_filename):
     image = nib.load(filename)
-    data = image.get_fdata()
+    data = threshold_4d_volume(image.get_fdata())
     output_image = new_img_like(image, data)
     return output_image.to_filename(output_filename)
 
@@ -45,10 +45,11 @@ def threshold_4d_nifti_volume(filename, output_filename):
 def main():
     wildcard = sys.argv[1]
     filenames = glob.glob(wildcard)
+    overwrite = True
     for i, filename in enumerate(filenames):
         update_progress(i/len(filenames))
         output_filename = filename.replace(".nii", "_thresholded.nii")
-        if not os.path.exists(output_filename):
+        if overwrite or not os.path.exists(output_filename):
             threshold_4d_nifti_volume(filename, output_filename)
     update_progress(1)
 

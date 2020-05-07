@@ -31,7 +31,10 @@ def g2gm_threshold(data, iterations=1000, lower_quantile=0.5, upper_quantile=0.5
 def threshold_4d_volume(data, threshold_func=g2gm_threshold, **threshold_kwargs):
     data = np.copy(data)
     for volume_index in range(data.shape[-1]):
-        data[..., volume_index] = threshold_func(data[..., volume_index], **threshold_kwargs)
+        _data = data[..., volume_index]
+        _shape = _data.shape
+        _thresholded = threshold_func(_data.ravel(), **threshold_kwargs).reshape(_shape)
+        data[..., volume_index] = _thresholded
     return data
 
 

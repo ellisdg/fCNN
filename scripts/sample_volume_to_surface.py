@@ -25,6 +25,7 @@ def volume_to_surface(volume, left_surface, right_surface, output_filename, surf
     if name_file is not None:
         cmd.extend(["-name-file", name_file])
     if method == "ribbon-constrained":
+        surface_name = surface_name.split("_")[0]  # in case midthickness_MSMAll is the surface name
         right_cmd.append(right_surface.replace(surface_name, "white"))
         right_cmd.append(right_surface.replace(surface_name, "pial"))
         left_cmd.append(left_surface.replace(surface_name, "white"))

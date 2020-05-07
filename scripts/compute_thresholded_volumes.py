@@ -24,7 +24,9 @@ def g2gm_threshold(data, iterations=1000, lower_quantile=0.5, upper_quantile=0.5
     membership = model.estimate(data, niter=iterations)
     lower_threshold = quantile_1D(data, membership[..., 0], lower_quantile)
     upper_threshold = quantile_1D(data, membership[..., 2], upper_quantile)
-    thresholded_data = np.copy(data)[np.logical_and(data < upper_threshold, data > lower_threshold)] = background_value
+    background_mask = np.logical_and(data < upper_threshold, data > lower_threshold)
+    print(np.sum(background_mask))
+    thresholded_data = np.copy(data)[background_mask][:] = background_value
     return thresholded_data
 
 

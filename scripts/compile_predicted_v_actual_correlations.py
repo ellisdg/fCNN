@@ -46,14 +46,13 @@ def compute_correlation(target_fn, predicted_data, metric_names, structure_names
 
 def main():
     output_file = sys.argv[1]
-    # config_filename = "/home/neuro-user/PycharmProjects/fCNN/data/v4_struct6_unet_MOTOR-TAVOR_2mm_v1_pt_config.json"
     config_filename = sys.argv[2]
     hcp_dir = "/work/aizenberg/dgellis/HCP/HCP_1200"
     config = load_json(config_filename)
     target_basename = config["target_basenames"]
-    # prediction_dir =  "/home/neuro-user/PycharmProjects/fCNN/trials/predictions/v4_struct6_unet_MOTOR-TAVOR_2mm_v1_pt"
     prediction_dir = sys.argv[3]
-    surf_name = sys.argv[4]
+    metric_filename = sys.argv[4]
+    surf_name = sys.argv[5]
     all_prediction_images = glob.glob(os.path.join(prediction_dir, "*.{}.dscalar.nii".format(surf_name)))
     target_images = list()
     structure_names = ["CortexLeft", "CortexRight"]
@@ -62,7 +61,6 @@ def main():
     # all_surfaces = list()
     prediction_images = list()
     # metric_filename = "/home/neuro-user/PycharmProjects/fCNN/data/labels/MOTOR-TAVOR_name-file.txt"
-    metric_filename = sys.argv[4]
     metric_names = read_namefile(metric_filename)
     pool_size = 32
     subjects = list()
@@ -75,10 +73,6 @@ def main():
                 surf_name)
             target_images.append(target_fn)
             prediction_images.append(p_image_fn)
-            # all_surfaces.append([os.path.join(hcp_dir, sid, surface_template.format(subject=sid,
-            #                                                                         hemi=hemi,
-            #                                                                         surf=surf_name)) for hemi in
-            #                      hemispheres])
     correlations = list()
     if pool_size is not None:
         func = partial(compute_correlation_row, pool_size=None, target_fns=target_images, metric_names=metric_names,

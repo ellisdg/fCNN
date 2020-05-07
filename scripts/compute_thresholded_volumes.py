@@ -5,6 +5,7 @@ import nibabel as nib
 from nilearn.image import new_img_like
 from fcnn.utils.nipy.ggmixture import GGGM
 from fcnn.utils.wquantiles.wquantiles import quantile_1D
+from fcnn.utils.utils import update_progress
 
 
 def g2gm_threshold(data, iterations=1000, lower_quantile=0.5, upper_quantile=0.5, background_value=0):
@@ -42,8 +43,11 @@ def threshold_4d_nifti_volume(filename, output_filename):
 
 def main():
     wildcard = sys.argv[1]
-    for filename in glob.glob(wildcard):
+    filenames = glob.glob(wildcard)
+    for i, filename in enumerate(filenames):
+        update_progress(i/len(filenames))
         threshold_4d_nifti_volume(filename, filename.replace(".nii", "_thresholded.nii"))
+    update_progress(1)
 
 
 if __name__ == "__main__":

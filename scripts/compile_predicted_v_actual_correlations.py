@@ -53,7 +53,7 @@ def main():
     target_basename = config["target_basenames"]
     # prediction_dir =  "/home/neuro-user/PycharmProjects/fCNN/trials/predictions/v4_struct6_unet_MOTOR-TAVOR_2mm_v1_pt"
     prediction_dir = sys.argv[3]
-    surf_name = "midthickness"
+    surf_name = sys.argv[4]
     all_prediction_images = glob.glob(os.path.join(prediction_dir, "*.{}.dscalar.nii".format(surf_name)))
     target_images = list()
     structure_names = ["CortexLeft", "CortexRight"]

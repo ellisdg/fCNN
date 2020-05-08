@@ -4,7 +4,7 @@ import os
 from functools import partial
 from multiprocessing import Pool
 from fcnn.utils.utils import load_json, update_progress
-from fcnn.utils.hcp import get_metric_data
+from fcnn.utils.hcp import get_metric_data, extract_cifti_scalar_map_names
 from scipy.stats import pearsonr
 import nibabel as nib
 import numpy as np
@@ -18,7 +18,8 @@ def read_namefile(filename):
     return names
 
 
-def compute_correlation_row(predicted_fn, target_fns, metric_names, structure_names, pool_size=None, verbose=False):
+def compute_correlation_row(predicted_fn, target_fns, metric_names, structure_names, pool_size=None, verbose=False,
+                            fix_metric_names=True):
     if verbose:
         print(predicted_fn)
     predicted_image = nib.load(predicted_fn)
@@ -26,7 +27,8 @@ def compute_correlation_row(predicted_fn, target_fns, metric_names, structure_na
     row = list()
     for fn in target_fns:
         row.append(compute_correlation(target_fn=fn, predicted_data=predicted_data, metric_names=metric_names,
-                                       structure_names=structure_names, pool_size=pool_size))
+                                       structure_names=structure_names, pool_size=pool_size,
+                                       fix_metric_names=fix_metric_names))
     return row
 
 
@@ -56,11 +58,7 @@ def main():
     all_prediction_images = glob.glob(os.path.join(prediction_dir, "*.{}.dscalar.nii".format(surf_name)))
     target_images = list()
     structure_names = ["CortexLeft", "CortexRight"]
-    # hemispheres = ["L", "R"]
-    # surface_template = "T1w/fsaverage_LR32k/{subject}.{hemi}.{surf}.32k_fs_LR.surf.gii"
-    # all_surfaces = list()
     prediction_images = list()
-    # metric_filename = "/home/neuro-user/PycharmProjects/fCNN/data/labels/MOTOR-TAVOR_name-file.txt"
     metric_names = read_namefile(metric_filename)
     pool_size = 32
     subjects = list()
@@ -73,10 +71,17 @@ def main():
                 surf_name)
             target_images.append(target_fn)
             prediction_images.append(p_image_fn)
+
+    target = nib.load(target_images[0])
+    if np.all(np.in1d(metric_names, extract_cifti_scalar_map_names(target))):
+        fix_metric_names = False
+    else:
+        fix_metric_names = True
+
     correlations = list()
     if pool_size is not None:
         func = partial(compute_correlation_row, pool_size=None, target_fns=target_images, metric_names=metric_names,
-                       structure_names=structure_names, verbose=True)
+                       structure_names=structure_names, verbose=True, fix_metric_names=fix_metric_names)
         pool = Pool(pool_size)
         correlations = pool.map(func, prediction_images)
     else:

@@ -55,7 +55,10 @@ def main():
         update_progress(i/len(filenames))
         output_filename = filename.replace(".nii", "_thresholded.nii")
         if overwrite or not os.path.exists(output_filename):
-            threshold_4d_nifti_volume(filename, output_filename)
+            try:
+                threshold_4d_nifti_volume(filename, output_filename)
+            except RuntimeWarning as warning:
+                print(filename, "could not be processed due to warning:\n", warning)
     update_progress(1)
 
 

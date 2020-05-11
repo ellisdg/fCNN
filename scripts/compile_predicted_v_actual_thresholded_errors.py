@@ -156,7 +156,7 @@ def main():
                        prediction_metric_names=prediction_metric_names, structure_names=structure_names,
                        verbose=verbose, group_average_fn=group_average_filename,
                        group_average_metric_names=corrected_metric_names,
-                       group_average_thresholds=group_average_thresholds)
+                       thresholds=group_average_thresholds)
         pool = Pool(pool_size)
         errors = pool.map(func, zip(prediction_images, target_images))
     else:

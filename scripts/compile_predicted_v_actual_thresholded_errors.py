@@ -20,17 +20,17 @@ def read_namefile(filename):
     return names
 
 
-def compute_errors(predicted_fn, target_fn, group_average_data_thresholded, metric_names, structure_names,
-                   verbose=False):
+def compute_errors(predicted_fn, target_fn, group_average_data_thresholded, prediction_metric_names,
+                   target_metric_names, structure_names, verbose=False):
     if verbose:
         print(predicted_fn)
     predicted_image = nib.load(predicted_fn)
-    predicted_data = get_metric_data([predicted_image], [metric_names], structure_names, None)
+    predicted_data = get_metric_data([predicted_image], [prediction_metric_names], structure_names, None)
     target_image = nib.load(target_fn)
-    target_data = get_metric_data([target_image], [metric_names], structure_names, None)
+    target_data = get_metric_data([target_image], [target_metric_names], structure_names, None)
     prediction_errors = list()
     group_average_errors = list()
-    for index, metric_name in enumerate(metric_names):
+    for index, metric_name in enumerate(prediction_metric_names):
         predicted_data_thresholded = g2gm_threshold(predicted_data[..., index])
         target_data_thresholded = g2gm_threshold(target_data[..., index])
         predicted_dice = compute_dice(predicted_data_thresholded, target_data_thresholded)
@@ -40,10 +40,12 @@ def compute_errors(predicted_fn, target_fn, group_average_data_thresholded, metr
     return prediction_errors + group_average_errors
 
 
-def mp_compute_errors(inputs, group_average_fn, metric_names, structure_names, verbose=False):
-    group_average_thresholded_data = read_and_threshold_image_data(group_average_fn, metric_names, structure_names)
-    return compute_errors(inputs[0], inputs[1], group_average_thresholded_data, metric_names, structure_names,
-                          verbose=verbose)
+def mp_compute_errors(inputs, group_average_fn, target_metric_names, prediction_metric_names,
+                      group_average_metric_names, structure_names, verbose=False):
+    group_average_thresholded_data = read_and_threshold_image_data(group_average_fn, group_average_metric_names,
+                                                                   structure_names)
+    return compute_errors(inputs[0], inputs[1], group_average_thresholded_data, prediction_metric_names,
+                          target_metric_names, structure_names, verbose=verbose)
 
 
 def read_and_threshold_image_data(group_average_fn, metric_names, structure_names):
@@ -106,6 +108,7 @@ def main():
     all_prediction_images = glob.glob(os.path.join(prediction_dir, "*.{}.dscalar.nii".format(surf_name)))
     structure_names = ["CortexLeft", "CortexRight"]
     metric_names = read_namefile(name_file)
+    corrected_metric_names = [m.split(" ")[-1] for m in metric_names]
 
     subjects = list()
     for p_image_fn in all_prediction_images:
@@ -121,13 +124,21 @@ def main():
 
     target = nib.load(target_images[0])
     if np.all(np.in1d(metric_names, extract_cifti_scalar_map_names(target))):
-        corrected_metric_names = metric_names
+        target_metric_names = metric_names
     else:
-        corrected_metric_names = [m.split(" ")[-1] for m in metric_names]
+        target_metric_names = corrected_metric_names
+
+    prediction = nib.load(prediction_images[0])
+    if np.all(np.in1d(metric_names, extract_cifti_scalar_map_names(prediction))):
+        prediction_metric_names = metric_names
+    else:
+        prediction_metric_names = corrected_metric_names
 
     if pool_size is not None:
-        func = partial(mp_compute_errors, metric_names=corrected_metric_names, structure_names=structure_names,
-                       verbose=verbose, group_average_fn=group_average_filename)
+        func = partial(mp_compute_errors, target_metric_names=target_metric_names,
+                       prediction_metric_names=prediction_metric_names, structure_names=structure_names,
+                       verbose=verbose, group_average_fn=group_average_filename,
+                       group_average_metric_names=corrected_metric_names)
         pool = Pool(pool_size)
         errors = pool.map(func, zip(prediction_images, target_images))
     else:
@@ -136,7 +147,8 @@ def main():
         for i, (p_image_fn, t_image_fn) in enumerate(zip(prediction_images, target_images)):
             update_progress(i/len(prediction_images), message=os.path.basename(p_image_fn).split("_")[0])
             errors.append(compute_errors(predicted_fn=p_image_fn, target_fn=t_image_fn,
-                                         metric_names=corrected_metric_names,
+                                         target_metric_names=target_metric_names,
+                                         prediction_metric_names=prediction_metric_names,
                                          structure_names=structure_names,
                                          group_average_data_thresholded=group_average_thresholded_data,
                                          verbose=verbose))

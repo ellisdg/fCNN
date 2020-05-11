@@ -48,7 +48,8 @@ def threshold_4d_nifti_volume(filename, output_filename):
 
 
 def main():
-    wildcard = sys.argv[1]
+    # wildcard = sys.argv[1]
+    wildcard = "/Users/davidellis/Data/temp/818859_tfMRI_ALL_level2_zstat_hp200_s2_TAVOR.nii.gz"
     filenames = glob.glob(wildcard)
     overwrite = True
     for i, filename in enumerate(filenames):

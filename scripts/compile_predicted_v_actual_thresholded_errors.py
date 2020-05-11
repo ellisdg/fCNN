@@ -4,7 +4,7 @@ import os
 from functools import partial
 from multiprocessing import Pool
 from fcnn.utils.utils import load_json, update_progress
-from fcnn.utils.hcp import get_metric_data
+from fcnn.utils.hcp import get_metric_data, extract_cifti_scalar_map_names
 from fcnn.utils.nipy.ggmixture import GGGM
 from fcnn.utils.wquantiles.wquantiles import quantile_1D
 import pandas as pd
@@ -106,7 +106,6 @@ def main():
     all_prediction_images = glob.glob(os.path.join(prediction_dir, "*.{}.dscalar.nii".format(surf_name)))
     structure_names = ["CortexLeft", "CortexRight"]
     metric_names = read_namefile(name_file)
-    corrected_metric_names = [m.split(" ")[-1] for m in metric_names]
 
     subjects = list()
     for p_image_fn in all_prediction_images:
@@ -119,6 +118,13 @@ def main():
             target_images.append(target_fn)
             prediction_images.append(p_image_fn)
     errors = list()
+
+    target = nib.load(target_images[0])
+    if np.all(np.in1d(metric_names, extract_cifti_scalar_map_names(target))):
+        corrected_metric_names = metric_names
+    else:
+        corrected_metric_names = [m.split(" ")[-1] for m in metric_names]
+
     if pool_size is not None:
         func = partial(mp_compute_errors, metric_names=corrected_metric_names, structure_names=structure_names,
                        verbose=verbose, group_average_fn=group_average_filename)

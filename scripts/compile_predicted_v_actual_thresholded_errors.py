@@ -41,19 +41,22 @@ def compute_errors(predicted_fn, target_fn, group_average_data_thresholded, pred
 
 
 def mp_compute_errors(inputs, group_average_fn, target_metric_names, prediction_metric_names,
-                      group_average_metric_names, structure_names, verbose=False):
+                      group_average_metric_names, structure_names, verbose=False, thresholds=None):
     group_average_thresholded_data = read_and_threshold_image_data(group_average_fn, group_average_metric_names,
-                                                                   structure_names)
+                                                                   structure_names, thresholds=thresholds)
     return compute_errors(inputs[0], inputs[1], group_average_thresholded_data, prediction_metric_names,
                           target_metric_names, structure_names, verbose=verbose)
 
 
-def read_and_threshold_image_data(group_average_fn, metric_names, structure_names):
+def read_and_threshold_image_data(group_average_fn, metric_names, structure_names, return_thresholds=False,
+                                  thresholds=None):
     group_average_image = nib.load(group_average_fn)
     group_average_data = get_metric_data([group_average_image], metric_names=[metric_names],
                                          surface_names=structure_names, subject_id=None)
     group_average_thresholded_data = threshold_data_for_all_metrics(group_average_data,
-                                                                    metric_names=metric_names)
+                                                                    metric_names=metric_names,
+                                                                    return_thresholds=return_thresholds,
+                                                                    thresholds=thresholds)
     return group_average_thresholded_data
 
 
@@ -65,11 +68,18 @@ def compute_mse(data1, data2):
     return np.mean(np.square(data1-data2))
 
 
-def g2gm_threshold(data, iterations=1000):
+def g2gm_threshold(data, iterations=1000, return_thresholds=False):
     model = GGGM()
     membership = model.estimate(data, niter=iterations)
     lower_threshold = quantile_1D(data, membership[..., 0], 0.5)
     upper_threshold = quantile_1D(data, membership[..., 2], 0.5)
+    if return_thresholds:
+        return lower_threshold, upper_threshold
+    else:
+        return threshold_data(data, lower_threshold, upper_threshold)
+
+
+def threshold_data(data, lower_threshold, upper_threshold):
     thresholded_data = np.zeros((2,) + data.shape, np.int)
     thresholded_data[0][data >= upper_threshold] = 1
     thresholded_data[1][data <= lower_threshold] = 1
@@ -80,11 +90,14 @@ def compute_dice(x, y):
     return 2. * (x * y).sum()/(x.sum() + y.sum())
 
 
-def threshold_data_for_all_metrics(data, metric_names):
+def threshold_data_for_all_metrics(data, metric_names, return_thresholds=False, thresholds=None):
     thresholded_data = list()
     for index, metric_name in enumerate(metric_names):
         print("Group Average:", metric_name)
-        thresholded_data.append(g2gm_threshold(data[..., index]))
+        if thresholds is not None:
+            thresholded_data.append(threshold_data(data, thresholds[0][index], thresholds[1][index]))
+        else:
+            thresholded_data.append(g2gm_threshold(data[..., index], return_thresholds=return_thresholds))
     return np.asarray(thresholded_data)
 
 
@@ -135,10 +148,14 @@ def main():
         prediction_metric_names = corrected_metric_names
 
     if pool_size is not None:
+        group_average_thresholds = read_and_threshold_image_data(
+            group_average_filename, corrected_metric_names, structure_names, return_thresholds=True)
+
         func = partial(mp_compute_errors, target_metric_names=target_metric_names,
                        prediction_metric_names=prediction_metric_names, structure_names=structure_names,
                        verbose=verbose, group_average_fn=group_average_filename,
-                       group_average_metric_names=corrected_metric_names)
+                       group_average_metric_names=corrected_metric_names,
+                       group_average_thresholds=group_average_thresholds)
         pool = Pool(pool_size)
         errors = pool.map(func, zip(prediction_images, target_images))
     else:

@@ -96,9 +96,10 @@ def threshold_data_for_all_metrics(data, metric_names, return_thresholds=False, 
         print("Group Average:", metric_name)
         if thresholds is not None:
             thresholded_data.append(threshold_data(data, thresholds[0][index], thresholds[1][index]))
+            return thresholded_data
         else:
             thresholded_data.append(g2gm_threshold(data[..., index], return_thresholds=return_thresholds))
-    return np.asarray(thresholded_data)
+            return np.asarray(thresholded_data)
 
 
 def main():

@@ -30,8 +30,13 @@ def plot_data(data, surface_fn, sulc_data, title, hemi="left", output_file=None)
 def compare_data(actual, predicted, group_avg, sulc, surface_fn, metric_name, hemi="left",
                  subject_id=None, sulc_name="{}_Sulc", output_template=None):
     surface_names = ["Cortex" + hemi.capitalize()]
-    a, p, g = [np.ravel(get_metric_data([image], [[metric_name]], surface_names, None))
-               for image in (actual, predicted, group_avg)]
+    data = list()
+    for image in (actual, predicted, group_avg):
+        try:
+            data.append(np.ravel(get_metric_data([image], [[metric_name]], surface_names, None)))
+        except ValueError:
+            data.append(np.ravel(get_metric_data([image], [[metric_name.split(" ")[-1]]], surface_names, None)))
+    a, p, g = data
     sulc_data = np.ravel(get_metric_data([sulc], [[sulc_name]], surface_names, subject_id))
     for d, n in ((a, "actual"), (p, "predicted"), (g, "group average")):
         if output_template is not None:

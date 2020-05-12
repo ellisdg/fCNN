@@ -40,7 +40,8 @@ def compare_data(actual, predicted, group_avg, sulc, surface_fn, metric_name, he
     sulc_data = np.ravel(get_metric_data([sulc], [[sulc_name]], surface_names, subject_id))
     for d, n in ((a, "actual"), (p, "predicted"), (g, "group average")):
         if output_template is not None:
-            output_filename = output_template.format(subject=subject_id, task=metric_name, method=n, hemi=hemi)
+            output_filename = output_template.format(subject=subject_id, task=metric_name.replace(" ", "_"), method=n,
+                                                     hemi=hemi)
             print(output_filename)
         else:
             output_filename = None

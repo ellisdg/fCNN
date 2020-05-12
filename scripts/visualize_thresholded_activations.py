@@ -59,7 +59,7 @@ def main():
     domain = "ALL"
     prediction_dir = prediction_dir.format(input=input_name)
 
-    prediction_basename = os.path.basename(prediction_dir)
+    prediction_basename = os.path.basename(prediction_dir).replace("_test", "")
     input_basename = input_name + "_normalized"
 
     actual_fn = os.path.join(hcp_dir, subject, "T1w", "Results", "tfMRI_" + domain,

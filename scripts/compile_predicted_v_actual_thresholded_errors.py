@@ -93,13 +93,12 @@ def compute_dice(x, y):
 def threshold_data_for_all_metrics(data, metric_names, return_thresholds=False, thresholds=None):
     thresholded_data = list()
     for index, metric_name in enumerate(metric_names):
-        print("Group Average:", metric_name)
+        print(metric_name)
         if thresholds is not None:
-            thresholded_data.append(threshold_data(data, thresholds[0][index], thresholds[1][index]))
-            return thresholded_data
+            thresholded_data.append(threshold_data(data[..., index], thresholds[index][0], thresholds[index][1]))
         else:
             thresholded_data.append(g2gm_threshold(data[..., index], return_thresholds=return_thresholds))
-            return np.asarray(thresholded_data)
+    return np.asarray(thresholded_data)
 
 
 def main():
@@ -110,7 +109,7 @@ def main():
     group_average_filename = sys.argv[5]
 
     verbose = True
-    pool_size = 32
+    pool_size = 16
 
     target_images = list()
     prediction_images = list()
@@ -151,7 +150,7 @@ def main():
     if pool_size is not None:
         group_average_thresholds = read_and_threshold_image_data(
             group_average_filename, corrected_metric_names, structure_names, return_thresholds=True)
-
+        print(group_average_thresholds)
         func = partial(mp_compute_errors, target_metric_names=target_metric_names,
                        prediction_metric_names=prediction_metric_names, structure_names=structure_names,
                        verbose=verbose, group_average_fn=group_average_filename,

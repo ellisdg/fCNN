@@ -48,7 +48,7 @@ def main():
     input_name = str(sys.argv[3])
 
     hcp_dir = "/work/aizenberg/dgellis/HCP/HCP_1200"
-    prediction_dir = "/work/aizenberg/dgellis/fCNN/predictions/v4_{input}_unet_ALL-TAVOR_2mm_v1_pt"
+    prediction_dir = "/work/aizenberg/dgellis/fCNN/predictions/v4_{input}_unet_ALL-TAVOR_2mm_v2_pt_test"
     output_dir = os.path.join("/work/aizenberg/dgellis", "fCNN", "predictions", "figures", "statmaps")
     group_avg_fn = "/work/aizenberg/dgellis/fCNN/" \
                    "v4_tfMRI_group_average_errors_level2_zstat_hp200_s2_TAVOR.midthickness.dscalar.nii".format(

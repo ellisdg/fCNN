@@ -20,11 +20,11 @@ def g2gm_threshold(data, iterations=1000):
     return thresholded_data
 
 
-def plot_data(data, surface_fn, sulc_data, title, hemi="left", output_file=None):
+def plot_data(data, surface_fn, sulc_data, title, hemi="left", output_file=None, view="lateral"):
     data_threshold_mask = np.any(g2gm_threshold(data), axis=0)
     data_thresholded = data * data_threshold_mask
     return plot_surf_stat_map(surface_fn, data_thresholded, threshold=0.01, bg_map=sulc_data,
-                              title=title, hemi=hemi, output_file=output_file)
+                              title=title, hemi=hemi, output_file=output_file, view=view)
 
 
 def compare_data(actual, predicted, group_avg, sulc, surface_fn, metric_name, hemi="left",
@@ -39,13 +39,14 @@ def compare_data(actual, predicted, group_avg, sulc, surface_fn, metric_name, he
     a, p, g = data
     sulc_data = np.ravel(get_metric_data([sulc], [[sulc_name]], surface_names, subject_id))
     for d, n in ((a, "actual"), (p, "predicted"), (g, "group average")):
-        if output_template is not None:
-            output_filename = output_template.format(subject=subject_id, task=metric_name, method=n,
-                                                     hemi=hemi).replace(" ", "_")
-            print(output_filename)
-        else:
-            output_filename = None
-        fig = plot_data(d, surface_fn, sulc_data, title=n, hemi=hemi, output_file=output_filename)
+        for view in ("medial", "lateral"):
+            if output_template is not None:
+                output_filename = output_template.format(subject=subject_id, task=metric_name, method=n,
+                                                         hemi=hemi, view=view).replace(" ", "_")
+                print(output_filename)
+            else:
+                output_filename = None
+            fig = plot_data(d, surface_fn, sulc_data, title=n, hemi=hemi, output_file=output_filename, view=view)
 
 
 def main():
@@ -91,7 +92,7 @@ def main():
         compare_data(actual=actual, predicted=predicted, group_avg=group_avg, sulc=sulc, surface_fn=surface_fn,
                      metric_name=contrast, subject_id=subject, hemi=hemi_full,
                      output_template=os.path.join(output_dir, input_name +
-                                                  "_{subject}_{task}_{method}_{hemi}_zstat_thresholded.png"))
+                                                  "_{subject}_{task}_{method}_{hemi}_{view}_zstat_thresholded.png"))
 
 
 if __name__ == "__main__":

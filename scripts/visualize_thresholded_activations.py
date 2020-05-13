@@ -30,6 +30,7 @@ def plot_data(data, surface_fn, sulc_data, title, hemi="left", output_file=None)
                 _output_file = output_file.format(view=view)
                 if positive_only:
                     _output_file =  _output_file.replace(".png", "_positives.png")
+                print(_output_file)
             else:
                 _output_file = output_file
             if positive_only:
@@ -57,7 +58,6 @@ def compare_data(actual, predicted, group_avg, sulc, surface_fn, metric_name, he
         if output_template is not None:
             output_filename = output_template.format(subject=subject_id, task=metric_name, method=n,
                                                      hemi=hemi, view="{view}").replace(" ", "_")
-            print(output_filename)
         else:
             output_filename = None
         figs = plot_data(d, surface_fn, sulc_data, title=n, hemi=hemi, output_file=output_filename)

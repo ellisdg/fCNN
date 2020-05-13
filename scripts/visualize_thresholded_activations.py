@@ -20,11 +20,26 @@ def g2gm_threshold(data, iterations=1000):
     return thresholded_data
 
 
-def plot_data(data, surface_fn, sulc_data, title, hemi="left", output_file=None, view="lateral"):
+def plot_data(data, surface_fn, sulc_data, title, hemi="left", output_file=None):
     data_threshold_mask = np.any(g2gm_threshold(data), axis=0)
     data_thresholded = data * data_threshold_mask
-    return plot_surf_stat_map(surface_fn, data_thresholded, threshold=0.01, bg_map=sulc_data,
-                              title=title, hemi=hemi, output_file=output_file, view=view)
+    figs = list()
+    for view in ("lateral", "medial"):
+        for positive_only in (True, False):
+            if output_file is not None:
+                _output_file = output_file.format(view=view)
+                if positive_only:
+                    _output_file =  _output_file.replace(".png", "_positives.png")
+            else:
+                _output_file = output_file
+            if positive_only:
+                _data_to_plot = np.copy(data_thresholded)
+                _data_to_plot[data_thresholded < 0] = 0
+            else:
+                _data_to_plot = data_thresholded
+            figs.append(plot_surf_stat_map(surface_fn, _data_to_plot, threshold=0.01, bg_map=sulc_data,
+                                           title=title, hemi=hemi, output_file=_output_file, view=view))
+    return figs
 
 
 def compare_data(actual, predicted, group_avg, sulc, surface_fn, metric_name, hemi="left",
@@ -39,14 +54,13 @@ def compare_data(actual, predicted, group_avg, sulc, surface_fn, metric_name, he
     a, p, g = data
     sulc_data = np.ravel(get_metric_data([sulc], [[sulc_name]], surface_names, subject_id))
     for d, n in ((a, "actual"), (p, "predicted"), (g, "group average")):
-        for view in ("medial", "lateral"):
-            if output_template is not None:
-                output_filename = output_template.format(subject=subject_id, task=metric_name, method=n,
-                                                         hemi=hemi, view=view).replace(" ", "_")
-                print(output_filename)
-            else:
-                output_filename = None
-            fig = plot_data(d, surface_fn, sulc_data, title=n, hemi=hemi, output_file=output_filename, view=view)
+        if output_template is not None:
+            output_filename = output_template.format(subject=subject_id, task=metric_name, method=n,
+                                                     hemi=hemi, view="{view}").replace(" ", "_")
+            print(output_filename)
+        else:
+            output_filename = None
+        figs = plot_data(d, surface_fn, sulc_data, title=n, hemi=hemi, output_file=output_filename)
 
 
 def main():
@@ -61,8 +75,7 @@ def main():
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     group_avg_fn = "/work/aizenberg/dgellis/fCNN/" \
-                   "v4_tfMRI_group_average_errors_level2_zstat_hp200_s2_TAVOR.midthickness.dscalar.nii".format(
-        subject=subject)
+                   "v4_tfMRI_group_average_errors_level2_zstat_hp200_s2_TAVOR.midthickness.dscalar.nii"
     domain = "ALL"
     prediction_dir = prediction_dir.format(input=input_name)
 

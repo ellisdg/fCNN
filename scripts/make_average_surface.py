@@ -23,7 +23,12 @@ def main(args):
     surface_basename_template = "{subject}.{hemi}.{surface}.32k_fs_LR.surf.gii"
     surface_name = "inflated"
 
-    subject_ids = subjects_config[subset]
+    if subset == "all":
+        subject_ids = []
+        for subset_subject_ids in subjects_config.values():
+            subject_ids.extend(subset_subject_ids)
+    else:
+        subject_ids = subjects_config[subset]
 
     for surface_hemisphere in hemispheres:
         surface_basename = surface_basename_template.format(hemi=surface_hemisphere,

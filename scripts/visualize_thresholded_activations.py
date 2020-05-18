@@ -99,7 +99,7 @@ def main():
 
     for hemi_full in ("left", "right"):
         hemi_letter = hemi_full[0].upper()
-        surface_fn = os.path.join(hcp_dir, subject, "T1w", "fsaverage_LR32k",
+        surface_fn = os.path.join(hcp_dir, subject, "MNINonLinear", "fsaverage_LR32k",
                                   "{subject}.{hemi}.inflated.32k_fs_LR.surf.gii".format(subject=subject,
                                                                                         hemi=hemi_letter))
         compare_data(actual=actual, predicted=predicted, group_avg=group_avg, sulc=sulc, surface_fn=surface_fn,

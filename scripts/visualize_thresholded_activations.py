@@ -82,8 +82,9 @@ def main():
     if "," in subject:
         subjects = subject.split(",")
         pool = Pool(len(subjects))
-        func = partial(contrast=contrast, prediction_dir=prediction_dir, input_name=input_name, output_dir=output_dir,
-                       hcp_dir=hcp_dir, domain=domain, group_avg_fn=group_avg_fn)
+        func = partial(visualize_subject_contrast, contrast=contrast, prediction_dir=prediction_dir,
+                       input_name=input_name, output_dir=output_dir, hcp_dir=hcp_dir, domain=domain,
+                       group_avg_fn=group_avg_fn)
         pool.map(func=func, iterable=subjects)
     else:
         visualize_subject_contrast(subject, contrast, prediction_dir, input_name, hcp_dir, domain, output_dir,

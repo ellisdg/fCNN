@@ -35,12 +35,11 @@ def main(args):
         cmd = ["wb_command", "-surface-average", output_filename]
         for subject_id in subject_ids:
             subject_id = str(subject_id)
-            cmd.append("-surf")
-            cmd.append(os.path.join(directory,
-                                    subject_id,
-                                    "MNINonLinear",
-                                    "fsaverage_LR32k",
-                                    surface_basename.format(subject=subject_id)))
+            surface_filename = os.path.join(directory, subject_id, "MNINonLinear", "fsaverage_LR32k",
+                                            surface_basename.format(subject=subject_id))
+            if os.path.exists(surface_filename):
+                cmd.append("-surf")
+                cmd.append(surface_filename)
         print(" ".join(cmd))
         subprocess.call(cmd)
 

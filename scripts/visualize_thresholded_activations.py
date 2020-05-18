@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import sys
 import os
+from multiprocessing import Pool
+from functools import partial
 import numpy as np
 import nibabel as nib
 from fcnn.utils.nipy.ggmixture import GGGM
@@ -77,6 +79,19 @@ def main():
     group_avg_fn = "/work/aizenberg/dgellis/fCNN/" \
                    "v4_tfMRI_group_average_errors_level2_zstat_hp200_s2_TAVOR.midthickness.dscalar.nii"
     domain = "ALL"
+    if "," in subject:
+        subjects = subject.split(",")
+        pool = Pool(len(subjects))
+        func = partial(contrast=contrast, prediction_dir=prediction_dir, input_name=input_name, output_dir=output_dir,
+                       hcp_dir=hcp_dir, domain=domain, group_avg_fn=group_avg_fn)
+        pool.map(func=func, iterable=subjects)
+    else:
+        visualize_subject_contrast(subject, contrast, prediction_dir, input_name, hcp_dir, domain, output_dir,
+                                   group_avg_fn)
+
+
+def visualize_subject_contrast(subject, contrast, prediction_dir, input_name, hcp_dir, domain, output_dir,
+                               group_avg_fn):
     prediction_dir = prediction_dir.format(input=input_name)
 
     prediction_basename = os.path.basename(prediction_dir).replace("_test", "")

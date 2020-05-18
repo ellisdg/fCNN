@@ -31,7 +31,7 @@ def main(args):
                                                             surface=surface_name)
 
         output_filename = os.path.join(output_directory,
-                                       output_basename + os.path.basename(surface_basename.format(subject_id=subset)))
+                                       output_basename + os.path.basename(surface_basename.format(subject=subset)))
         cmd = ["wb_command", "-surface-average", output_filename]
         for subject_id in subject_ids:
             subject_id = str(subject_id)
@@ -40,7 +40,7 @@ def main(args):
                                     subject_id,
                                     "MNINonLinear",
                                     "fsaverage_LR32k",
-                                    surface_basename.format(subject_id=subject_id)))
+                                    surface_basename.format(subject=subject_id)))
         print(" ".join(cmd))
         subprocess.call(cmd)
 

@@ -10,7 +10,7 @@ def load_json(filename):
 
 
 def main(args):
-    config = load_json(args[1])
+    subjects_config = load_json(args[1])
     directory = os.path.abspath(args[2])
     output_directory = os.path.abspath(args[3])
     subset = str(args[4])
@@ -18,16 +18,18 @@ def main(args):
         output_basename = str(args[5])
     except IndexError:
         output_basename = ""
-    if subset not in config and "subjects_filename" in config:
-        subjects_config = load_json(config["subjects_filename"])
-        subject_ids = subjects_config[subset]
-    else:
-        subject_ids = config[subset]
 
-    for surface_hemisphere in config["hemispheres"]:
-        surface_basename = config["surface_basename_template"].format(hemi=surface_hemisphere,
-                                                                      subject_id="{subject_id}").replace("pial",
-                                                                                                         "inflated")
+    hemispheres = ["L", "R"]
+    surface_basename_template = "{subject}.{hemi}.{surface}.32k_fs_LR.surf.gii"
+    surface_name = "inflated"
+
+    subject_ids = subjects_config[subset]
+
+    for surface_hemisphere in hemispheres:
+        surface_basename = surface_basename_template.format(hemi=surface_hemisphere,
+                                                            subject="{subject}",
+                                                            surface=surface_name)
+
         output_filename = os.path.join(output_directory,
                                        output_basename + os.path.basename(surface_basename.format(subject_id=subset)))
         cmd = ["wb_command", "-surface-average", output_filename]

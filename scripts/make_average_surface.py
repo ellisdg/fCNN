@@ -27,7 +27,7 @@ def main(args):
     for surface_hemisphere in config["hemispheres"]:
         surface_basename = config["surface_basename_template"].format(hemi=surface_hemisphere,
                                                                       subject_id="{subject_id}").replace("pial",
-                                                                                                         "midthickness")
+                                                                                                         "inflated")
         output_filename = os.path.join(output_directory,
                                        output_basename + os.path.basename(surface_basename.format(subject_id=subset)))
         cmd = ["wb_command", "-surface-average", output_filename]

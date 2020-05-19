@@ -9,6 +9,7 @@ from fcnn.utils.nipy.ggmixture import GGGM
 from fcnn.utils.wquantiles.wquantiles import quantile_1D
 from fcnn.utils.hcp import get_metric_data
 from nilearn.plotting import plot_surf_stat_map
+import matplotlib.pyplot as plt
 
 
 def g2gm_threshold(data, iterations=1000):
@@ -40,8 +41,11 @@ def plot_data(data, surface_fn, sulc_data, title, hemi="left", output_file=None)
                 _data_to_plot[data_thresholded < 0] = 0
             else:
                 _data_to_plot = data_thresholded
-            figs.append(plot_surf_stat_map(surface_fn, _data_to_plot, threshold=0.01, bg_map=sulc_data,
-                                           title=title, hemi=hemi, output_file=_output_file, view=view))
+            fig = plot_surf_stat_map(surface_fn, _data_to_plot, threshold=0.01, bg_map=sulc_data, title=title,
+                                     hemi=hemi, output_file=None, view=view)
+            fig.savefig(_output_file, bbox_inches="tight")
+            plt.close(fig)
+            figs.append(fig)
     return figs
 
 

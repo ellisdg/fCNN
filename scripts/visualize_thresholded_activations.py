@@ -78,21 +78,24 @@ def main():
         os.makedirs(output_dir)
     group_avg_fn = "/work/aizenberg/dgellis/fCNN/" \
                    "v4_tfMRI_group_average_errors_level2_zstat_hp200_s2_TAVOR.midthickness.dscalar.nii"
+
+    surface_template = "/work/aizenberg/dgellis/fCNN/v4_test_{hemi}.inflated.32k_fs_LR.surf.gii"
+
     domain = "ALL"
     if "," in subject:
         subjects = subject.split(",")
         pool = Pool(len(subjects))
         func = partial(visualize_subject_contrast, contrast=contrast, prediction_dir=prediction_dir,
                        input_name=input_name, output_dir=output_dir, hcp_dir=hcp_dir, domain=domain,
-                       group_avg_fn=group_avg_fn)
+                       group_avg_fn=group_avg_fn, surface_template=surface_template)
         pool.map(func=func, iterable=subjects)
     else:
         visualize_subject_contrast(subject, contrast, prediction_dir, input_name, hcp_dir, domain, output_dir,
-                                   group_avg_fn)
+                                   group_avg_fn, surface_template=surface_template)
 
 
 def visualize_subject_contrast(subject, contrast, prediction_dir, input_name, hcp_dir, domain, output_dir,
-                               group_avg_fn):
+                               group_avg_fn, surface_template=None):
     prediction_dir = prediction_dir.format(input=input_name)
 
     prediction_basename = os.path.basename(prediction_dir).replace("_test", "")
@@ -108,6 +111,10 @@ def visualize_subject_contrast(subject, contrast, prediction_dir, input_name, hc
     sulc_fn = os.path.join(hcp_dir, subject, "MNINonLinear", "fsaverage_LR32k",
                            "{subject}.sulc.32k_fs_LR.dscalar.nii".format(subject=subject))
 
+    if surface_template is None:
+        surface_template = os.path.join(hcp_dir, subject, "MNINonLinear", "fsaverage_LR32k",
+                                        "{subject}.{hemi}.inflated.32k_fs_LR.surf.gii")
+
     actual = nib.load(actual_fn)
     predicted = nib.load(predicted_fn)
     group_avg = nib.load(group_avg_fn)
@@ -115,9 +122,7 @@ def visualize_subject_contrast(subject, contrast, prediction_dir, input_name, hc
 
     for hemi_full in ("left", "right"):
         hemi_letter = hemi_full[0].upper()
-        surface_fn = os.path.join(hcp_dir, subject, "MNINonLinear", "fsaverage_LR32k",
-                                  "{subject}.{hemi}.inflated.32k_fs_LR.surf.gii".format(subject=subject,
-                                                                                        hemi=hemi_letter))
+        surface_fn = surface_template.format(subject=subject, hemi=hemi_letter)
         compare_data(actual=actual, predicted=predicted, group_avg=group_avg, sulc=sulc, surface_fn=surface_fn,
                      metric_name=contrast, subject_id=subject, hemi=hemi_full,
                      output_template=os.path.join(output_dir, input_name +

@@ -21,6 +21,8 @@ def main(args):
 
     hemispheres = ["L", "R"]
     surface_basename_template = "{subject}.{hemi}.{surface}.32k_fs_LR.surf.gii"
+    surface_template = os.path.join(directory, "{subject}", "MNINonLinear", "fsaverage_LR32k",
+                                    surface_basename_template)
     surface_name = "inflated"
 
     if subset == "all":
@@ -40,8 +42,8 @@ def main(args):
         cmd = ["wb_command", "-surface-average", output_filename]
         for subject_id in subject_ids:
             subject_id = str(subject_id)
-            surface_filename = os.path.join(directory, subject_id, "MNINonLinear", "fsaverage_LR32k",
-                                            surface_basename.format(subject=subject_id))
+            surface_filename = surface_template.format(subject=subject_id, hemi=surface_hemisphere,
+                                                       surface=surface_name)
             if os.path.exists(surface_filename):
                 cmd.append("-surf")
                 cmd.append(surface_filename)

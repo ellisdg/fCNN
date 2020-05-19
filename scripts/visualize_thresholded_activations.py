@@ -79,7 +79,7 @@ def main():
     group_avg_fn = "/work/aizenberg/dgellis/fCNN/" \
                    "v4_tfMRI_group_average_errors_level2_zstat_hp200_s2_TAVOR.midthickness.dscalar.nii"
 
-    surface_template = "/work/aizenberg/dgellis/fCNN/v4_test_{hemi}.inflated.32k_fs_LR.surf.gii"
+    surface_template = "/work/aizenberg/dgellis/fCNN/v4_training.{hemi}.inflated.32k_fs_LR.surf.gii"
 
     domain = "ALL"
     if "," in subject:

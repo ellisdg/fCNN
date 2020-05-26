@@ -17,7 +17,7 @@ def load_json(filename):
 
 
 def main(args):
-    reference_volume = "/work/aizenberg/tools/HCPpipelines/global/templates/MNI152_T1_2mm.nii.gz"
+    reference_volume = "/work/aizenberg/dgellis/tools/HCPpipelines/global/templates/MNI152_T1_2mm.nii.gz"
     prediction_directory = os.path.abspath(args[1])
     directory = os.path.abspath(args[2])
     config = load_json(args[3])
@@ -26,7 +26,7 @@ def main(args):
     overwrite = True
     transformed = transform_prediction_dir(prediction_dir=prediction_directory, directory=directory,
                                            reference_volume=reference_volume, dir_name=dir_name, overwrite=overwrite,
-                                           target_basename=config["target_basenames"])
+                                           target_basename=config["target_basenames"], pool_size=n_threads)
     output_filename = os.path.join(prediction_directory, dir_name, dir_name + "errors.csv")
     compute_errors(transformed, output_filename=output_filename, columns=config["metric_names"], pool_size=n_threads)
     compute_correlations(transformed, output_file=os.path.join(prediction_directory, dir_name, dir_name +

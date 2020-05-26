@@ -17,13 +17,13 @@ def load_json(filename):
 
 
 def main(args):
-    reference_volume = "/media/crane/tools/HCPpipelines/global/templates/MNI152_T1_2mm.nii.gz"
+    reference_volume = "/work/aizenberg/tools/HCPpipelines/global/templates/MNI152_T1_2mm.nii.gz"
     prediction_directory = os.path.abspath(args[1])
     directory = os.path.abspath(args[2])
     config = load_json(args[3])
     n_threads = int(args[4])
     dir_name = "MNINonLinear"
-    overwrite = False
+    overwrite = True
     transformed = transform_prediction_dir(prediction_dir=prediction_directory, directory=directory,
                                            reference_volume=reference_volume, dir_name=dir_name, overwrite=overwrite,
                                            target_basename=config["target_basenames"])
@@ -74,18 +74,28 @@ def run_command(cmd):
 
 
 def transform_prediction_dir(prediction_dir, directory, reference_volume, target_basename, dir_name="MNINonLinear",
-                             overwrite=False):
+                             overwrite=False, pool_size=1):
     output_dir = os.path.join(prediction_dir, dir_name)
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-    outputs = list()
-    for prediction_volume in glob.glob(os.path.join(prediction_dir, "*.nii.gz")):
-        _outputs = transform_prediction_target_volumes(prediction_volume=prediction_volume, hcp_directory=directory,
-                                                       output_dir=output_dir,
-                                                       reference_volume_filename=reference_volume,
-                                                       target_basename_template=target_basename, overwrite=overwrite)
-        if _outputs is not None:
-            outputs.append(_outputs)
+    prediction_volumes = glob.glob(os.path.join(prediction_dir, "*.nii.gz"))
+    if pool_size > 1:
+        pool = Pool(pool_size)
+        func = partial(transform_prediction_target_volumes, hcp_directory=directory, output_dir=output_dir,
+                       reference_volume_filename=reference_volume, target_basename_template=target_basename,
+                       overwrite=overwrite)
+        outputs = pool.map(func, prediction_volumes)
+    else:
+        outputs = list()
+        for prediction_volume in prediction_volumes:
+            outputs.append(transform_prediction_target_volumes(prediction_volume=prediction_volume,
+                                                               hcp_directory=directory,
+                                                               output_dir=output_dir,
+                                                               reference_volume_filename=reference_volume,
+                                                               target_basename_template=target_basename,
+                                                               overwrite=overwrite))
+    while None in outputs:
+        outputs.remove(None)
     return outputs
 
 

@@ -28,6 +28,14 @@ def read_namefile(filename):
     return names
 
 
+def save_fig(fig, filename, dpi=1200, extensions=('.jpg', '.pdf'), **kwargs):
+    for extension in extensions:
+        if extension in ('.jpg', '.png'):
+            fig.savefig(filename + extension, dpi=dpi, **kwargs)
+        else:
+            fig.savefig(filename + extension, **kwargs)
+
+
 def main():
     seaborn.set_palette('muted')
     seaborn.set_style('whitegrid')
@@ -119,9 +127,9 @@ def main():
         stats.append([task, metric_name, d_value, p_value])
         print(title, "D-value: {:.2f}\tp-value = {:.8f}".format(d_value, p_value))
         result.append((diag_values.mean() - extra_diag_values.mean())/extra_diag_values.mean())
-    fig.savefig(output_dir + "/correlation_matrices.png")
-    hist_fig.savefig(output_dir + "/correlation_matrices_histograms.png")
-    cbar_fig.savefig(output_dir + "/correlation_matrices_colorbar.png", bbox_inches="tight")
+    save_fig(fig, output_dir + "/correlation_matrices")
+    save_fig(hist_fig, output_dir + "/correlation_matrices_histograms")
+    save_fig(cbar_fig, output_dir + "/correlation_matrices_colorbar", bbox_inches="tight")
 
     # define a seperate collor bar for the average histograms
     avg_cbar_fig, avg_cbar_ax = plt.subplots(figsize=(0.5, 5))
@@ -136,7 +144,7 @@ def main():
                     vmin=avg_vmin, cmap=avg_cmap, cbar_ax=avg_cbar_ax)
     avg_ax.set_ylabel("subjects (predicted)")
     avg_ax.set_xlabel("subjects (actual)")
-    avg_fig.savefig(output_dir + "/correlation_matrix_average.png")
+    save_fig(avg_fig, output_dir + "/correlation_matrix_average")
 
     avg_corr_norm = normalize_correlation_matrix(avg_corr, avg_vmax, avg_vmin, axes=(0, 1))
 
@@ -146,8 +154,8 @@ def main():
                     vmin=avg_vmin, cmap=avg_cmap)
     avg_ax.set_ylabel("subjects (predicted)")
     avg_ax.set_xlabel("subjects (actual)")
-    avg_fig.savefig(output_dir + "/correlation_matrix_average_normalized.png")
-    avg_cbar_fig.savefig(output_dir + "/correlation_matrix_average_colorbar.png", bbox_inches="tight")
+    save_fig(avg_fig, output_dir + "/correlation_matrix_average_normalized")
+    save_fig(avg_cbar_fig, output_dir + "/correlation_matrix_average_colorbar", bbox_inches="tight")
 
     fig, axes = plt.subplots(nrows=n_rows, ncols=plots_per_row, figsize=(plots_per_row*column_height,
                                                                          n_rows*row_height))
@@ -158,7 +166,7 @@ def main():
         seaborn.heatmap(data=normalize_correlation_matrix(corr_matrices[..., i], vmax, vmin, axes=(0, 1)), ax=ax,
                         cbar=False, xticklabels=False, yticklabels=False, vmax=vmax, vmin=vmin, cmap=cmap)
         ax.set_title(title)
-    fig.savefig(output_dir + "/correlation_matrices_normalized.png")
+    save_fig(fig, output_dir + "/correlation_matrices_normalized")
 
     fig, ax = plt.subplots()
     diagonal_mask = np.diag(np.ones(avg_corr.shape[0], dtype=bool))
@@ -171,7 +179,7 @@ def main():
     ax.set_ylabel("Count")
     ax.set_xlabel("Correlation")
     ax.legend()
-    fig.savefig(output_dir + "/average_correlation_histogram.png")
+    save_fig(fig, output_dir + "/average_correlation_histogram")
     d, p = ks_2samp(diag_values, extra_diag_values)
     stats.append(["Average", "ALL", d, p])
     print("D-value: {:.2f}\tp-value = {:.8f}".format(d, p))
@@ -193,7 +201,7 @@ def main():
     ax.legend()
     ax.set_xlabel("Self vs other increase (in %)")
     seaborn.despine(ax=ax, top=True)
-    fig.savefig(output_dir + "/increase_correlation_over_mean_correlation.png", bbox_inches="tight")
+    save_fig(fig, output_dir + "/increase_correlation_over_mean_correlation", bbox_inches="tight")
 
 
 if __name__ == "__main__":

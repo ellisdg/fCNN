@@ -27,6 +27,14 @@ def read_namefile(filename):
     return names
 
 
+def save_fig(fig, filename, dpi=1200, extensions=('.jpg', '.pdf'), **kwargs):
+    for extension in extensions:
+        if extension in ('.jpg', '.png'):
+            fig.savefig(filename + extension, dpi=dpi, **kwargs)
+        else:
+            fig.savefig(filename + extension, **kwargs)
+
+
 def main():
     seaborn.set_palette('muted')
     seaborn.set_style('whitegrid')
@@ -75,13 +83,13 @@ def main():
 
     corr_matrices = np.asarray(correlations)[..., 0]
     plot(corr_matrices, domains, metric_names, method_labels, labels, output_dir, average_per_domain,
-         metric_func=self_vs_other_correlation, output_filename="{}_increase_correlation_over_mean_correlation.png",
+         metric_func=self_vs_other_correlation, output_filename="{}_increase_correlation_over_mean_correlation",
          xlabel="Self vs other increase (in %)")
     plot(corr_matrices, domains, metric_names, method_labels, labels, output_dir, average_per_domain,
-         metric_func=mean_diagonal, output_filename="{}_mean_correlation.png",
+         metric_func=mean_diagonal, output_filename="{}_mean_correlation",
          xlabel="Average correlation (mean diagonal)")
     plot(corr_matrices, domains, metric_names, method_labels, labels, output_dir, average_per_domain,
-         metric_func=normalized_mean_diagonal, output_filename="{}_normalized_mean_correlation.png",
+         metric_func=normalized_mean_diagonal, output_filename="{}_normalized_mean_correlation",
          xlabel="Normalized average correlation")
 
 
@@ -102,7 +110,7 @@ def normalized_mean_diagonal(corr_matrix):
 
 
 def plot(corr_matrices, domains, metric_names, method_labels, labels, output_dir, average_per_domain=True,
-         metric_func=self_vs_other_correlation, output_filename="{}_increase_correlation_over_mean_correlation.png",
+         metric_func=self_vs_other_correlation, output_filename="{}_increase_correlation_over_mean_correlation",
          xlabel="Self vs other increase (in %)"):
     names = list()
     result = list()
@@ -138,8 +146,7 @@ def plot(corr_matrices, domains, metric_names, method_labels, labels, output_dir
     ax.set_xlabel(xlabel)
     ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
     seaborn.despine(ax=ax, top=True)
-    fig.savefig(os.path.join(output_dir, output_filename.format("_".join(labels))),
-                bbox_inches="tight")
+    save_fig(fig, os.path.join(output_dir, output_filename.format("_".join(labels))), bbox_inches="tight")
 
 
 if __name__ == "__main__":

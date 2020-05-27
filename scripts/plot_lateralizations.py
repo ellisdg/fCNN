@@ -28,6 +28,14 @@ def read_namefile(filename):
     return names
 
 
+def save_fig(fig, filename, dpi=1200, extensions=('.jpg', '.pdf'), **kwargs):
+    for extension in extensions:
+        if extension in ('.jpg', '.png'):
+            fig.savefig(filename + extension, dpi=dpi, **kwargs)
+        else:
+            fig.savefig(filename + extension, **kwargs)
+
+
 def main():
     seaborn.set_palette('muted')
     seaborn.set_style('whitegrid')
@@ -74,12 +82,12 @@ def main():
         ax1.legend()
         ax1.set_title(" ".join((task, contrast)))
         # fig.savefig(output_dir + '/lateralization_{task}_{name}_bar.png'.format(task=task, name=contrast))
-        plt.close(fig)
+        # plt.close(fig)
 
         seaborn.regplot(x=predicted, y=actual, color="C3", ax=ax2)
         ax2.set_xlabel(r"RIGHT $\leftarrow$ Predicted Lateralization Index $\rightarrow$ LEFT")
         ax2.set_ylabel(r"RIGHT $\leftarrow$ Actual Lateralization Index $\rightarrow$ LEFT")
-        fig.savefig(output_dir + '/lateralization_{task}_{name}_bar_scatter.png'.format(task=task, name=contrast))
+        save_fig(fig, output_dir + '/lateralization_{task}_{name}_bar_scatter.png'.format(task=task, name=contrast))
         plt.close(fig)
 
         correlation, p_value = pearsonr(predicted, actual)

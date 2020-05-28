@@ -36,6 +36,26 @@ def save_fig(fig, filename, dpi=1200, extensions=('.jpg', '.pdf'), **kwargs):
             fig.savefig(filename + extension, **kwargs)
 
 
+def plot_scatter(predicted, actual, ax, color="C3", title=None):
+    seaborn.regplot(x=predicted, y=actual, color=color, ax=ax)
+    ax.set_xlabel(r"RIGHT $\leftarrow$ Predicted Lateralization Index $\rightarrow$ LEFT")
+    ax.set_ylabel(r"RIGHT $\leftarrow$ Actual Lateralization Index $\rightarrow$ LEFT")
+    if title is not None:
+        ax.set_title(title)
+
+
+def plot_bar(predicted, actual, x, ax, title=None):
+    ax.bar(x=x, height=actual, width=0.5, label="actual")
+    ax.bar(x=x + 0.5, height=predicted, width=0.5, label="predicted")
+    seaborn.despine(ax=ax, top=True, left=False, bottom=False, right=True)
+    ax.axhline(0, color="black", linewidth=1)
+    ax.set_xlabel("Subjects")
+    ax.set_ylabel(r"RIGHT $\leftarrow$ Lateralization Index $\rightarrow$ LEFT")
+    ax.legend()
+    if title is not None:
+        ax.set_title(title)
+
+
 def main():
     seaborn.set_palette('muted')
     seaborn.set_style('whitegrid')
@@ -68,26 +88,26 @@ def main():
         contrast = contrast_names[task_ind]
         fig_width = 18
         fig_height = 6
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(fig_width, fig_height), gridspec_kw={'width_ratios': [2, 1]})
+        title = " ".join((task, contrast))
         x = np.arange(lateralizations.shape[0])
         ind = np.argsort(lateralizations[..., task_ind, 1], axis=0)
         actual = lateralizations[..., task_ind, 1][ind]
         predicted = lateralizations[..., task_ind, 0][ind]
-        ax1.bar(x=x, height=actual, width=0.5, label="actual")
-        ax1.bar(x=x + 0.5, height=predicted, width=0.5, label="predicted")
-        seaborn.despine(ax=ax1, top=True, left=False, bottom=False, right=True)
-        ax1.axhline(0, color="black", linewidth=1)
-        ax1.set_xlabel("Subjects")
-        ax1.set_ylabel(r"RIGHT $\leftarrow$ Lateralization Index $\rightarrow$ LEFT")
-        ax1.legend()
-        ax1.set_title(" ".join((task, contrast)))
-        # fig.savefig(output_dir + '/lateralization_{task}_{name}_bar.png'.format(task=task, name=contrast))
-        # plt.close(fig)
 
-        seaborn.regplot(x=predicted, y=actual, color="C3", ax=ax2)
-        ax2.set_xlabel(r"RIGHT $\leftarrow$ Predicted Lateralization Index $\rightarrow$ LEFT")
-        ax2.set_ylabel(r"RIGHT $\leftarrow$ Actual Lateralization Index $\rightarrow$ LEFT")
-        save_fig(fig, output_dir + '/lateralization_{task}_{name}_bar_scatter.png'.format(task=task, name=contrast))
+        fig_bar, ax_bar = plt.subplots()
+        plot_bar(predicted, actual, x, ax_bar, title=title)
+        save_fig(fig_bar, output_dir + '/lateralization_{task}_{name}_bar'.format(task=task, name=contrast))
+        plt.close(fig_bar)
+
+        fig_scatter, ax_scatter = plt.subplots()
+        plot_scatter(predicted=predicted, actual=actual, color="C3", ax=ax_scatter, title=title)
+        save_fig(fig_scatter, output_dir + '/lateralization_{task}_{name}_scatter'.format(task=task, name=contrast))
+        plt.close(fig_scatter)
+
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(fig_width, fig_height), gridspec_kw={'width_ratios': [2, 1]})
+        plot_bar(predicted, actual, x=x, ax=ax1, title=title)
+        plot_scatter(predicted=predicted, actual=actual, color="C3", ax=ax2)
+        save_fig(fig, output_dir + '/lateralization_{task}_{name}_bar_scatter'.format(task=task, name=contrast))
         plt.close(fig)
 
         correlation, p_value = pearsonr(predicted, actual)

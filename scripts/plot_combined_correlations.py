@@ -108,14 +108,14 @@ def main():
     n_plots = len(metric_names)
     plots_per_row = 6
     n_rows = int(np.ceil(n_plots/plots_per_row))
-    row_height = 4
-    column_width = 4
+    row_height = 3
+    column_width = 3
     fig, axes = plt.subplots(nrows=n_rows, ncols=plots_per_row, figsize=(plots_per_row*column_width,
                                                                          n_rows*row_height))
     hist_fig, hist_axes = plt.subplots(nrows=n_rows, ncols=plots_per_row, figsize=(plots_per_row*column_width,
                                                                                    n_rows*row_height),
                                        sharex=True, sharey=True)
-    cbar_fig, cbar_ax = plt.subplots(figsize=(0.5, 5))
+    cbar_fig, cbar_ax = plt.subplots(figsize=(0.5, row_height))
     cmap = plt.get_cmap("jet")
     # cmap = seaborn.diverging_palette(220, 10, sep=1, center="light", as_cmap=True)
     # cmap = seaborn.cubehelix_palette(n_colors=8, as_cmap=True)
@@ -142,8 +142,8 @@ def main():
         print(title, "D-value: {:.2f}\tp-value = {:.2e}".format(d_value, p_value))
         diag_values, extra_diag_values = extract_diagonal_and_extra_diagonal_elements(corr_matrix)
         result.append((diag_values.mean() - extra_diag_values.mean())/extra_diag_values.mean())
-    save_fig(fig, output_dir + "/correlation_matrices")
-    save_fig(hist_fig, output_dir + "/correlation_matrices_histograms")
+    save_fig(fig, output_dir + "/correlation_matrices", bbox_inches="tight")
+    save_fig(hist_fig, output_dir + "/correlation_matrices_histograms", bbox_inches="tight")
     save_fig(cbar_fig, output_dir + "/correlation_matrices_colorbar", bbox_inches="tight")
 
     # define a separate color bar for the average histograms
@@ -151,7 +151,7 @@ def main():
     avg_cmap = cmap = seaborn.diverging_palette(220, 10, sep=1, center="light", as_cmap=True)
 
     avg_all_fig, (_avg_ax, _avg_cbar_ax, _avg_norm_ax, _avg_hist_ax) = plt.subplots(1, 4,
-                                                                                    figsize=(5, 5 * 3 + 0.5),
+                                                                                    figsize=(5 * 3 + 0.5, 5),
                                                                                     gridspec_kw={'width_ratios': [10,
                                                                                                                   1,
                                                                                                                   10,
@@ -194,7 +194,7 @@ def main():
     d, p = plot_hist(avg_corr, avg_hist_ax, title=None, plot_p_value=True)
     stats.append(["Average", "ALL", d, p])
     print("D-value: {:.2f}\tp-value = {:.2e}".format(d, p))
-    save_fig(avg_hist_fig, output_dir + "/correlation_matrices_normalized")
+    save_fig(avg_hist_fig, output_dir + "/correlation_average_histogram")
 
     _ = plot_hist(avg_corr, _avg_hist_ax, title=None, plot_p_value=True)
 

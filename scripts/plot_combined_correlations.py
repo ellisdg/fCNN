@@ -36,6 +36,28 @@ def save_fig(fig, filename, dpi=1200, extensions=('.pdf',), **kwargs):
             fig.savefig(filename + extension, **kwargs)
 
 
+def extract_diagonal_and_extra_diagonal_elements(matrix):
+    diagonal_mask = np.diag(np.ones(matrix.shape[0], dtype=bool))
+    diag_values = matrix[diagonal_mask]
+    extra_diag_values = matrix[diagonal_mask == False]
+    return diag_values, extra_diag_values
+
+
+def plot_hist(correlations, ax, title=None, plot_p_value=True):
+    diag_values, extra_diag_values = extract_diagonal_and_extra_diagonal_elements(correlations)
+    for m in (extra_diag_values, diag_values):
+        seaborn.distplot(m, ax=ax, kde_kws={"shade": True})
+        if title is not None:
+            ax.set_title(title)
+    ax.set_xlabel("Correlation")
+    ax.set_ylabel("Density")
+    d_value, p_value = ks_2samp(diag_values, extra_diag_values)
+    if plot_p_value:
+        ax.text(1, 1, "p={.2e}".format(p_value), horizontalalignment='right', verticalalignment='top',
+                transform=ax.transAxes)
+    return d_value, p_value
+
+
 def main():
     seaborn.set_palette('muted')
     seaborn.set_style('whitegrid')
@@ -87,10 +109,10 @@ def main():
     plots_per_row = 6
     n_rows = int(np.ceil(n_plots/plots_per_row))
     row_height = 4
-    column_height = 4
-    fig, axes = plt.subplots(nrows=n_rows, ncols=plots_per_row, figsize=(plots_per_row*column_height,
+    column_width = 4
+    fig, axes = plt.subplots(nrows=n_rows, ncols=plots_per_row, figsize=(plots_per_row*column_width,
                                                                          n_rows*row_height))
-    hist_fig, hist_axes = plt.subplots(nrows=n_rows, ncols=plots_per_row, figsize=(plots_per_row*column_height,
+    hist_fig, hist_axes = plt.subplots(nrows=n_rows, ncols=plots_per_row, figsize=(plots_per_row*column_width,
                                                                                    n_rows*row_height),
                                        sharex=True, sharey=True)
     cbar_fig, cbar_ax = plt.subplots(figsize=(0.5, 5))
@@ -115,74 +137,77 @@ def main():
                         vmax=vmax, vmin=vmin, cmap=cmap)
         ax.set_title(title)
         hist_ax = np.ravel(hist_axes)[i]
-        diagonal_mask = np.diag(np.ones(corr_matrix.shape[0], dtype=bool))
-        diag_values = corr_matrix[diagonal_mask]
-        extra_diag_values = corr_matrix[diagonal_mask == False]
-        for m in (extra_diag_values, diag_values):
-            seaborn.distplot(m, ax=hist_ax, kde_kws={"shade": True})
-        hist_ax.set_title(title)
-        hist_ax.set_xlabel("Correlation")
-        hist_ax.set_ylabel("Density")
-        d_value, p_value = ks_2samp(diag_values, extra_diag_values)
+        d_value, p_value = plot_hist(corr_matrix, hist_ax, title=title, plot_p_value=True)
         stats.append([task, metric_name, d_value, p_value])
-        print(title, "D-value: {:.2f}\tp-value = {:.8f}".format(d_value, p_value))
+        print(title, "D-value: {:.2f}\tp-value = {:.2e}".format(d_value, p_value))
+        diag_values, extra_diag_values = extract_diagonal_and_extra_diagonal_elements(corr_matrix)
         result.append((diag_values.mean() - extra_diag_values.mean())/extra_diag_values.mean())
     save_fig(fig, output_dir + "/correlation_matrices")
     save_fig(hist_fig, output_dir + "/correlation_matrices_histograms")
     save_fig(cbar_fig, output_dir + "/correlation_matrices_colorbar", bbox_inches="tight")
 
-    # define a seperate collor bar for the average histograms
+    # define a separate color bar for the average histograms
     avg_cbar_fig, avg_cbar_ax = plt.subplots(figsize=(0.5, 5))
     avg_cmap = cmap = seaborn.diverging_palette(220, 10, sep=1, center="light", as_cmap=True)
 
-    avg_fig, avg_ax = plt.subplots(figsize=(column_height, row_height))
+    avg_all_fig, (_avg_ax, _avg_cbar_ax, _avg_norm_ax, _avg_hist_ax) = plt.subplots(1, 4,
+                                                                                    figsize=(5, 5 * 3 + 0.5),
+                                                                                    gridspec_kw={'width_ratios': [10,
+                                                                                                                  1,
+                                                                                                                  10,
+                                                                                                                  10]})
+
+    avg_fig, avg_ax = plt.subplots(figsize=(column_width, row_height))
     avg_corr = corr_matrices.mean(axis=-1)
     avg_vmax = np.max(avg_corr)
     avg_vmin = np.min(avg_corr)
 
-    seaborn.heatmap(data=avg_corr, ax=avg_ax, xticklabels=False, yticklabels=False, cbar=True, vmax=avg_vmax,
+    seaborn.heatmap(data=avg_corr, ax=avg_ax, xticklabels=True, yticklabels=True, cbar=True, vmax=avg_vmax,
                     vmin=avg_vmin, cmap=avg_cmap, cbar_ax=avg_cbar_ax)
     avg_ax.set_ylabel("subjects (predicted)")
     avg_ax.set_xlabel("subjects (actual)")
-    save_fig(avg_fig, output_dir + "/correlation_matrix_average")
+
+    seaborn.heatmap(data=avg_corr, ax=_avg_ax, xticklabels=True, yticklabels=True, cbar=True, vmax=avg_vmax,
+                    vmin=avg_vmin, cmap=avg_cmap, cbar_ax=_avg_cbar_ax)
+    _avg_ax.set_ylabel("subjects (predicted)")
+    _avg_ax.set_xlabel("subjects (actual)")
 
     avg_corr_norm = normalize_correlation_matrix(avg_corr, avg_vmax, avg_vmin, axes=(0, 1))
 
-    avg_fig, avg_ax = plt.subplots(figsize=(column_height, row_height))
+    avg_norm_fig, avg_norm_ax = plt.subplots(figsize=(column_width, row_height))
 
-    seaborn.heatmap(data=avg_corr_norm, ax=avg_ax, xticklabels=False, yticklabels=False, cbar=False, vmax=avg_vmax,
+    seaborn.heatmap(data=avg_corr_norm, ax=avg_norm_ax, xticklabels=True, yticklabels=True, cbar=False, vmax=avg_vmax,
                     vmin=avg_vmin, cmap=avg_cmap)
     avg_ax.set_ylabel("subjects (predicted)")
     avg_ax.set_xlabel("subjects (actual)")
-    save_fig(avg_fig, output_dir + "/correlation_matrix_average_normalized")
+
+    seaborn.heatmap(data=avg_corr_norm, ax=_avg_norm_ax, xticklabels=True, yticklabels=True, cbar=False, vmax=avg_vmax,
+                    vmin=avg_vmin, cmap=avg_cmap)
+    _avg_ax.set_ylabel("subjects (predicted)")
+    _avg_ax.set_xlabel("subjects (actual)")
+
+    save_fig(avg_fig, output_dir + "/correlation_matrix_average")
+    save_fig(avg_norm_fig, output_dir + "/correlation_matrix_average_normalized")
     save_fig(avg_cbar_fig, output_dir + "/correlation_matrix_average_colorbar", bbox_inches="tight")
 
-    fig, axes = plt.subplots(nrows=n_rows, ncols=plots_per_row, figsize=(plots_per_row*column_height,
-                                                                         n_rows*row_height))
+    avg_hist_fig, avg_hist_ax = plt.subplots()
+    d, p = plot_hist(avg_corr, avg_hist_ax, title=None, plot_p_value=True)
+    stats.append(["Average", "ALL", d, p])
+    print("D-value: {:.2f}\tp-value = {:.2e}".format(d, p))
+    save_fig(avg_hist_fig, output_dir + "/correlation_matrices_normalized")
 
+    _ = plot_hist(avg_corr, _avg_hist_ax, title=None, plot_p_value=True)
+
+    save_fig(avg_all_fig, output_dir + "/correlation_average_panel")
+
+    fig, axes = plt.subplots(nrows=n_rows, ncols=plots_per_row, figsize=(plots_per_row*column_width,
+                                                                         n_rows*row_height))
     for i, (task, metric_name) in enumerate(zip(tasks, metric_names)):
         title = "{task} ".format(task=task) + metric_name
         ax = np.ravel(axes)[i]
         seaborn.heatmap(data=normalize_correlation_matrix(corr_matrices[..., i], vmax, vmin, axes=(0, 1)), ax=ax,
                         cbar=False, xticklabels=False, yticklabels=False, vmax=vmax, vmin=vmin, cmap=cmap)
         ax.set_title(title)
-    save_fig(fig, output_dir + "/correlation_matrices_normalized")
-
-    fig, ax = plt.subplots()
-    diagonal_mask = np.diag(np.ones(avg_corr.shape[0], dtype=bool))
-    diag_values = avg_corr[diagonal_mask]
-    extra_diag_values = avg_corr[diagonal_mask == False]
-
-    _ = seaborn.distplot(extra_diag_values, kde_kws={"shade": True}, ax=ax, label="predicted vs other subjects")
-    _ = seaborn.distplot(diag_values, kde_kws={"shade": True}, ax=ax, label="predicted vs actual")
-
-    ax.set_ylabel("Count")
-    ax.set_xlabel("Correlation")
-    ax.legend()
-    save_fig(fig, output_dir + "/average_correlation_histogram")
-    d, p = ks_2samp(diag_values, extra_diag_values)
-    stats.append(["Average", "ALL", d, p])
-    print("D-value: {:.2f}\tp-value = {:.8f}".format(d, p))
 
     if stats_filename is not None:
         stats_df = pd.DataFrame(stats, columns=["Task", "Contrast", "D-Value", "P-Value"])

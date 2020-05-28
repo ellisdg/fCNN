@@ -142,8 +142,8 @@ def main():
         print(title, "D-value: {:.2f}\tp-value = {:.2e}".format(d_value, p_value))
         diag_values, extra_diag_values = extract_diagonal_and_extra_diagonal_elements(corr_matrix)
         result.append((diag_values.mean() - extra_diag_values.mean())/extra_diag_values.mean())
-    save_fig(fig, output_dir + "/correlation_matrices", bbox_inches="tight")
-    save_fig(hist_fig, output_dir + "/correlation_matrices_histograms", bbox_inches="tight")
+    save_fig(fig, output_dir + "/correlation_matrices")
+    save_fig(hist_fig, output_dir + "/correlation_matrices_histograms")
     save_fig(cbar_fig, output_dir + "/correlation_matrices_colorbar", bbox_inches="tight")
 
     # define a separate color bar for the average histograms
@@ -162,12 +162,12 @@ def main():
     avg_vmax = np.max(avg_corr)
     avg_vmin = np.min(avg_corr)
 
-    seaborn.heatmap(data=avg_corr, ax=avg_ax, xticklabels=True, yticklabels=True, cbar=True, vmax=avg_vmax,
+    seaborn.heatmap(data=avg_corr, ax=avg_ax, xticklabels=False, yticklabels=False, cbar=True, vmax=avg_vmax,
                     vmin=avg_vmin, cmap=avg_cmap, cbar_ax=avg_cbar_ax)
     avg_ax.set_ylabel("subjects (predicted)")
     avg_ax.set_xlabel("subjects (actual)")
 
-    seaborn.heatmap(data=avg_corr, ax=_avg_ax, xticklabels=True, yticklabels=True, cbar=True, vmax=avg_vmax,
+    seaborn.heatmap(data=avg_corr, ax=_avg_ax, xticklabels=False, yticklabels=False, cbar=True, vmax=avg_vmax,
                     vmin=avg_vmin, cmap=avg_cmap, cbar_ax=_avg_cbar_ax)
     _avg_ax.set_ylabel("subjects (predicted)")
     _avg_ax.set_xlabel("subjects (actual)")
@@ -176,12 +176,12 @@ def main():
 
     avg_norm_fig, avg_norm_ax = plt.subplots(figsize=(column_width, row_height))
 
-    seaborn.heatmap(data=avg_corr_norm, ax=avg_norm_ax, xticklabels=True, yticklabels=True, cbar=False, vmax=avg_vmax,
+    seaborn.heatmap(data=avg_corr_norm, ax=avg_norm_ax, xticklabels=False, yticklabels=False, cbar=False, vmax=avg_vmax,
                     vmin=avg_vmin, cmap=avg_cmap)
     avg_ax.set_ylabel("subjects (predicted)")
     avg_ax.set_xlabel("subjects (actual)")
 
-    seaborn.heatmap(data=avg_corr_norm, ax=_avg_norm_ax, xticklabels=True, yticklabels=True, cbar=False, vmax=avg_vmax,
+    seaborn.heatmap(data=avg_corr_norm, ax=_avg_norm_ax, xticklabels=False, yticklabels=False, cbar=False, vmax=avg_vmax,
                     vmin=avg_vmin, cmap=avg_cmap)
     _avg_ax.set_ylabel("subjects (predicted)")
     _avg_ax.set_xlabel("subjects (actual)")
@@ -194,7 +194,7 @@ def main():
     d, p = plot_hist(avg_corr, avg_hist_ax, title=None, plot_p_value=True)
     stats.append(["Average", "ALL", d, p])
     print("D-value: {:.2f}\tp-value = {:.2e}".format(d, p))
-    save_fig(avg_hist_fig, output_dir + "/correlation_average_histogram")
+    save_fig(avg_hist_fig, output_dir + "/correlation_average_histogram", bbox_inches="tight")
 
     _ = plot_hist(avg_corr, _avg_hist_ax, title=None, plot_p_value=True)
 
@@ -208,6 +208,7 @@ def main():
         seaborn.heatmap(data=normalize_correlation_matrix(corr_matrices[..., i], vmax, vmin, axes=(0, 1)), ax=ax,
                         cbar=False, xticklabels=False, yticklabels=False, vmax=vmax, vmin=vmin, cmap=cmap)
         ax.set_title(title)
+    save_fig(avg_all_fig, output_dir + "/correlation_matrices_normalized")
 
     if stats_filename is not None:
         stats_df = pd.DataFrame(stats, columns=["Task", "Contrast", "D-Value", "P-Value"])

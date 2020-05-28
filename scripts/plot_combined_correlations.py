@@ -148,7 +148,7 @@ def main():
 
     # define a separate color bar for the average histograms
     avg_cbar_fig, avg_cbar_ax = plt.subplots(figsize=(0.5, 5))
-    avg_cmap = cmap = seaborn.diverging_palette(220, 10, sep=1, center="light", as_cmap=True)
+    avg_cmap = seaborn.diverging_palette(220, 10, sep=1, center="light", as_cmap=True)
 
     avg_all_fig, (_avg_ax, _avg_cbar_ax, _avg_norm_ax, _avg_hist_ax) = plt.subplots(1, 4,
                                                                                     figsize=(5 * 3 + 0.5, 5),

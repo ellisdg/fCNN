@@ -53,7 +53,7 @@ def plot_hist(correlations, ax, title=None, plot_p_value=True):
     ax.set_ylabel("Density")
     d_value, p_value = ks_2samp(diag_values, extra_diag_values)
     if plot_p_value:
-        ax.text(1, 1, "p={.2e}".format(p_value), horizontalalignment='right', verticalalignment='top',
+        ax.text(1, 1, "p={:.2e}".format(p_value), horizontalalignment='right', verticalalignment='top',
                 transform=ax.transAxes)
     return d_value, p_value
 

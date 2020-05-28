@@ -122,7 +122,7 @@ def main():
             seaborn.distplot(m, ax=hist_ax, kde_kws={"shade": True})
         hist_ax.set_title(title)
         hist_ax.set_xlabel("Correlation")
-        hist_ax.set_ylabel("Count")
+        hist_ax.set_ylabel("Density")
         d_value, p_value = ks_2samp(diag_values, extra_diag_values)
         stats.append([task, metric_name, d_value, p_value])
         print(title, "D-value: {:.2f}\tp-value = {:.8f}".format(d_value, p_value))

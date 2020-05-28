@@ -4,7 +4,6 @@ import os
 from scipy.stats import ks_2samp, pearsonr
 import numpy as np
 import sys
-from functools import reduce
 import pandas as pd
 
 
@@ -28,7 +27,7 @@ def read_namefile(filename):
     return names
 
 
-def save_fig(fig, filename, dpi=1200, extensions=('.jpg', '.pdf'), **kwargs):
+def save_fig(fig, filename, dpi=1200, extensions=('.png', '.pdf'), **kwargs):
     for extension in extensions:
         if extension in ('.jpg', '.png'):
             fig.savefig(filename + extension, dpi=dpi, **kwargs)

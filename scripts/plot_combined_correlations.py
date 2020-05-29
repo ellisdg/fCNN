@@ -182,11 +182,12 @@ def main():
     avg_cmap = seaborn.diverging_palette(220, 10, sep=1, center="light", as_cmap=True)
 
     avg_all_fig, (_avg_ax, _avg_cbar_ax, _avg_norm_ax, _avg_hist_ax) = plt.subplots(1, 4,
-                                                                                    figsize=(5 * 3 + 1, 5),
-                                                                                    gridspec_kw={'width_ratios': [5,
+                                                                                    figsize=(5 * 3 + 0.5, 5),
+                                                                                    gridspec_kw={'width_ratios': [10,
                                                                                                                   1,
-                                                                                                                  5,
-                                                                                                                  5]})
+                                                                                                                  10,
+                                                                                                                  10],
+                                                                                                 'wspace': 0.1})
 
     avg_fig, avg_ax = plt.subplots(figsize=(column_width, row_height))
     avg_corr = corr_matrices.mean(axis=-1)

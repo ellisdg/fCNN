@@ -219,7 +219,7 @@ def main():
 
     _ = plot_hist(avg_corr, _avg_hist_ax, title=None, plot_p_value=True)
 
-    save_fig(avg_all_fig, output_dir + "/correlation_average_panel", bbox_inches="tight")
+    save_fig(avg_all_fig, output_dir + "/correlation_average_panel")
 
     if stats_filename is not None:
         stats_df = pd.DataFrame(stats, columns=["Task", "Contrast", "D-Value", "P-Value"])

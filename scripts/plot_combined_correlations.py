@@ -77,7 +77,6 @@ def plot_heatmap(data, ax, vmin, vmax, cmap, cbar=True, cbar_ax=None, set_xlabel
         ax.set_title(title)
     if set_xlabel:
         ax.set_xlabel(xlabel)
-        ax.set_yticklabels(ax.get_yticklabels(), rotation=0)
     if set_ylabel:
         ax.set_ylabel(ylabel)
 
@@ -164,7 +163,8 @@ def main():
         plot_heatmap(data=corr_matrix, ax=ax, cbar=cbar, cbar_ax=cbar_ax, set_xlabel=set_xlabel, set_ylabel=set_ylabel,
                      vmax=vmax, vmin=vmin, cmap=cmap, title=title)
         plot_heatmap(data=normalize_correlation_matrix(corr_matrix, vmax, vmin, axes=(0, 1)), ax=np.ravel(norm_axes)[i],
-                     cbar=False, set_xlabel=set_xlabel, set_ylabel=set_ylabel, vmax=vmax, vmin=vmin, cmap=cmap)
+                     cbar=False, set_xlabel=set_xlabel, set_ylabel=set_ylabel, vmax=vmax, vmin=vmin, cmap=cmap,
+                     title=title)
         hist_ax = np.ravel(hist_axes)[i]
         d_value, p_value = plot_hist(corr_matrix, hist_ax, set_ylabel=set_ylabel, set_xlabel=set_xlabel, title=title,
                                      plot_p_value=True, p_value_fontsize=14)
@@ -182,11 +182,11 @@ def main():
     avg_cmap = seaborn.diverging_palette(220, 10, sep=1, center="light", as_cmap=True)
 
     avg_all_fig, (_avg_ax, _avg_cbar_ax, _avg_norm_ax, _avg_hist_ax) = plt.subplots(1, 4,
-                                                                                    figsize=(5 * 3 + 0.5, 5),
-                                                                                    gridspec_kw={'width_ratios': [10,
+                                                                                    figsize=(5 * 3 + 1, 5),
+                                                                                    gridspec_kw={'width_ratios': [5,
                                                                                                                   1,
-                                                                                                                  10,
-                                                                                                                  10]})
+                                                                                                                  5,
+                                                                                                                  5]})
 
     avg_fig, avg_ax = plt.subplots(figsize=(column_width, row_height))
     avg_corr = corr_matrices.mean(axis=-1)
@@ -218,8 +218,7 @@ def main():
 
     _ = plot_hist(avg_corr, _avg_hist_ax, title=None, plot_p_value=True)
 
-    plt.tight_layout(pad=2)
-    save_fig(avg_all_fig, output_dir + "/correlation_average_panel")
+    save_fig(avg_all_fig, output_dir + "/correlation_average_panel", bbox_inches="tight")
 
     if stats_filename is not None:
         stats_df = pd.DataFrame(stats, columns=["Task", "Contrast", "D-Value", "P-Value"])

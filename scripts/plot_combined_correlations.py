@@ -43,7 +43,8 @@ def extract_diagonal_and_extra_diagonal_elements(matrix):
     return diag_values, extra_diag_values
 
 
-def plot_hist(correlations, ax, set_xlabel=True, set_ylabel=True, title=None, plot_p_value=True):
+def plot_hist(correlations, ax, set_xlabel=True, set_ylabel=True, title=None, plot_p_value=True,
+              p_value_fontsize='normal'):
     diag_values, extra_diag_values = extract_diagonal_and_extra_diagonal_elements(correlations)
     for m in (extra_diag_values, diag_values):
         seaborn.distplot(m, ax=ax, kde_kws={"shade": True})
@@ -56,7 +57,7 @@ def plot_hist(correlations, ax, set_xlabel=True, set_ylabel=True, title=None, pl
     d_value, p_value = ks_2samp(diag_values, extra_diag_values)
     if plot_p_value:
         ax.text(1, 1, "p={:.2e}".format(p_value), horizontalalignment='right', verticalalignment='top',
-                transform=ax.transAxes)
+                transform=ax.transAxes, fontsize=p_value_fontsize)
     return d_value, p_value
 
 
@@ -76,6 +77,7 @@ def plot_heatmap(data, ax, vmin, vmax, cmap, cbar=True, cbar_ax=None, set_xlabel
         ax.set_title(title)
     if set_xlabel:
         ax.set_xlabel(xlabel)
+        ax.set_yticklabels(ax.get_yticklabels(), rotation=0)
     if set_ylabel:
         ax.set_ylabel(ylabel)
 
@@ -165,7 +167,7 @@ def main():
                      cbar=False, set_xlabel=set_xlabel, set_ylabel=set_ylabel, vmax=vmax, vmin=vmin, cmap=cmap)
         hist_ax = np.ravel(hist_axes)[i]
         d_value, p_value = plot_hist(corr_matrix, hist_ax, set_ylabel=set_ylabel, set_xlabel=set_xlabel, title=title,
-                                     plot_p_value=True)
+                                     plot_p_value=True, p_value_fontsize=14)
         stats.append([task, metric_name, d_value, p_value])
         print(title, "D-value: {:.2f}\tp-value = {:.2e}".format(d_value, p_value))
         diag_values, extra_diag_values = extract_diagonal_and_extra_diagonal_elements(corr_matrix)
@@ -216,7 +218,8 @@ def main():
 
     _ = plot_hist(avg_corr, _avg_hist_ax, title=None, plot_p_value=True)
 
-    save_fig(avg_all_fig, output_dir + "/correlation_average_panel", bbox_inches="tight")
+    plt.tight_layout(pad=2)
+    save_fig(avg_all_fig, output_dir + "/correlation_average_panel")
 
     if stats_filename is not None:
         stats_df = pd.DataFrame(stats, columns=["Task", "Contrast", "D-Value", "P-Value"])

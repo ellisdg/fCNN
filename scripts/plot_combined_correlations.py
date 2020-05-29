@@ -149,17 +149,25 @@ def main():
     names = list()
     result = list()
     stats = list()
-    for i, (task, metric_name) in enumerate(zip(tasks, metric_names)):
-        set_ylabel = (i % plots_per_row) == 0
-        set_xlabel = (i / plots_per_row) >= (n_rows - 1)
-        title = task + " " + metric_name
-        names.append(title)
+    n_empty_plots = plots_per_row * n_rows - len(tasks)
+    for i in range(n_rows * plots_per_row):
         ax = np.ravel(axes)[i]
+        try:
+            corr_matrix = corr_matrices[..., i]
+            task = tasks[i]
+            metric_name = metric_names[i]
+            title = task + " " + metric_name
+            names.append(title)
+        except IndexError:
+            ax.axis("off")
+            continue
+        set_ylabel = (i % plots_per_row) == 0
+        set_xlabel = ((i + n_empty_plots) / plots_per_row) >= (n_rows - 1)
         if i + 1 == len(metric_names):
             cbar = True
         else:
             cbar = False
-        corr_matrix = corr_matrices[..., i]
+
         plot_heatmap(data=corr_matrix, ax=ax, cbar=cbar, cbar_ax=cbar_ax, set_xlabel=set_xlabel, set_ylabel=set_ylabel,
                      vmax=vmax, vmin=vmin, cmap=cmap, title=title)
         plot_heatmap(data=normalize_correlation_matrix(corr_matrix, vmax, vmin, axes=(0, 1)), ax=np.ravel(norm_axes)[i],
@@ -167,7 +175,7 @@ def main():
                      title=title)
         hist_ax = np.ravel(hist_axes)[i]
         d_value, p_value = plot_hist(corr_matrix, hist_ax, set_ylabel=set_ylabel, set_xlabel=set_xlabel, title=title,
-                                     plot_p_value=True, p_value_fontsize="medium")
+                                     plot_p_value=True, p_value_fontsize="large")
         stats.append([task, metric_name, d_value, p_value])
         print(title, "D-value: {:.2f}\tp-value = {:.2e}".format(d_value, p_value))
         diag_values, extra_diag_values = extract_diagonal_and_extra_diagonal_elements(corr_matrix)
@@ -187,7 +195,7 @@ def main():
                                                                                                                   1,
                                                                                                                   10,
                                                                                                                   10],
-                                                                                                 'wspace': 0.1})
+                                                                                                 'wspace': 0.5})
 
     avg_fig, avg_ax = plt.subplots(figsize=(column_width, row_height))
     avg_corr = corr_matrices.mean(axis=-1)
@@ -198,7 +206,7 @@ def main():
                  vmin=avg_vmin, cmap=avg_cmap, cbar_ax=avg_cbar_ax)
 
     plot_heatmap(data=avg_corr, ax=_avg_ax, set_xlabel=True, set_ylabel=True, cbar=True, vmax=avg_vmax,
-                    vmin=avg_vmin, cmap=avg_cmap, cbar_ax=_avg_cbar_ax)
+                 vmin=avg_vmin, cmap=avg_cmap, cbar_ax=_avg_cbar_ax)
 
     avg_corr_norm = normalize_correlation_matrix(avg_corr, avg_vmax, avg_vmin, axes=(0, 1))
     avg_norm_fig, avg_norm_ax = plt.subplots(figsize=(column_width, row_height))

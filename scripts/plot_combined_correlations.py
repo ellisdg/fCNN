@@ -167,7 +167,7 @@ def main():
                      title=title)
         hist_ax = np.ravel(hist_axes)[i]
         d_value, p_value = plot_hist(corr_matrix, hist_ax, set_ylabel=set_ylabel, set_xlabel=set_xlabel, title=title,
-                                     plot_p_value=True, p_value_fontsize=14)
+                                     plot_p_value=True, p_value_fontsize="large")
         stats.append([task, metric_name, d_value, p_value])
         print(title, "D-value: {:.2f}\tp-value = {:.2e}".format(d_value, p_value))
         diag_values, extra_diag_values = extract_diagonal_and_extra_diagonal_elements(corr_matrix)

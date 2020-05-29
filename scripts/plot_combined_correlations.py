@@ -152,6 +152,8 @@ def main():
     n_empty_plots = plots_per_row * n_rows - len(tasks)
     for i in range(n_rows * plots_per_row):
         ax = np.ravel(axes)[i]
+        norm_ax = np.ravel(norm_axes)[i]
+        hist_ax = np.ravel(hist_axes)[i]
         try:
             corr_matrix = corr_matrices[..., i]
             task = tasks[i]
@@ -160,6 +162,8 @@ def main():
             names.append(title)
         except IndexError:
             ax.axis("off")
+            norm_ax.axis("off")
+            hist_ax.axis("off")
             continue
         set_ylabel = (i % plots_per_row) == 0
         set_xlabel = ((i + n_empty_plots) / plots_per_row) >= (n_rows - 1)
@@ -167,13 +171,11 @@ def main():
             cbar = True
         else:
             cbar = False
-
         plot_heatmap(data=corr_matrix, ax=ax, cbar=cbar, cbar_ax=cbar_ax, set_xlabel=set_xlabel, set_ylabel=set_ylabel,
                      vmax=vmax, vmin=vmin, cmap=cmap, title=title)
-        plot_heatmap(data=normalize_correlation_matrix(corr_matrix, vmax, vmin, axes=(0, 1)), ax=np.ravel(norm_axes)[i],
+        plot_heatmap(data=normalize_correlation_matrix(corr_matrix, vmax, vmin, axes=(0, 1)), ax=norm_ax,
                      cbar=False, set_xlabel=set_xlabel, set_ylabel=set_ylabel, vmax=vmax, vmin=vmin, cmap=cmap,
                      title=title)
-        hist_ax = np.ravel(hist_axes)[i]
         d_value, p_value = plot_hist(corr_matrix, hist_ax, set_ylabel=set_ylabel, set_xlabel=set_xlabel, title=title,
                                      plot_p_value=True, p_value_fontsize="large")
         stats.append([task, metric_name, d_value, p_value])

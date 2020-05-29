@@ -64,18 +64,20 @@ def plot_heatmap(data, ax, vmin, vmax, cmap, cbar=True, cbar_ax=None, set_xlabel
                  tick_label_spacing=25, xlabel="Subjects (actual)", ylabel="Subjects (predicted)"):
     if set_xlabel:
         xticklabels = tick_label_spacing
-        ax.set_xlabel(xlabel)
     else:
         xticklabels = False
     if set_ylabel:
         yticklabels = tick_label_spacing
-        ax.set_ylabel(ylabel)
     else:
         yticklabels = False
     seaborn.heatmap(data=data, ax=ax, cbar=cbar, cbar_ax=cbar_ax, xticklabels=xticklabels, yticklabels=yticklabels,
                     vmax=vmax, vmin=vmin, cmap=cmap)
     if title is not None:
         ax.set_title(title)
+    if set_xlabel:
+        ax.set_xlabel(xlabel)
+    if set_ylabel:
+        ax.set_ylabel(ylabel)
 
 
 def main():
@@ -132,6 +134,8 @@ def main():
     column_width = 3
     fig, axes = plt.subplots(nrows=n_rows, ncols=plots_per_row, figsize=(plots_per_row*column_width,
                                                                          n_rows*row_height))
+    norm_fig, norm_axes = plt.subplots(nrows=n_rows, ncols=plots_per_row, figsize=(plots_per_row*column_width,
+                                                                                   n_rows*row_height))
     hist_fig, hist_axes = plt.subplots(nrows=n_rows, ncols=plots_per_row, figsize=(plots_per_row*column_width,
                                                                                    n_rows*row_height),
                                        sharex=True, sharey=True)
@@ -157,7 +161,8 @@ def main():
         corr_matrix = corr_matrices[..., i]
         plot_heatmap(data=corr_matrix, ax=ax, cbar=cbar, cbar_ax=cbar_ax, set_xlabel=set_xlabel, set_ylabel=set_ylabel,
                      vmax=vmax, vmin=vmin, cmap=cmap, title=title)
-
+        plot_heatmap(data=normalize_correlation_matrix(corr_matrix, vmax, vmin, axes=(0, 1)), ax=np.ravel(norm_axes)[i],
+                     cbar=False, set_xlabel=set_xlabel, set_ylabel=set_ylabel, vmax=vmax, vmin=vmin, cmap=cmap)
         hist_ax = np.ravel(hist_axes)[i]
         d_value, p_value = plot_hist(corr_matrix, hist_ax, set_ylabel=set_ylabel, set_xlabel=set_xlabel, title=title,
                                      plot_p_value=True)
@@ -168,6 +173,7 @@ def main():
     save_fig(fig, output_dir + "/correlation_matrices", bbox_inches="tight")
     save_fig(hist_fig, output_dir + "/correlation_matrices_histograms", bbox_inches="tight")
     save_fig(cbar_fig, output_dir + "/correlation_matrices_colorbar", bbox_inches="tight")
+    save_fig(norm_fig, output_dir + "/correlation_matrices_normalized", bbox_inches="tight")
 
     # define a separate color bar for the average histograms
     avg_cbar_fig, avg_cbar_ax = plt.subplots(figsize=(0.5, 5))
@@ -211,16 +217,6 @@ def main():
     _ = plot_hist(avg_corr, _avg_hist_ax, title=None, plot_p_value=True)
 
     save_fig(avg_all_fig, output_dir + "/correlation_average_panel", bbox_inches="tight")
-
-    fig, axes = plt.subplots(nrows=n_rows, ncols=plots_per_row, figsize=(plots_per_row*column_width,
-                                                                         n_rows*row_height))
-    for i, (task, metric_name) in enumerate(zip(tasks, metric_names)):
-        title = "{task} ".format(task=task) + metric_name
-        ax = np.ravel(axes)[i]
-        seaborn.heatmap(data=normalize_correlation_matrix(corr_matrices[..., i], vmax, vmin, axes=(0, 1)), ax=ax,
-                        cbar=False, xticklabels=False, yticklabels=False, vmax=vmax, vmin=vmin, cmap=cmap)
-        ax.set_title(title)
-    save_fig(fig, output_dir + "/correlation_matrices_normalized", bbox_inches="tight")
 
     if stats_filename is not None:
         stats_df = pd.DataFrame(stats, columns=["Task", "Contrast", "D-Value", "P-Value"])

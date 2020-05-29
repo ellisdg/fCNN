@@ -193,12 +193,11 @@ def main():
     avg_cmap = seaborn.diverging_palette(220, 10, sep=1, center="light", as_cmap=True)
 
     avg_all_fig, (_avg_ax, _avg_cbar_ax, _avg_norm_ax, _avg_hist_ax) = plt.subplots(1, 4,
-                                                                                    figsize=(5 * 3 + 0.5, 5),
-                                                                                    gridspec_kw={'width_ratios': [10,
+                                                                                    figsize=(5 * 3 + 1, 5),
+                                                                                    gridspec_kw={'width_ratios': [5,
                                                                                                                   1,
-                                                                                                                  10,
-                                                                                                                  10],
-                                                                                                 'wspace': 0.5})
+                                                                                                                  5,
+                                                                                                                  5]})
 
     avg_fig, avg_ax = plt.subplots(figsize=(column_width, row_height))
     avg_corr = corr_matrices.mean(axis=-1)
@@ -208,9 +207,9 @@ def main():
     plot_heatmap(data=avg_corr, ax=avg_ax, set_xlabel=True, set_ylabel=True, cbar=True, vmax=avg_vmax,
                  vmin=avg_vmin, cmap=avg_cmap, cbar_ax=avg_cbar_ax)
 
-    plot_heatmap(data=avg_corr, ax=_avg_ax, set_xlabel=True, set_ylabel=True, cbar=True, vmax=avg_vmax,
-                 vmin=avg_vmin, cmap=avg_cmap, cbar_ax=_avg_cbar_ax)
-
+    plot_heatmap(data=avg_corr, ax=_avg_ax, set_xlabel=True, set_ylabel=True, cbar=False, vmax=avg_vmax,
+                 vmin=avg_vmin, cmap=avg_cmap)
+    _avg_cbar_ax.axis("off")
     avg_corr_norm = normalize_correlation_matrix(avg_corr, avg_vmax, avg_vmin, axes=(0, 1))
     avg_norm_fig, avg_norm_ax = plt.subplots(figsize=(column_width, row_height))
     plot_heatmap(data=avg_corr_norm, ax=avg_norm_ax, set_xlabel=True, set_ylabel=True, cbar=False, vmax=avg_vmax,

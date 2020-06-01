@@ -23,7 +23,7 @@ def main(args):
     config = load_json(args[3])
     n_threads = int(args[4])
     dir_name = "MNINonLinear"
-    overwrite = True
+    overwrite = False
     transformed = transform_prediction_dir(prediction_dir=prediction_directory, directory=directory,
                                            reference_volume=reference_volume, dir_name=dir_name, overwrite=overwrite,
                                            target_basename=config["target_basenames"], pool_size=n_threads)

@@ -1,4 +1,5 @@
 import os
+import time
 import numpy as np
 import nibabel as nib
 import pandas as pd
@@ -286,7 +287,8 @@ def pytorch_whole_brain_autoencoder_predictions(model_filename, model_name, n_fe
                                                 criterion_name, prediction_dir=None, output_csv=None, reference=None,
                                                 n_gpus=1, n_workers=1, batch_size=1, model_kwargs=None, n_outputs=None,
                                                 sequence_kwargs=None, spacing=None, sequence=None,
-                                                strict_model_loading=True, metric_names=None):
+                                                strict_model_loading=True, metric_names=None,
+                                                print_prediction_time=True):
     from .train.pytorch import load_criterion
     from fcnn.models.pytorch.build import build_or_load_model
     from .utils.pytorch.dataset import AEDataset
@@ -323,10 +325,15 @@ def pytorch_whole_brain_autoencoder_predictions(model_filename, model_name, n_fe
             if n_gpus > 0:
                 x = x.cuda()
                 y = y.cuda()
+            start = time.time()
             try:
                 pred_x = model.test(x)
             except AttributeError:
+                start = time.time()
                 pred_x = model(x)
+            end = time.time()
+            if print_prediction_time:
+                print("Prediction time: {:.2f}s".format(end - start))
             if type(pred_x) == tuple:
                 pred_x, mu, logvar = pred_x
                 mu = mu.cpu().numpy()

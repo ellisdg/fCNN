@@ -14,7 +14,7 @@ def parse_args():
     parser.add_argument('--output_filename', help='output filename with "{group}" and "{operation}" used as '
                                                   'placeholders.')
 
-    return parser.parse_args()
+    return vars(parser.parse_args())
 
 
 def run_command(cmd):

@@ -13,7 +13,7 @@ def parse_args():
                              '"{subject}" should be used as a placeholder for the subject ID.')
     parser.add_argument('--output_filename', help='output filename with "{group}" and "{operation}" used as '
                                                   'placeholders.')
-
+    parser.add_argument('--overwrite', action="store_true", default=False)
     return vars(parser.parse_args())
 
 
@@ -50,14 +50,27 @@ def compute_std(output_filename, mean_filename, subjects, cifti_template, overwr
         run_command(cmd)
 
 
+def compute_cv(output_filename, mean_filename, std_filename, overwrite=False):
+    if not os.path.exists(output_filename) and not overwrite:
+        expression = "std/mean"
+        cmd = ["wm_command", "-cifti-math", expression, output_filename,
+               "-var", "std", std_filename,
+               "-var", "mean", mean_filename]
+        run_command(cmd)
+
+
 def main():
     args = parse_args()
     mean_filename = args['output_filename'].format(group=args['group'], operation="mean")
     subjects = load_json(args['subjects_filename'])[args['group']]
-    compute_mean(output_filename=mean_filename, subjects=subjects, cifti_template=args['template'])
+    compute_mean(output_filename=mean_filename, subjects=subjects, cifti_template=args['template'],
+                 overwrite=args["overwrite"])
     std_filename = args['output_filename'].format(group=args['group'], operation="std")
     compute_std(output_filename=std_filename, mean_filename=mean_filename, subjects=subjects,
-                cifti_template=args['template'])
+                cifti_template=args['template'], overwrite=args['overwrite'])
+    cv_filename = args['output_filename'].format(group=args['group'], operation="cv")
+    compute_cv(output_filename=cv_filename, mean_filename=mean_filename, std_filename=std_filename,
+               overwrite=args['overwrite'])
 
 
 if __name__ == "__main__":

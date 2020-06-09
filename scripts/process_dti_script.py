@@ -11,8 +11,8 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--subjects_filename')
     parser.add_argument('--group')
-    parser.add_argument('--hcp-dir')
-    parser.add_argument('--multi-b-value', action='store_true', default=False)
+    parser.add_argument('--hcp_dir')
+    parser.add_argument('--multi_b_value', action='store_true', default=False)
     parser.add_argument('--nthreads', type=int, default=1)
     return vars(parser.parse_args())
 
@@ -21,10 +21,10 @@ def main():
     args = parse_args()
     group = args['group']
     subjects = load_json(args["subjects_filename"])[group]
-    hcp_dir = args["hcp-dir"]
+    hcp_dir = args["hcp_dir"]
     subject_dirs = [os.path.join(hcp_dir, subject) for subject in subjects]
-    pool = Pool(args['n_threads'])
-    if args['multi-b-value']:
+    pool = Pool(args['nthreads'])
+    if args['multi_b_value']:
         process_func = process_multi_b_value_dti
     else:
         process_func = process_dti

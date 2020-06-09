@@ -53,7 +53,7 @@ def compute_std(output_filename, mean_filename, subjects, cifti_template, overwr
 def compute_cv(output_filename, mean_filename, std_filename, overwrite=False):
     if not os.path.exists(output_filename) and not overwrite:
         expression = "std/mean"
-        cmd = ["wm_command", "-cifti-math", expression, output_filename,
+        cmd = ["wb_command", "-cifti-math", expression, output_filename,
                "-var", "std", std_filename,
                "-var", "mean", mean_filename]
         run_command(cmd)

@@ -14,6 +14,15 @@ def normalize_correlation_matrix_by_axis(matrix, new_max, new_min, axis=0):
     return matrix
 
 
+def p_value_to_string(p_value, decimals=3):
+    lower_limit = 10**(-decimals)
+    if p_value >= lower_limit:
+        p_value_string = ("{:." + str(decimals) + "f}").format(p_value)[1:]
+        return "p=" + p_value_string
+    else:
+        return "p<" + str(lower_limit)[1:]
+
+
 def normalize_correlation_matrix(matrix, new_max, new_min, axes=(0, 1)):
     for axis in axes:
         matrix = normalize_correlation_matrix_by_axis(matrix, new_max, new_min, axis=axis)
@@ -57,8 +66,8 @@ def plot_hist(correlations, ax, set_xlabel=True, set_ylabel=True, title=None, pl
         ax.set_ylabel("Density")
     d_value, p_value = ks_2samp(diag_values, extra_diag_values)
     if plot_p_value:
-        ax.text(1, 1, "p={:.2e}".format(p_value), horizontalalignment='right', verticalalignment='top',
-                transform=ax.transAxes, fontsize=p_value_fontsize)
+        ax.text(1, 1, "\n".join(("Kolmogorov D = {.1f}".format(d_value), p_value_to_string(p_value))),
+                horizontalalignment='right', verticalalignment='top', transform=ax.transAxes, fontsize=p_value_fontsize)
     return d_value, p_value
 
 

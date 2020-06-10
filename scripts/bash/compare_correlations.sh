@@ -6,11 +6,11 @@ python $fCNNDir/scripts/plot_compared_correlation_models.py \
 $WORK/fCNN/predictions/v4_t1_unet_ALL-TAVOR_2mm_v2_pt_test/correlations.npy,\
 $WORK/fCNN/predictions/v4_t1t2_unet_ALL-TAVOR_2mm_v2_pt_test/correlations.npy,\
 $WORK/fCNN/predictions/v4_struct6_unet_ALL-TAVOR_2mm_v2_pt_test/correlations.npy,\
-$WORK/fCNN/predictions/v4_struct14_unet_ALL-TAVOR_2mm_v2_pt_test/correlations.npy\
+$WORK/fCNN/predictions/v4_struct14_unet_ALL-TAVOR_2mm_v2_pt_test/correlations.npy,\
 $WORK/fCNN/predictions/v4_t1_unet_ALL-TAVOR_2mm_v2_pt_test/correlations_MSMAll.npy,\
 $WORK/fCNN/predictions/v4_t1t2_unet_ALL-TAVOR_2mm_v2_pt_test/correlations_MSMAll.npy,\
 $WORK/fCNN/predictions/v4_struct6_unet_ALL-TAVOR_2mm_v2_pt_test/correlations_MSMAll.npy,\
-$WORK/fCNN/predictions/v4_struct14_unet_ALL-TAVOR_2mm_v2_pt_test/correlations_MSMAll.npy\
+$WORK/fCNN/predictions/v4_struct14_unet_ALL-TAVOR_2mm_v2_pt_test/correlations_MSMAll.npy,\
 $WORK/fCNN/predictions/v4_t1_unet_ALL-TAVOR_2mm_v2_pt_test/MNINonLinear/MNINonLinearcorrelations.npy,\
 $WORK/fCNN/predictions/v4_t1t2_unet_ALL-TAVOR_2mm_v2_pt_test/MNINonLinear/MNINonLinearcorrelations.npy,\
 $WORK/fCNN/predictions/v4_struct6_unet_ALL-TAVOR_2mm_v2_pt_test/MNINonLinear/MNINonLinearcorrelations.npy,\

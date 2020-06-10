@@ -55,7 +55,7 @@ def self_vs_other_correlation(corr_matrix):
     diagonal_mask = np.diag(np.ones(corr_matrix.shape[0], dtype=bool))
     diag_values = corr_matrix[diagonal_mask]
     extra_diag_values = corr_matrix[diagonal_mask == False]
-    return (diag_values.mean() - extra_diag_values.mean())/extra_diag_values.mean()
+    return ((diag_values.mean() - extra_diag_values.mean())/extra_diag_values.mean()) * 100
 
 
 def plot(corr_matrices, model_labels, method_labels, output_dir, metric_func=self_vs_other_correlation,

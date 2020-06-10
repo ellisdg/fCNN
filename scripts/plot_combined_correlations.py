@@ -66,7 +66,7 @@ def plot_hist(correlations, ax, set_xlabel=True, set_ylabel=True, title=None, pl
         ax.set_ylabel("Density")
     d_value, p_value = ks_2samp(diag_values, extra_diag_values)
     if plot_p_value:
-        ax.text(1, 1, "\n".join(("Kolmogorov D = {.1f}".format(d_value), p_value_to_string(p_value))),
+        ax.text(1, 1, "\n".join(("Kolmogorov D = {:.2f}".format(d_value), p_value_to_string(p_value))),
                 horizontalalignment='right', verticalalignment='top', transform=ax.transAxes, fontsize=p_value_fontsize)
     return d_value, p_value
 

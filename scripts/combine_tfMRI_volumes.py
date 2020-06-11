@@ -19,11 +19,14 @@ def read_namefile(filename):
 
 def main():
     config = load_json(sys.argv[1])
+    try:
+        hcp_dir = sys.argv[2]
+    except IndexError:
+        hcp_dir = "/work/aizenberg/dgellis/HCP/HCP_1200"
     subjects = list()
     for key in config:
         subjects.extend(config[key])
     tasks = ["MOTOR", "LANGUAGE", "WM", "RELATIONAL", "EMOTION", "SOCIAL", "GAMBLING"]
-    hcp_dir = "/work/aizenberg/dgellis/HCP/HCP_1200"
     name_filename_template = "/home/aizenberg/dgellis/fCNN/data/labels/{task}-TAVOR_name-file.txt"
     volume_template = os.path.join(hcp_dir, "{subject}", "T1w", "Results", "tfMRI_{task}",
                                    "tfMRI_{task}_hp200_s2_level2.feat",

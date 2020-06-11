@@ -80,7 +80,8 @@ def main():
         if os.path.exists(vol) and (overwrite or not os.path.exists(filename)):
             for surf, hemi in ((left_surf, "L"), (right_surf, "R")):
                 if not os.path.exists(surf):
-                    download(os.path.join("s3://hcp-openaccess/HCP_1200/", subject,
+                    download(os.path.join("s3://hcp-openaccess/{}/".format(os.path.basename(directory)),
+                                          subject,
                                           os.path.dirname(surface_template)),
                              os.path.join(directory, subject, os.path.dirname(surface_template)),
                              verbose=verbose,

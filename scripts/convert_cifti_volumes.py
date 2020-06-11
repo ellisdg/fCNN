@@ -18,7 +18,10 @@ def main(args):
     basename = str(args[3])
     crop = False
     overwrite = True
-    subjects_config_filename = os.path.join(os.path.dirname(__file__), "..", config["subjects_filename"])
+    try:
+        subjects_config_filename = sys.argv[4]
+    except IndexError:
+        subjects_config_filename = os.path.join(os.path.dirname(__file__), "..", config["subjects_filename"])
     subjects_config = load_json(subjects_config_filename)
     target_basenames = config["target_basenames"]
     all_metric_names = config["metric_names"]

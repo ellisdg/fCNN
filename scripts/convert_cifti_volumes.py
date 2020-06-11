@@ -17,7 +17,7 @@ def main(args):
     directory = os.path.abspath(args[2])
     basename = str(args[3])
     crop = False
-    overwrite = True
+    overwrite = False
     try:
         subjects_config_filename = sys.argv[4]
     except IndexError:

@@ -22,11 +22,11 @@ do
   # convert the cifti volumes to nifti volumes
   for Task in "MOTOR" "LANGUAGE" "WM" "RELATIONAL" "EMOTION" "SOCIAL" "GAMBLING"
   do
-    ${HOME}/.conda/envs/dti/bin/python scripts/convert_cifti_volumes.py data/v4_struct6_unet_${Task}_2mm_v1_pt_config.json ${Dir} ${Basename} ${SubjectsConfig}
+    ${HOME}/.conda/envs/dti/bin/python ${fCNNDir}/scripts/convert_cifti_volumes.py data/v4_struct6_unet_${Task}_2mm_v1_pt_config.json ${Dir} ${Basename} ${SubjectsConfig}
   done
   # combine the nifti volumes
-  ${HOME}/.conda/envs/dti/bin/python scripts/combine_convert_cifti_volumes ${SubjectsConfig} ${Dir}
+  ${HOME}/.conda/envs/dti/bin/python ${fCNNDir}/scripts/convert_cifti_volumes ${SubjectsConfig} ${Dir}
   # sample the nifti volumes to the surface
-  ${HOME}/.conda/envs/dti/bin/python scripts/sample_volume_to_surface.py ${Dir} ${SubjectsConfig} "T1w/fsaverage_LR32k/{subject}.{hemi}.$SurfaceName.32k_fs_LR.surf.gii" ${Method} "T1w/Results/tfMRI_ALL/tfMRI_ALL_hp200_s2_level2.feat/{subject}_tfMRI_ALL_level2_zstat_hp200_s2_${Basename}.nii.gz" $fCNNDir/data/labels/ALL-TAVOR_name-file.txt "MNINonLinear/fsaverage_LR32k/{subject}.{hemi}.atlasroi.32k_fs_LR.shape.gii" $SurfaceName
+  ${HOME}/.conda/envs/dti/bin/python ${fCNNDir}/scripts/sample_volume_to_surface.py ${Dir} ${SubjectsConfig} "T1w/fsaverage_LR32k/{subject}.{hemi}.$SurfaceName.32k_fs_LR.surf.gii" ${Method} "T1w/Results/tfMRI_ALL/tfMRI_ALL_hp200_s2_level2.feat/{subject}_tfMRI_ALL_level2_zstat_hp200_s2_${Basename}.nii.gz" $fCNNDir/data/labels/ALL-TAVOR_name-file.txt "MNINonLinear/fsaverage_LR32k/{subject}.{hemi}.atlasroi.32k_fs_LR.shape.gii" $SurfaceName
 done
 

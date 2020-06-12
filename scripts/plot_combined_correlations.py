@@ -137,6 +137,8 @@ def main():
     corr_matrices = np.asarray(correlations)[..., 0]
     vmin = corr_matrices.min()
     vmax = corr_matrices.max()
+    norm_vmin = -3
+    norm_vmax = 3
 
     n_plots = len(metric_names)
     plots_per_row = 6
@@ -183,9 +185,9 @@ def main():
             cbar = False
         plot_heatmap(data=corr_matrix, ax=ax, cbar=cbar, cbar_ax=cbar_ax, set_xlabel=set_xlabel, set_ylabel=set_ylabel,
                      vmax=vmax, vmin=vmin, cmap=cmap, title=title)
-        plot_heatmap(data=normalize_correlation_matrix(corr_matrix, vmax, vmin, axes=(0, 1)), ax=norm_ax,
-                     cbar=False, set_xlabel=set_xlabel, set_ylabel=set_ylabel, vmax=vmax, vmin=vmin, cmap=cmap,
-                     title=title)
+        plot_heatmap(data=normalize_correlation_matrix(corr_matrix, norm_vmax, norm_vmin, axes=(0, 1)), ax=norm_ax,
+                     cbar=False, set_xlabel=set_xlabel, set_ylabel=set_ylabel, vmax=norm_vmax, vmin=norm_vmin,
+                     cmap=cmap, title=title)
         d_value, p_value = plot_hist(corr_matrix, hist_ax, set_ylabel=set_ylabel, set_xlabel=set_xlabel, title=title,
                                      plot_p_value=True, p_value_fontsize="large")
         stats.append([task, metric_name, d_value, p_value])
@@ -199,6 +201,7 @@ def main():
 
     # define a separate color bar for the average histograms
     avg_cbar_fig, avg_cbar_ax = plt.subplots(figsize=(0.5, 5))
+    norm_cbar_fig, norm_cbar_ax = plt.subplots(figsize=(0.5, 5))
     avg_cmap = seaborn.diverging_palette(220, 10, sep=1, center="light", as_cmap=True)
 
     avg_all_fig, (_avg_ax, _avg_cbar_ax, _avg_norm_ax, _avg_hist_ax) = plt.subplots(1, 4,
@@ -219,16 +222,17 @@ def main():
     plot_heatmap(data=avg_corr, ax=_avg_ax, set_xlabel=True, set_ylabel=True, cbar=False, vmax=avg_vmax,
                  vmin=avg_vmin, cmap=avg_cmap)
     _avg_cbar_ax.axis("off")
-    avg_corr_norm = normalize_correlation_matrix(avg_corr, avg_vmax, avg_vmin, axes=(0, 1))
+    avg_corr_norm = normalize_correlation_matrix(avg_corr, norm_vmax, norm_vmin, axes=(0, 1))
     avg_norm_fig, avg_norm_ax = plt.subplots(figsize=(column_width, row_height))
-    plot_heatmap(data=avg_corr_norm, ax=avg_norm_ax, set_xlabel=True, set_ylabel=True, cbar=False, vmax=avg_vmax,
-                 vmin=avg_vmin, cmap=avg_cmap)
-    plot_heatmap(data=avg_corr_norm, ax=_avg_norm_ax, set_xlabel=True, set_ylabel=True, cbar=False, vmax=avg_vmax,
-                 vmin=avg_vmin, cmap=avg_cmap)
+    plot_heatmap(data=avg_corr_norm, ax=avg_norm_ax, set_xlabel=True, set_ylabel=True, cbar=True, vmax=norm_vmax,
+                 vmin=norm_vmin, cmap=avg_cmap)
+    plot_heatmap(data=avg_corr_norm, ax=_avg_norm_ax, set_xlabel=True, set_ylabel=True, cbar=False, vmax=norm_vmax,
+                 vmin=norm_vmin, cmap=avg_cmap, cbar_ax=norm_cbar_ax)
 
     save_fig(avg_fig, output_dir + "/correlation_matrix_average", bbox_inches="tight")
     save_fig(avg_norm_fig, output_dir + "/correlation_matrix_average_normalized", bbox_inches="tight")
     save_fig(avg_cbar_fig, output_dir + "/correlation_matrix_average_colorbar", bbox_inches="tight")
+    save_fig(norm_cbar_fig, output_dir + "/correlation_matrix_normalized_colorbar", bbox_inches="tight")
 
     avg_hist_fig, avg_hist_ax = plt.subplots()
     d, p = plot_hist(avg_corr, avg_hist_ax, title=None, plot_p_value=True)

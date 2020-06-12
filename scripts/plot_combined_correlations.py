@@ -153,6 +153,7 @@ def main():
                                                                                    n_rows*row_height),
                                        sharex=True, sharey=True)
     cbar_fig, cbar_ax = plt.subplots(figsize=(0.5, row_height))
+    norm_cbar_fig, norm_cbar_ax = plt.subplots(figsize=(0.5, row_height))
     cmap = plt.get_cmap("jet")
     # cmap = seaborn.diverging_palette(220, 10, sep=1, center="light", as_cmap=True)
     # cmap = seaborn.cubehelix_palette(n_colors=8, as_cmap=True)
@@ -186,8 +187,8 @@ def main():
         plot_heatmap(data=corr_matrix, ax=ax, cbar=cbar, cbar_ax=cbar_ax, set_xlabel=set_xlabel, set_ylabel=set_ylabel,
                      vmax=vmax, vmin=vmin, cmap=cmap, title=title)
         plot_heatmap(data=normalize_correlation_matrix(corr_matrix, norm_vmax, norm_vmin, axes=(0, 1)), ax=norm_ax,
-                     cbar=False, set_xlabel=set_xlabel, set_ylabel=set_ylabel, vmax=norm_vmax, vmin=norm_vmin,
-                     cmap=cmap, title=title)
+                     cbar=cbar, set_xlabel=set_xlabel, set_ylabel=set_ylabel, vmax=norm_vmax, vmin=norm_vmin,
+                     cmap=cmap, title=title, cbar_ax=norm_cbar_ax)
         d_value, p_value = plot_hist(corr_matrix, hist_ax, set_ylabel=set_ylabel, set_xlabel=set_xlabel, title=title,
                                      plot_p_value=True, p_value_fontsize="large")
         stats.append([task, metric_name, d_value, p_value])
@@ -198,6 +199,7 @@ def main():
     save_fig(hist_fig, output_dir + "/correlation_matrices_histograms", bbox_inches="tight")
     save_fig(cbar_fig, output_dir + "/correlation_matrices_colorbar", bbox_inches="tight")
     save_fig(norm_fig, output_dir + "/correlation_matrices_normalized", bbox_inches="tight")
+    save_fig(norm_cbar_fig, output_dir + "/correlation_matrices_normalized_colorbar", bbox_inches="tight")
 
     # define a separate color bar for the average histograms
     avg_cbar_fig, avg_cbar_ax = plt.subplots(figsize=(0.5, 5))

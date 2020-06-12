@@ -224,9 +224,9 @@ def main():
     _avg_cbar_ax.axis("off")
     avg_corr_norm = normalize_correlation_matrix(avg_corr, norm_vmax, norm_vmin, axes=(0, 1))
     avg_norm_fig, avg_norm_ax = plt.subplots(figsize=(column_width, row_height))
-    plot_heatmap(data=avg_corr_norm, ax=avg_norm_ax, set_xlabel=True, set_ylabel=True, cbar=True, vmax=norm_vmax,
+    plot_heatmap(data=avg_corr_norm, ax=avg_norm_ax, set_xlabel=True, set_ylabel=True, cbar=False, vmax=norm_vmax,
                  vmin=norm_vmin, cmap=avg_cmap)
-    plot_heatmap(data=avg_corr_norm, ax=_avg_norm_ax, set_xlabel=True, set_ylabel=True, cbar=False, vmax=norm_vmax,
+    plot_heatmap(data=avg_corr_norm, ax=_avg_norm_ax, set_xlabel=True, set_ylabel=True, cbar=True, vmax=norm_vmax,
                  vmin=norm_vmin, cmap=avg_cmap, cbar_ax=norm_cbar_ax)
 
     save_fig(avg_fig, output_dir + "/correlation_matrix_average", bbox_inches="tight")

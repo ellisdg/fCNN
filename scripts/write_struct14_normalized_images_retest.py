@@ -52,7 +52,7 @@ def main():
                              True, False, False, False,
                              True, False, False, False,
                              True, False, False, False]
-    for directory in ["$WORK/HCP/HCP_1200", "$WORK/HCP/HCP_Retest"]:
+    for directory in ["/work/aizenberg/dgellis/HCP/HCP_1200", "/work/aizenberg/dgellis/HCP/HCP_Retest"]:
         func = partial(write_struct6_image,
                        hcp_dir=directory,
                        feature_basenames=feature_basenames,

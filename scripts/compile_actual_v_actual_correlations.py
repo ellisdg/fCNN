@@ -18,28 +18,24 @@ def read_namefile(filename):
     return names
 
 
-def compute_correlation_row(predicted_fn, target_fns, metric_names, structure_names, pool_size=None, verbose=False,
+def compute_correlation_row(predicted_fn, target_fns, metric_names, structure_names, verbose=False,
                             fix_metric_names=True):
+    if fix_metric_names:
+        metric_names = [metric_name.split(" ")[-1] for metric_name in metric_names]
     if verbose:
         print(predicted_fn)
-    predicted_image = nib.load(predicted_fn)
-    predicted_data = get_metric_data([predicted_image], [metric_names], structure_names, None)
+    target_image = nib.load(predicted_fn)
+    predicted_data = get_metric_data([target_image], [metric_names], structure_names, None)
     row = list()
     for fn in target_fns:
         row.append(compute_correlation(target_fn=fn, predicted_data=predicted_data, metric_names=metric_names,
-                                       structure_names=structure_names, pool_size=pool_size,
-                                       fix_metric_names=fix_metric_names))
+                                       structure_names=structure_names))
     return row
 
 
-def compute_correlation(target_fn, predicted_data, metric_names, structure_names, pool_size=None,
-                        fix_metric_names=True):
+def compute_correlation(target_fn, predicted_data, metric_names, structure_names):
     target_image = nib.load(target_fn)
-    if fix_metric_names:
-        target_metric_names = [metric_name.split(" ")[-1] for metric_name in metric_names]
-    else:
-        target_metric_names = metric_names
-    target_data = get_metric_data([target_image], [target_metric_names], structure_names, None)
+    target_data = get_metric_data([target_image], [metric_names], structure_names, None)
     task_row = list()
     for i, task_name in enumerate(metric_names):
         task_row.append(pearsonr(predicted_data[..., i].flatten(), target_data[..., i].flatten()))
@@ -80,15 +76,14 @@ def main():
 
     correlations = list()
     if pool_size is not None:
-        func = partial(compute_correlation_row, pool_size=None, target_fns=target_images, metric_names=metric_names,
+        func = partial(compute_correlation_row, target_fns=target_images, metric_names=metric_names,
                        structure_names=structure_names, verbose=True, fix_metric_names=fix_metric_names)
         pool = Pool(pool_size)
         correlations = pool.map(func, target_images)
     else:
         for i, t_image_fn in enumerate(target_images):
             update_progress(i/len(target_images), message=os.path.basename(t_image_fn).split("_")[0])
-            correlations.append(compute_correlation_row(t_image_fn, target_images, metric_names, structure_names,
-                                                        pool_size=pool_size))
+            correlations.append(compute_correlation_row(t_image_fn, target_images, metric_names, structure_names))
         update_progress(1)
     np.save(output_file, correlations)
     np.save(output_file.replace(".npy", "_subjects.npy"), subjects)

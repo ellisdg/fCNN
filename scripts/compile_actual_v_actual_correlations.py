@@ -83,7 +83,7 @@ def main():
         func = partial(compute_correlation_row, pool_size=None, target_fns=target_images, metric_names=metric_names,
                        structure_names=structure_names, verbose=True, fix_metric_names=fix_metric_names)
         pool = Pool(pool_size)
-        correlations = pool.map(func, prediction_images)
+        correlations = pool.map(func, target_images)
     else:
         for i, t_image_fn in enumerate(target_images):
             update_progress(i/len(target_images), message=os.path.basename(t_image_fn).split("_")[0])

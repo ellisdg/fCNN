@@ -39,7 +39,7 @@ def get_metric_data_for_metric_names(target_image, metric_names, structure_names
         return get_metric_data([target_image], [metric_names], structure_names, subject)
     except KeyError:
         _metric_names = [metric_name.split(" ") for metric_name in metric_names]
-        return get_metric_data([target_image], [metric_names], structure_names, subject)
+        return get_metric_data([target_image], [_metric_names], structure_names, subject)
 
 
 def compute_correlation_row(predicted_fn, target_fns, metric_names, structure_names, verbose=False):

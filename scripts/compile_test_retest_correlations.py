@@ -37,7 +37,7 @@ def read_namefile(filename):
 def get_metric_data_for_metric_names(target_image, metric_names, structure_names, subject=None):
     try:
         return get_metric_data([target_image], [metric_names], structure_names, subject)
-    except KeyError:
+    except ValueError:
         _metric_names = [metric_name.split(" ") for metric_name in metric_names]
         return get_metric_data([target_image], [_metric_names], structure_names, subject)
 

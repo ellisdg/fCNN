@@ -2,7 +2,7 @@ import os
 from functools import partial
 from multiprocessing import Pool
 from fcnn.utils.utils import load_json, update_progress
-from fcnn.utils.hcp import get_metric_data, extract_cifti_scalar_map_names
+from fcnn.utils.hcp import get_metric_data
 from scipy.stats import pearsonr
 import nibabel as nib
 import numpy as np

@@ -91,8 +91,8 @@ def main():
             correlations.append(compute_correlation_row(test_filename, retest_filenames, metric_names,
                                                         args["structures"]))
         update_progress(1)
-    np.save(args["output_file"], correlations)
-    np.save(args["output_file"].replace(".npy", "_subjects.npy"), subjects)
+    np.save(args["output_filename"], correlations)
+    np.save(args["output_filename"].replace(".npy", "_subjects.npy"), subjects)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,3 @@
-import sys
-import glob
 import os
 from functools import partial
 from multiprocessing import Pool
@@ -36,14 +34,19 @@ def read_namefile(filename):
     return names
 
 
-def compute_correlation_row(predicted_fn, target_fns, metric_names, structure_names, verbose=False,
-                            fix_metric_names=True):
-    if fix_metric_names:
-        metric_names = [metric_name.split(" ")[-1] for metric_name in metric_names]
+def get_metric_data_for_metric_names(target_image, metric_names, structure_names, subject=None):
+    try:
+        return get_metric_data([target_image], [metric_names], structure_names, subject)
+    except KeyError:
+        _metric_names = [metric_name.split(" ") for metric_name in metric_names]
+        return get_metric_data([target_image], [metric_names], structure_names, subject)
+
+
+def compute_correlation_row(predicted_fn, target_fns, metric_names, structure_names, verbose=False):
     if verbose:
         print(predicted_fn)
     target_image = nib.load(predicted_fn)
-    predicted_data = get_metric_data([target_image], [metric_names], structure_names, None)
+    predicted_data = get_metric_data_for_metric_names(target_image, metric_names, structure_names, None)
     row = list()
     for fn in target_fns:
         row.append(compute_correlation(target_fn=fn, predicted_data=predicted_data, metric_names=metric_names,
@@ -53,7 +56,7 @@ def compute_correlation_row(predicted_fn, target_fns, metric_names, structure_na
 
 def compute_correlation(target_fn, predicted_data, metric_names, structure_names):
     target_image = nib.load(target_fn)
-    target_data = get_metric_data([target_image], [metric_names], structure_names, None)
+    target_data = get_metric_data_for_metric_names(target_image, metric_names, structure_names, None)
     task_row = list()
     for i, task_name in enumerate(metric_names):
         task_row.append(pearsonr(predicted_data[..., i].flatten(), target_data[..., i].flatten()))
@@ -75,12 +78,6 @@ def main():
             retest_filenames.append(retest_filename)
 
     metric_names = read_namefile(args["metric_names"])
-
-    _test_image = nib.load(test_filenames[0])
-    if not np.all(np.in1d(metric_names, extract_cifti_scalar_map_names(_test_image))):
-        _metric_names = [metric_name.split(" ")[-1] for metric_name in metric_names]
-        if np.all(np.in1d(_metric_names, extract_cifti_scalar_map_names(_test_image))):
-            metric_names = _metric_names
 
     if args["nthreads"] > 1:
         func = partial(compute_correlation_row, target_fns=retest_filenames, metric_names=metric_names,

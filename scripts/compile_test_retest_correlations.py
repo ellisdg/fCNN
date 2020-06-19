@@ -82,7 +82,7 @@ def main():
         if np.all(np.in1d(_metric_names, extract_cifti_scalar_map_names(_test_image))):
             metric_names = _metric_names
 
-    if args["nthreads"] is not None:
+    if args["nthreads"] > 1:
         func = partial(compute_correlation_row, target_fns=retest_filenames, metric_names=metric_names,
                        structure_names=args["structures"], verbose=True)
         pool = Pool(args["nthreads"])

@@ -77,7 +77,7 @@ def main():
     metric_names = read_namefile(args["metric_names"])
 
     _test_image = nib.load(test_filenames[0])
-    if np.all(np.in1d(metric_names, extract_cifti_scalar_map_names(_test_image))):
+    if not np.all(np.in1d(metric_names, extract_cifti_scalar_map_names(_test_image))):
         _metric_names = [metric_name.split(" ")[-1] for metric_name in metric_names]
         if np.all(np.in1d(_metric_names, extract_cifti_scalar_map_names(_test_image))):
             metric_names = _metric_names

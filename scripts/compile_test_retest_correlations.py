@@ -62,7 +62,7 @@ def compute_correlation(target_fn, predicted_data, metric_names, structure_names
 
 def main():
     args = parse_args()
-    subjects = load_json(args["subject_filename"])[args["group"]]
+    subjects = load_json(args["subjects_filename"])[args["group"]]
     test_template = os.path.join(args["test"], "{subject}", args["template"])
     retest_template = os.path.join(args["retest"], "{subject}", args["template"])
     test_filenames = list()

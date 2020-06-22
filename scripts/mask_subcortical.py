@@ -55,3 +55,7 @@ def main():
     else:
         for subject in subjects:
             func(subject)
+
+
+if __name__ == "__main__":
+    main()

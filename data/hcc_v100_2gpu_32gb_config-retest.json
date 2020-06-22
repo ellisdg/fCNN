@@ -1,0 +1,5 @@
+{"use_multiprocessing": true,
+  "n_workers": 40,
+  "max_queue_size": 20,
+  "n_gpus": 2,
+  "directory": "/work/aizenberg/dgellis/HCP/HCP_Retest"}

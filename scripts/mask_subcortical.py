@@ -21,9 +21,9 @@ def parse_args():
 
 def mask_t1_image(subject, hcp_dir, input_filename, output_filename, overwrite=False):
     output_filename = os.path.join(hcp_dir, subject, "T1w", output_filename)
-    if overwrite or not os.path.exists(output_filename):
+    t1_filename = os.path.join(hcp_dir, subject, "T1w", input_filename)
+    if (overwrite or not os.path.exists(output_filename)) and os.path.exists(t1_filename):
         print(output_filename)
-        t1_filename = os.path.join(hcp_dir, subject, "T1w", input_filename)
         t1 = nib.load(t1_filename)
         aparc_filename = os.path.join(hcp_dir, subject, "T1w", "aparc+aseg.nii.gz")
         aparc = nib.load(aparc_filename)

@@ -57,7 +57,7 @@ def parse_args():
     parser.add_argument('--surface_template',
                         default="T1w/fsaverage_LR32k/{subject}.{hemi}.{surface_name}.32k_fs_LR.surf.gii")
     parser.add_argument('--atlas_roi_template',
-                        default="T1w/fsaverage_LR32k/{subject}.{hemi}.{surface_name}.32k_fs_LR.surf.gii")
+                        default="MNINonLinear/fsaverage_LR32k/{subject}.{hemi}.atlasroi.32k_fs_LR.shape.gii")
     parser.add_argument('--task_names', default="/home/aizenberg/dgellis/fCNN/data/labels/ALL-TAVOR_name-file.txt")
     parser.add_argument('--overwrite', action="store_true", default=False)
     parser.add_argument('--verbose', action="store_true", default=False)
@@ -81,8 +81,8 @@ def main():
             subject_ids.extend(data[key])
     for i, subject in enumerate(sorted(subject_ids)):
         update_progress(i/len(subject_ids), message=str(subject))
-        left_surf = surface_template.format(subject=subject, hemi="L")
-        right_surf = surface_template.format(subject=subject, hemi="R")
+        left_surf = surface_template.format(subject=subject, hemi="L", surface_name=args["surface_name"])
+        right_surf = surface_template.format(subject=subject, hemi="R", surface_name=args["surface_name"])
         left_atlas_roi = atlas_roi_template.format(subject=subject, hemi="L")
         right_atlas_roi = atlas_roi_template.format(subject=subject, hemi="R")
         vol = volume_template.format(subject=subject)

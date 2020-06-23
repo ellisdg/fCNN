@@ -51,25 +51,19 @@ def get_metric_data_for_metric_names(target_image, metric_names, structure_names
         return get_metric_data([target_image], [_metric_names], structure_names, subject)
 
 
-def compute_correlation_row(predicted_fn, target_fns, metric_names, structure_names, verbose=False):
+def compute_correlation_row(filenames, metric_names, structure_names, verbose=False):
     if verbose:
-        print(predicted_fn)
-    target_image = nib.load(predicted_fn)
-    predicted_data = get_metric_data_for_metric_names(target_image, metric_names, structure_names, None)
-    row = list()
-    for fn in target_fns:
-        row.append(compute_correlation(target_fn=fn, predicted_data=predicted_data, metric_names=metric_names,
-                                       structure_names=structure_names))
-    return row
-
-
-def compute_correlation(target_fn, predicted_data, metric_names, structure_names):
-    target_image = nib.load(target_fn)
-    target_data = get_metric_data_for_metric_names(target_image, metric_names, structure_names, None)
-    task_row = list()
-    for i, task_name in enumerate(metric_names):
-        task_row.append(pearsonr(predicted_data[..., i].flatten(), target_data[..., i].flatten()))
-    return task_row
+        print(" ".join(filenames))
+    test, retest, p_test, p_retest = [get_metric_data_for_metric_names(nib.load(fn), metric_names, structure_names,
+                                                                       None)
+                                      for fn in filenames]
+    # compute test-retest correlation
+    r_test_retest = pearsonr(test.flatten(), retest.flatten())
+    # compute predicted test to actual retest correlation
+    r_p_test_retest = pearsonr(p_test.flatten(), retest.flatten())
+    # compute actual test to predicted retest correlation
+    r_test_p_retest = pearsonr(test.flatten(), p_retest.flatten())
+    return [r_test_retest, r_p_test_retest, r_test_p_retest]
 
 
 def main():
@@ -78,8 +72,6 @@ def main():
     test_template = os.path.join(args["test_dir"], "{subject}", args["template"])
     retest_template = os.path.join(args["retest_dir"], "{subject}", args["template"])
     filenames = list()
-    test_filenames = list()
-    retest_filenames = list()
     for subject in subjects:
         test_filename = test_template.format(subject=subject)
         retest_filename = retest_template.format(subject=subject)
@@ -92,16 +84,16 @@ def main():
     metric_names = read_namefile(args["metric_names"])
 
     if args["nthreads"] > 1:
-        func = partial(compute_correlation_row, target_fns=retest_filenames, metric_names=metric_names,
-                       structure_names=args["structures"], verbose=True)
+        func = partial(compute_correlation_row, metric_names=metric_names, structure_names=args["structures"],
+                       verbose=args["verbose"])
         pool = Pool(args["nthreads"])
-        correlations = pool.map(func, test_filenames)
+        correlations = pool.map(func, filenames)
     else:
         correlations = list()
-        for i, test_filename in enumerate(test_filenames):
-            update_progress(i/len(retest_filenames), message=os.path.basename(test_filename).split("_")[0])
-            correlations.append(compute_correlation_row(test_filename, retest_filenames, metric_names,
-                                                        args["structures"]))
+        for i, _filenames in enumerate(filenames):
+            update_progress(i/len(filenames), message=os.path.basename(_filenames[0]).split("_")[0])
+            correlations.append(compute_correlation_row(filenames=_filenames, metric_names=metric_names,
+                                                        structure_names=args["structures"]))
         update_progress(1)
     np.save(args["output_filename"], correlations)
     np.save(args["output_filename"].replace(".npy", "_subjects.npy"), subjects)

@@ -82,7 +82,7 @@ def parse_args():
 def main():
     args = parse_args()
     if args["submit"]:
-        from ..scripts.process_dti_script import submit_slurm_script
+        from scripts.process_dti_script import submit_slurm_script
         flags = list()
         for arg in sys.argv[1:]:
             if arg != "--submit":

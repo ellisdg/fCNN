@@ -1,6 +1,6 @@
-import sys
 import glob
 import os
+import argparse
 from functools import partial
 from multiprocessing import Pool
 from fcnn.utils.utils import load_json, update_progress
@@ -8,7 +8,6 @@ from fcnn.utils.hcp import get_metric_data, extract_cifti_scalar_map_names
 from scipy.stats import pearsonr
 import nibabel as nib
 import numpy as np
-import argparse
 
 
 def read_namefile(filename):
@@ -19,7 +18,7 @@ def read_namefile(filename):
     return names
 
 
-def compute_correlation_row(predicted_fn, target_fns, metric_names, structure_names, verbose=False):
+def compute_correlation_row(predicted_fn, target_fns, metric_names, structure_names, verbose=False, level="overall"):
     if verbose:
         print(predicted_fn)
     predicted_image = nib.load(predicted_fn)
@@ -27,7 +26,7 @@ def compute_correlation_row(predicted_fn, target_fns, metric_names, structure_na
     row = list()
     for fn in target_fns:
         row.append(compute_correlation(target_fn=fn, predicted_data=predicted_data, metric_names=metric_names,
-                                       structure_names=structure_names))
+                                       structure_names=structure_names, level=level))
     return row
 
 
@@ -39,10 +38,28 @@ def get_metric_data_for_metric_names(target_image, metric_names, structure_names
         return get_metric_data([target_image], [_metric_names], structure_names, subject)
 
 
-def compute_correlation(target_fn, predicted_data, metric_names, structure_names):
+def compute_correlation(target_fn, predicted_data, metric_names, structure_names, level="overall"):
     target_image = nib.load(target_fn)
     target_data = get_metric_data_for_metric_names(target_image, metric_names, structure_names, None)
-    return pearsonr(predicted_data.flatten(), target_data.flatten())
+    if level == "overall":
+        return pearsonr(predicted_data.flatten(), target_data.flatten())
+    elif level == "task":
+        task_row = list()
+        for i, task_name in enumerate(metric_names):
+            task_row.append(pearsonr(predicted_data[..., i].flatten(), target_data[..., i].flatten()))
+        return task_row
+    elif level == "domain":
+        domains = np.asarray([task.split(" ")[0] for task in metric_names])
+        domain_row = list()
+        processed_domains = list()
+        for domain in domains:
+            if domain not in processed_domains:
+                domain_mask = domains == domain
+                domain_row.append(pearsonr(predicted_data[..., domain_mask].flatten(),
+                                           target_data[..., domain_mask].flatten()))
+                processed_domains.append(domain)
+    else:
+        raise NotImplementedError("Level='{}'".format(level))
 
 
 def parse_args():
@@ -53,6 +70,7 @@ def parse_args():
     parser.add_argument('--hcp_dir', default="/work/aizenberg/dgellis/HCP/HCP_1200")
     parser.add_argument('--task_names', default="/home/aizenberg/dgellis/fCNN/data/labels/ALL-TAVOR_name-file.txt")
     parser.add_argument('--surface_name', default="midthickness")
+    parser.add_argument('--level', default="overall", choices=['overall', 'domain', 'task'])
     parser.add_argument('--nthreads', type=int, default=1)
     parser.add_argument('--structures', nargs=2, default=["CortexLeft", "CortexRight"])
     parser.add_argument('--verbose', action="store_true", default=False)
@@ -89,13 +107,14 @@ def main():
     correlations = list()
     if pool_size > 1:
         func = partial(compute_correlation_row, target_fns=target_images, metric_names=metric_names,
-                       structure_names=structure_names, verbose=args["verbose"])
+                       structure_names=structure_names, verbose=args["verbose"], level=args["level"])
         pool = Pool(pool_size)
         correlations = pool.map(func, prediction_images)
     else:
         for i, p_image_fn in enumerate(prediction_images):
             update_progress(i/len(prediction_images), message=os.path.basename(p_image_fn).split("_")[0])
-            correlations.append(compute_correlation_row(p_image_fn, target_images, metric_names, structure_names))
+            correlations.append(compute_correlation_row(p_image_fn, target_images, metric_names, structure_names,
+                                                        level=args["level"]))
         update_progress(1)
     np.save(output_file, correlations)
     np.save(output_file.replace(".npy", "_subjects.npy"), subjects)

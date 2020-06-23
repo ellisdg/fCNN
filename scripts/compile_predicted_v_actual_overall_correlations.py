@@ -86,11 +86,14 @@ def main():
         flags = list()
         for arg in sys.argv[1:]:
             if arg != "--submit":
-                flags.append(arg)
-        return submit_slurm_script(nthreads=args["nthreads"], mem_per_cpu=4000, python_file=__file__,
+                if os.path.isfile(arg):
+                    flags.append(os.path.abspath(arg))
+                else:
+                    flags.append(arg)
+        return submit_slurm_script(nthreads=args["nthreads"], mem_per_cpu=4000, python_file=os.path.abspath(__file__),
                                    job_name=os.path.basename(args["output_filename"].split(".")[0]),
                                    slurm_script_filename=args["output_filename"].replace(".npy", ".slurm"),
-                                   flags=" ".join(flags))
+                                   flags=" ".join(flags), job_template="CORR_%J")
     output_file = args["output_filename"]
     config_filename = args["config_filename"]
     hcp_dir = args["hcp_dir"]

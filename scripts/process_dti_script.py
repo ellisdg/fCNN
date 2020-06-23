@@ -40,19 +40,19 @@ def submit_subject_dirs(subject_dirs, python="/home/aizenberg/dgellis/.conda/env
 
 def submit_slurm_script(python="/home/aizenberg/dgellis/.conda/envs/dti/bin/python", nthreads=1,
                         mem_per_cpu=8000, flags="", delete_script=False, python_file=__file__, job_name="fCNN",
-                        slurm_script_filename="temp.slurm"):
+                        slurm_script_filename="temp.slurm", job_template="DTI_%J"):
     sbatch = "#!/bin/bash\n" \
              "#SBATCH --time=7-00:00:00          # Run time in hh:mm:ss\n" \
-             "#SBATCH --mem-per-cpu={}       # Maximum memory required per CPU (in megabytes)\n" \
-             "#SBATCH --ntasks-per-node={}\n" \
-             "#SBATCH --job-name={}\n" \
-             "#SBATCH --error=/work/aizenberg/dgellis/fCNN/logs/job.DTI_%J.err\n" \
-             "#SBATCH --output=/work/aizenberg/dgellis/fCNN/logs/job.DTI_%J.err\n" \
+             "#SBATCH --mem-per-cpu={0}       # Maximum memory required per CPU (in megabytes)\n" \
+             "#SBATCH --ntasks-per-node={1}\n" \
+             "#SBATCH --job-name={2}\n" \
+             "#SBATCH --error=/work/aizenberg/dgellis/fCNN/logs/job.{3}.err\n" \
+             "#SBATCH --output=/work/aizenberg/dgellis/fCNN/logs/job.{3}.err\n" \
              "module load anaconda\n" \
              "source /home/aizenberg/dgellis/.conda/envs/dti/bin/activate dti\n" \
              "export PYTHONPATH=/home/aizenberg/dgellis/fCNN:/home/aizenberg/dgellis/3DUnetCNN/:$PYTHONPATH\n" \
-             "{} {} {}\n".format(
-                 mem_per_cpu, nthreads, job_name, python, python_file, flags)
+             "{4} {5} {6}\n".format(
+                 mem_per_cpu, nthreads, job_name, job_template, python, python_file, flags)
     with open(slurm_script_filename, "w") as temp:
         temp.write(sbatch)
     cmd = ['sbatch', slurm_script_filename]

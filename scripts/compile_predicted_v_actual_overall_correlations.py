@@ -1,4 +1,5 @@
 import glob
+import sys
 import os
 import argparse
 from functools import partial
@@ -74,11 +75,22 @@ def parse_args():
     parser.add_argument('--nthreads', type=int, default=1)
     parser.add_argument('--structures', nargs=2, default=["CortexLeft", "CortexRight"])
     parser.add_argument('--verbose', action="store_true", default=False)
+    parser.add_argument('--submit', action="store_true", default=False)
     return vars(parser.parse_args())
 
 
 def main():
     args = parse_args()
+    if args["submit"]:
+        from .process_dti_script import submit_slurm_script
+        flags = list()
+        for arg in sys.argv[1:]:
+            if arg != "--submit":
+                flags.append(arg)
+        return submit_slurm_script(nthreads=args["nthreads"], mem_per_cpu=4000, python_file=__file__,
+                                   job_name=os.path.basename(args["output_filename"].split(".")[0]),
+                                   slurm_script_filename=args["output_filename"].replace(".npy", ".slurm"),
+                                   flags=" ".join(flags))
     output_file = args["output_filename"]
     config_filename = args["config_filename"]
     hcp_dir = args["hcp_dir"]

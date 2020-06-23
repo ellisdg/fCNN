@@ -71,7 +71,7 @@ def main():
     surf_name = args["surface_name"]
     all_prediction_images = glob.glob(os.path.join(prediction_dir, "*.{}.dscalar.nii".format(surf_name)))
     target_images = list()
-    structure_names = args["Structures"]
+    structure_names = args["structures"]
     prediction_images = list()
     metric_names = read_namefile(metric_filename)
     pool_size = args["nthreads"]

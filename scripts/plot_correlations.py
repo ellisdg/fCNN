@@ -82,7 +82,7 @@ def plot_hist(correlations, ax, set_xlabel=True, set_ylabel=True, title=None, pl
         ax.text(1, 1, "\n".join(("D=" + "{:.3f}".format(d_value)[1:], p_value_to_string(p_value))),
                 horizontalalignment='right', verticalalignment='top', transform=ax.transAxes, fontsize=p_value_fontsize)
     if legend:
-        ax.legend(legend_loc=legend_loc)
+        ax.legend(loc=legend_loc)
     return d_value, p_value
 
 

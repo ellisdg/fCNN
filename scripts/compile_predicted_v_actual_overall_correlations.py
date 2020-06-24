@@ -5,7 +5,7 @@ import argparse
 from functools import partial
 from multiprocessing import Pool
 from fcnn.utils.utils import load_json, update_progress
-from fcnn.utils.hcp import get_metric_data, extract_cifti_scalar_map_names
+from fcnn.utils.hcp import get_metric_data
 from scipy.stats import pearsonr
 import nibabel as nib
 import numpy as np
@@ -19,15 +19,19 @@ def read_namefile(filename):
     return names
 
 
-def compute_correlation_row(predicted_fn, target_fns, metric_names, structure_names, verbose=False, level="overall"):
+def compute_correlation_row(predicted_fn, target_fns, metric_names, structure_names, verbose=False, level="overall",
+                            volume=False):
     if verbose:
         print(predicted_fn)
     predicted_image = nib.load(predicted_fn)
-    predicted_data = get_metric_data_for_metric_names(predicted_image, metric_names, structure_names, None)
+    if volume:
+        predicted_data = predicted_image.get_fdata()
+    else:
+        predicted_data = get_metric_data_for_metric_names(predicted_image, metric_names, structure_names, None)
     row = list()
     for fn in target_fns:
         row.append(compute_correlation(target_fn=fn, predicted_data=predicted_data, metric_names=metric_names,
-                                       structure_names=structure_names, level=level))
+                                       structure_names=structure_names, level=level, volume=volume))
     return row
 
 
@@ -39,9 +43,12 @@ def get_metric_data_for_metric_names(target_image, metric_names, structure_names
         return get_metric_data([target_image], [_metric_names], structure_names, subject)
 
 
-def compute_correlation(target_fn, predicted_data, metric_names, structure_names, level="overall"):
+def compute_correlation(target_fn, predicted_data, metric_names, structure_names, level="overall", volume=False):
     target_image = nib.load(target_fn)
-    target_data = get_metric_data_for_metric_names(target_image, metric_names, structure_names, None)
+    if volume:
+        target_data = target_image.get_fdata()
+    else:
+        target_data = get_metric_data_for_metric_names(target_image, metric_names, structure_names, None)
     if level == "overall":
         return pearsonr(predicted_data.flatten(), target_data.flatten())
     elif level == "task":
@@ -71,6 +78,7 @@ def parse_args():
     parser.add_argument('--hcp_dir', default="/work/aizenberg/dgellis/HCP/HCP_1200")
     parser.add_argument('--task_names', default="/home/aizenberg/dgellis/fCNN/data/labels/ALL-TAVOR_name-file.txt")
     parser.add_argument('--surface_name', default="midthickness")
+    parser.add_argument('--volume', action="store_true", default=False)
     parser.add_argument('--level', default="overall", choices=['overall', 'domain', 'task'])
     parser.add_argument('--nthreads', type=int, default=1)
     parser.add_argument('--structures', nargs=2, default=["CortexLeft", "CortexRight"])
@@ -86,7 +94,7 @@ def main():
         flags = list()
         for arg in sys.argv[1:]:
             if arg != "--submit":
-                if os.path.isfile(arg):
+                if os.path.isfile(arg) or os.path.isdir(arg):
                     flags.append(os.path.abspath(arg))
                 else:
                     flags.append(arg)
@@ -102,7 +110,10 @@ def main():
     prediction_dir = args["prediction_dir"]
     metric_filename = args["task_names"]
     surf_name = args["surface_name"]
-    all_prediction_images = glob.glob(os.path.join(prediction_dir, "*.{}.dscalar.nii".format(surf_name)))
+    if args["volume"]:
+        all_prediction_images = glob.glob(os.path.join(prediction_dir, "*.nii.gz"))
+    else:
+        all_prediction_images = glob.glob(os.path.join(prediction_dir, "*.{}.dscalar.nii".format(surf_name)))
     target_images = list()
     structure_names = args["structures"]
     prediction_images = list()
@@ -113,23 +124,27 @@ def main():
         if "target" not in p_image_fn:
             sid = os.path.basename(p_image_fn).split("_")[0]
             subjects.append(sid)
-            target_fn = os.path.join(hcp_dir, sid, target_basename.format(sid)).replace(".nii.gz",
-                                                                                        ".{}.dscalar.nii").format(
-                surf_name)
+            if args["volume"]:
+                target_fn = os.path.join(hcp_dir, target_basename.format(sid))
+            else:
+                target_fn = os.path.join(hcp_dir, sid, target_basename.format(sid)).replace(".nii.gz",
+                                                                                            ".{}.dscalar.nii").format(
+                    surf_name)
             target_images.append(target_fn)
             prediction_images.append(p_image_fn)
 
     correlations = list()
     if pool_size > 1:
         func = partial(compute_correlation_row, target_fns=target_images, metric_names=metric_names,
-                       structure_names=structure_names, verbose=args["verbose"], level=args["level"])
+                       structure_names=structure_names, verbose=args["verbose"], level=args["level"],
+                       volume=args["volume"])
         pool = Pool(pool_size)
         correlations = pool.map(func, prediction_images)
     else:
         for i, p_image_fn in enumerate(prediction_images):
             update_progress(i/len(prediction_images), message=os.path.basename(p_image_fn).split("_")[0])
             correlations.append(compute_correlation_row(p_image_fn, target_images, metric_names, structure_names,
-                                                        level=args["level"]))
+                                                        level=args["level"], volume=args["volume"]))
         update_progress(1)
     np.save(output_file, correlations)
     np.save(output_file.replace(".npy", "_subjects.npy"), subjects)

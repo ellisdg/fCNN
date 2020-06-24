@@ -125,7 +125,9 @@ def main():
             sid = os.path.basename(p_image_fn).split("_")[0]
             subjects.append(sid)
             if args["volume"]:
-                target_fn = os.path.join(hcp_dir, sid, target_basename.format(sid))
+                target_fn = os.path.join(
+                    hcp_dir, sid, target_basename.format(sid)).replace(
+                    "/T1w/", "/MNINonLinear/").replace(".nii", "_resampled.nii")
             else:
                 target_fn = os.path.join(hcp_dir, sid, target_basename.format(sid)).replace(".nii.gz",
                                                                                             ".{}.dscalar.nii").format(

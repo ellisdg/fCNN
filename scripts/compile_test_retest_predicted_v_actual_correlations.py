@@ -32,6 +32,7 @@ def parse_args():
     parser.add_argument('--nthreads', type=int, default=1)
     parser.add_argument('--metric_names', default="/home/aizenberg/dgellis/fCNN/data/labels/ALL-TAVOR_name-file.txt")
     parser.add_argument('--structures', nargs=2, default=["CortexLeft", "CortexRight"])
+    parser.add_argument('--verbose', action='store_true', default=False)
     return vars(parser.parse_args())
 
 

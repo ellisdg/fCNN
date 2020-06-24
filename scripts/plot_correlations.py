@@ -64,12 +64,14 @@ def extract_diagonal_and_extra_diagonal_elements(matrix):
 
 
 def plot_hist(correlations, ax, set_xlabel=True, set_ylabel=True, title=None, plot_p_value=True,
-              p_value_fontsize='medium'):
+              p_value_fontsize='medium', legend=False, legend_loc="upper left"):
     diag_values, extra_diag_values = extract_diagonal_and_extra_diagonal_elements(correlations)
-    for m in (extra_diag_values, diag_values):
-        seaborn.distplot(m, ax=ax, kde_kws={"shade": True})
-        if title is not None:
-            ax.set_title(title)
+    for m, label, color in zip((diag_values, extra_diag_values),
+                               ("correlation with self", "correlation with other"),
+                               ("C1", "C0")):
+        seaborn.distplot(m, ax=ax, kde_kws={"shade": True}, label=label, color=color)
+    if title is not None:
+        ax.set_title(title)
     if set_xlabel:
         ax.set_xlabel("Correlation")
         ax.tick_params(labelbottom=True)
@@ -79,6 +81,8 @@ def plot_hist(correlations, ax, set_xlabel=True, set_ylabel=True, title=None, pl
     if plot_p_value:
         ax.text(1, 1, "\n".join(("D=" + "{:.3f}".format(d_value)[1:], p_value_to_string(p_value))),
                 horizontalalignment='right', verticalalignment='top', transform=ax.transAxes, fontsize=p_value_fontsize)
+    if legend:
+        ax.legend(legend_loc=legend_loc)
     return d_value, p_value
 
 
@@ -137,11 +141,11 @@ def plot_correlation_panel(corr_matrix, column_width=3, row_height=3, norm_vmax=
     save_fig(norm_cbar_fig, output_dir + "/correlation_matrix_overall_normalized_colorbar", bbox_inches="tight")
 
     overall_hist_fig, overall_hist_ax = plt.subplots()
-    d, p = plot_hist(corr_matrix, overall_hist_ax, title=None, plot_p_value=True)
+    d, p = plot_hist(corr_matrix, overall_hist_ax, title=None, plot_p_value=True, legend=True)
     print("D-value: {:.2f}\tp-value = {:.2e}".format(d, p))
     save_fig(overall_hist_fig, output_dir + "/correlation_overall_histogram", bbox_inches="tight")
 
-    _ = plot_hist(corr_matrix, _overall_hist_ax, title=None, plot_p_value=True)
+    _ = plot_hist(corr_matrix, _overall_hist_ax, title=None, plot_p_value=True, legend=True)
 
     save_fig(overall_all_fig, output_dir + "/correlation_overall_panel", bbox_inches="tight")
 

@@ -214,7 +214,7 @@ def compare_correlation_models(correlation_files, labels, output_directory):
         s, i, i_all = np.intersect1d(sub_list, all_subjects, return_indices=True)
         np.testing.assert_equal(s, all_subjects)
         correlations.append(corr[i][:, i])
-    correlations = np.mean(np.asarray(correlations)[..., 0])
+    correlations = np.asarray(correlations)[..., 0]
     print(correlations.shape)
 
     plot_self_vs_other_correlations(correlations, model_labels, method_labels, output_directory,

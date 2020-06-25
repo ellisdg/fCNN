@@ -5,7 +5,7 @@ from dipy.io import read_bvals_bvecs
 from nilearn.image import new_img_like, resample_to_img
 from dipy.core.gradients import gradient_table
 import dipy.reconst.dti as dti
-from unet3d.utils.utils import resample_image_to_spacing
+from .utils.resample import resample_image_to_spacing
 
 
 def fetch_dmri_filenames(subject_directory):

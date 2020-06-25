@@ -3,19 +3,19 @@ import numpy as np
 import nibabel as nib
 from keras.utils import Sequence
 from nilearn.image import new_img_like
-from .nilearn_custom_utils.nilearn_utils import crop_img, reorder_affine
-from unet3d.utils.utils import resize_affine, resample
-from unet3d.augment import scale_affine, add_noise
-from unet3d.data import combine_images
 
+from .nilearn_custom_utils.nilearn_utils import crop_img, reorder_affine
 from .radiomic_utils import binary_classification, multilabel_classification, fetch_data, pick_random_list_elements, \
     fetch_data_for_point
 from .radiomic_utils import load_single_image
 from .hcp import (nib_load_files, extract_gifti_surface_vertices, get_vertices_from_scalar, get_metric_data,
                   get_nibabel_data, extract_cifti_volumetric_data)
-from .utils import (read_polydata, extract_polydata_vertices, zero_mean_normalize_image_data, copy_image,
+from .utils import (combine_images, zero_mean_normalize_image_data, copy_image,
                     zero_floor_normalize_image_data, zero_one_window, compile_one_hot_encoding,
                     foreground_zero_mean_normalize_image_data)
+from .resample import resample
+from .augment import scale_affine, add_noise
+from .affine import resize_affine
 
 
 def load_image(filename, feature_axis=3, resample_unequal_affines=True, interpolation="linear", force_4d=False):

@@ -1,6 +1,7 @@
 import sys
 import numpy as np
 import json
+from nilearn.image import resample_to_img
 
 
 def load_json(filename):
@@ -205,3 +206,38 @@ def update_progress(progress, bar_length=30, message=""):
     text = "\r{0}[{1}] {2:.2f}% {3}".format(message, "#" * block + "-" * (bar_length - block), progress*100, status)
     sys.stdout.write(text)
     sys.stdout.flush()
+
+
+def combine_images(images, axis=0, resample_unequal_affines=False, interpolation="linear"):
+    base_image = images[0]
+    data = list()
+    max_dim = len(base_image.shape)
+    for image in images:
+        try:
+            np.testing.assert_array_equal(image.affine, base_image.affine)
+        except AssertionError as error:
+            if resample_unequal_affines:
+                image = resample_to_img(image, base_image, interpolation=interpolation)
+            else:
+                raise error
+        image_data = image.get_data()
+        dim = len(image.shape)
+        if dim < max_dim:
+            image_data = np.expand_dims(image_data, axis=axis)
+        elif dim > max_dim:
+            max_dim = max(max_dim, dim)
+            data = [np.expand_dims(x, axis=axis) for x in data]
+        data.append(image_data)
+    if len(data[0].shape) > 3:
+        array = np.concatenate(data, axis=axis)
+    else:
+        array = np.stack(data, axis=axis)
+    return base_image.__class__(array, base_image.affine)
+
+
+def move_channels_last(data):
+    return np.moveaxis(data, 0, -1)
+
+
+def move_channels_first(data):
+    return np.moveaxis(data, -1, 0)

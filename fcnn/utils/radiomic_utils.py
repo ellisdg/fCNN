@@ -6,13 +6,12 @@ from nilearn.image import reorder_img, resample_to_img
 import matplotlib.pyplot as plt
 import nibabel as nib
 
-from unet3d.utils.utils import update_progress
-from unet3d.normalize import normalize_data as unet3d_normalize
-from unet3d.data import resample as unet3d_resample
-from unet3d.data import move_channels_first, move_channels_last
-from unet3d.augment import permute_data, random_permutation_key
+from .utils import update_progress, move_channels_first, move_channels_last
+from .utils import zero_mean_normalize_image_data as unet3d_normalize
+from .resample import resample as unet3d_resample
+from .augment import permute_data, random_permutation_key
 
-    
+
 def compute_affine_from_point(point, window, spacing):
     affine = np.diag(np.ones(4))
     np.fill_diagonal(affine, list(spacing) + [1])

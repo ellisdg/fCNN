@@ -192,7 +192,7 @@ def plot_self_vs_other_correlations(corr_matrices, model_labels, method_labels, 
              bbox_inches="tight")
 
 
-def compare_correlation_models(correlation_files, labels, output_directory):
+def compare_overall_correlation_models_and_methods(correlation_files, labels, output_directory):
     temp_correlations = list()
     subjects = list()
     model_labels = list()
@@ -223,6 +223,84 @@ def compare_correlation_models(correlation_files, labels, output_directory):
          xlabel="Self vs other increase (in %)")
 
 
+def plot_per_domain(corr_matrices, domains, metric_names, method_labels, labels, output_dir, average_per_domain=True,
+         metric_func=self_vs_other_correlation, output_filename="{}_increase_correlation_over_mean_correlation",
+         xlabel="Self vs other increase (in %)"):
+    names = list()
+    result = list()
+    titles = list()
+    for i, (domain, metric_name) in enumerate(zip(domains, metric_names)):
+        title = domain + " " + metric_name
+        names.append(title)
+        corr_matrix = corr_matrices[..., i]
+        result.append(metric_func(corr_matrix))
+        titles.append(title)
+    if average_per_domain:
+        rows = list()
+        domains = np.asarray(domains)
+        method_labels = np.asarray(method_labels)
+        result = np.asarray(result)
+        for domain in np.unique(domains):
+            domain_mask = domains == domain
+            for method in labels:
+                method_mask = method_labels == method
+                value = result[np.logical_and(domain_mask, method_mask)].mean() * 100
+                rows.append([method, domain, value])
+        df = pd.DataFrame(rows, columns=["Method", "Task", "Value"])
+    else:
+        data = np.squeeze(np.dstack([method_labels, domains, names, titles, np.asarray(result) * 100]))
+        df = pd.DataFrame(data, columns=["Method", "Domain", "Contrast", "Task", "Value"])
+
+    w = 6
+    width = 0.4
+    gap = 0.
+    h = (width + gap) * len(df)
+    fig, ax = plt.subplots(figsize=(w, h))
+    seaborn.barplot(data=df, x="Value", y="Task", hue="Method", ax=ax)
+    ax.set_xlabel(xlabel)
+    ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
+    seaborn.despine(ax=ax, top=True)
+    save_fig(fig, os.path.join(output_dir, output_filename.format("_".join(labels))), bbox_inches="tight")
+
+
+def compare_domain_correlation_models(correlation_files, name_file, labels, output_directory, average_per_domain=True):
+    temp_correlations = list()
+    metric_names = list()
+    domains = list()
+    subjects = list()
+    method_labels = list()
+    task_names = read_namefile(name_file)
+
+    for c_file, label in zip(correlation_files, labels):
+        corr = np.load(c_file)
+        print(c_file, corr.shape)
+        subs = np.load(c_file.replace(".npy", "_subjects.npy"))
+        subjects.append(subs)
+        temp_correlations.append(corr)
+        for name in task_names:
+            d, n = name.split(" ")
+            domains.append(d)
+            metric_names.append(n)
+            method_labels.append(label)
+
+    if len(temp_correlations) > 1:
+        all_subjects = reduce(np.intersect1d, subjects)
+        correlations = list()
+        for sub_list, corr in zip(np.copy(subjects), temp_correlations):
+            s, i, i_all = np.intersect1d(sub_list, all_subjects, return_indices=True)
+            np.testing.assert_equal(s, all_subjects)
+            correlations.append(corr[i][:, i])
+        correlations = np.concatenate(correlations, axis=-2)
+    else:
+        correlations = np.asarray(temp_correlations[0])
+
+    corr_matrices = np.asarray(correlations)[..., 0]
+    plot_per_domain(corr_matrices, domains, metric_names, method_labels, labels, average_per_domain=average_per_domain,
+                    output_dir=output_directory, metric_func=self_vs_other_correlation,
+                    output_filename="{}_increase_correlation_over_mean_correlation",
+                    xlabel="Self vs other increase (in %)")
+
+
 def main():
     seaborn.set_palette('muted')
     seaborn.set_style('whitegrid')
@@ -236,11 +314,15 @@ def main():
     if args["level"] == "overall":
         if len(args["correlation_filename"]) > 1:
             # compare correlations
-            compare_correlation_models(args["correlation_filename"], args["labels"], args["output_dir"])
+            compare_overall_correlation_models_and_methods(args["correlation_filename"], args["labels"],
+                                                           args["output_dir"])
         else:
             # plot correlation results for a single correlation file
             corr_matrix = np.load(args["correlation_filename"])[..., 0]
             plot_correlation_panel(corr_matrix=corr_matrix, output_dir=args["output_dir"])
+    elif args["level"] == "domain":
+        compare_domain_correlation_models(args["correlation_file"], args["task_names"], args["labels"],
+                                          args["output_dir"])
     else:
         raise NotImplementedError("Level={}".format(args["level"]))
 

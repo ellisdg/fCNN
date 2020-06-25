@@ -244,11 +244,11 @@ def plot_per_domain(corr_matrices, domains, metric_names, method_labels, labels,
             domain_mask = domains == domain
             for method in labels:
                 method_mask = method_labels == method
-                value = result[np.logical_and(domain_mask, method_mask)].mean() * 100
+                value = result[np.logical_and(domain_mask, method_mask)].mean()
                 rows.append([method, domain, value])
         df = pd.DataFrame(rows, columns=["Method", "Task", "Value"])
     else:
-        data = np.squeeze(np.dstack([method_labels, domains, names, titles, np.asarray(result) * 100]))
+        data = np.squeeze(np.dstack([method_labels, domains, names, titles, np.asarray(result)]))
         df = pd.DataFrame(data, columns=["Method", "Domain", "Contrast", "Task", "Value"])
 
     w = 6

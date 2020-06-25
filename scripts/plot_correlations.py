@@ -321,7 +321,7 @@ def main():
             corr_matrix = np.load(args["correlation_filename"])[..., 0]
             plot_correlation_panel(corr_matrix=corr_matrix, output_dir=args["output_dir"])
     elif args["level"] == "domain":
-        compare_domain_correlation_models(args["correlation_file"], args["task_names"], args["labels"],
+        compare_domain_correlation_models(args["correlation_filename"], args["task_names"], args["labels"],
                                           args["output_dir"])
     else:
         raise NotImplementedError("Level={}".format(args["level"]))

@@ -72,8 +72,8 @@ def main():
     if not os.path.isabs(volume_template):
         volume_template = os.path.join(args["hcp_dir"], "{subject}", volume_template)
     subject_ids = list()
-    verbose = False
-    overwrite = False
+    verbose = args["verbose"]
+    overwrite = args["overwrite"]
 
     with open(args["config"], "r") as op:
         data = json.load(op)

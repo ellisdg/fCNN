@@ -301,6 +301,7 @@ class SubjectPredictionSequence(HCPParent, Sequence):
 
 class WholeBrainRegressionSequence(HCPRegressionSequence):
     def __init__(self, resample='linear', crop=True, cropping_pad_width=1, augment_scale_std=0, additive_noise_std=0,
+                 augment_blur_mean=None, augment_blur_std=None, augment_translation_std=None, flip_left_right=False,
                  **kwargs):
         super().__init__(**kwargs)
         self.resample = resample
@@ -308,6 +309,10 @@ class WholeBrainRegressionSequence(HCPRegressionSequence):
         self.augment_scale_std = augment_scale_std
         self.additive_noise_std = additive_noise_std
         self.cropping_pad_width = cropping_pad_width
+        self.augment_blur_mean = augment_blur_mean
+        self.augment_blur_std = augment_blur_std
+        self.augment_translation_std = augment_translation_std
+        self.flip_left_right = flip_left_right
 
     def __len__(self):
         return int(np.ceil(np.divide(len(self.filenames) * self.iterations_per_epoch, self.batch_size)))
@@ -329,7 +334,11 @@ class WholeBrainRegressionSequence(HCPRegressionSequence):
         feature_image, affine = format_feature_image(feature_image=feature_image, crop=self.crop,
                                                      augment_scale_std=self.augment_scale_std, window=self.window,
                                                      cropping_pad_width=self.cropping_pad_width,
-                                                     additive_noise_std=self.additive_noise_std)
+                                                     additive_noise_std=self.additive_noise_std,
+                                                     augment_blur_mean=self.augment_blur_mean,
+                                                     augment_blur_std=self.augment_blur_std,
+                                                     flip_left_right=self.flip_left_right,
+                                                     augment_translation_std=self.augment_translation_std)
         input_img = resample(feature_image, affine, self.window, interpolation=self.resample)
         return self.normalization_func(get_nibabel_data(input_img))
 
@@ -370,15 +379,21 @@ class WholeBrainAutoEncoder(WholeBrainRegressionSequence):
                                                      augment_scale_std=self.augment_scale_std,
                                                      window=self.window,
                                                      cropping_pad_width=self.cropping_pad_width,
-                                                     additive_noise_std=None)
+                                                     additive_noise_std=None,  # added later
+                                                     augment_blur_mean=None,  # added later
+                                                     augment_blur_std=None,  # added later
+                                                     flip_left_right=self.flip_left_right,
+                                                     augment_translation_std=self.augment_translation_std)
         target_image = self.resample_target(self.load_target_image(feature_image,
                                                                    input_filenames,
                                                                    target_index=target_index,
                                                                    reorder=self.reorder),
                                             target_resample=target_resample,
                                             affine=affine)
-        if self.additive_noise_std:
-            feature_image.dataobj[:] = add_noise(feature_image.dataobj, sigma_factor=self.additive_noise_std)
+        feature_image = augment_image(feature_image,
+                                      additive_noise_std=self.additive_noise_std,
+                                      augment_blur_mean=self.augment_blur_mean,
+                                      augment_blur_std=self.augment_blur_std)
         input_image = resample(feature_image, affine, self.window, interpolation=self.resample)
         return input_image, target_image
 

@@ -1,5 +1,5 @@
-from fcnn.utils.hcp import nib_load_files, get_metric_data
-from fcnn.utils.utils import load_json
+from fcnn.utils.hcp import get_metric_data
+from fcnn.utils.utils import load_json, nib_load_files
 
 
 def get_metric_data_from_config(metric_filenames, config_filename, subject_id=100206):

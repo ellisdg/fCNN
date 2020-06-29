@@ -1,0 +1,60 @@
+{
+  "subjects_filename": "data/subjects_seg.json",
+  "feature_basenames": "T1w/Diffusion/fa.nii.gz",
+  "target_basenames": "T1w/wmparc.nii.gz",
+  "hemispheres": [
+    "L",
+    "R"
+  ],
+  "window": [
+    144,
+    160,
+    144
+  ],
+  "n_features": 3,
+  "optimizer": "Adam",
+  "package": "pytorch",
+  "loss": "dice_loss",
+  "evaluation_metric": "dice_loss",
+  "weights": null,
+  "custom_loss": true,
+  "regularized": false,
+  "reorder": true,
+  "save_best_only": false,
+  "n_epochs": 2000,
+  "min_learning_rate": 1e-08,
+  "decay_patience": 5,
+  "decay_factor": 0.5,
+  "early_stopping_patience": 20,
+  "batch_size": 8,
+  "validation_batch_size": 8,
+  "initial_learning_rate": 1e-04,
+  "model_name": "UNet",
+  "model_kwargs": {
+    "base_width":  16,
+    "encoder_blocks": [2, 2, 2, 2, 2],
+    "decoder_mirrors_encoder": true,
+    "input_shape": [144, 160, 144],
+    "activation": "sigmoid"
+  },
+  "skip_validation": false,
+  "iterations_per_epoch": 1,
+  "n_outputs": 1,
+  "sequence": "WholeVolumeSupervisedRegressionDataset",
+  "sequence_kwargs": {
+    "normalization": null,
+    "target_normalization": null,
+    "crop": true,
+    "resample": "linear",
+    "labels": [[1024, 2024]]
+  },
+  "additional_training_args": {
+    "cropping_pad_width": 5,
+    "augment_scale_std": 0.1,
+    "additive_noise_std": 0.1,
+    "augment_blur_mean": 2.0,
+    "augment_blur_std":  1.0,
+    "augment_translation_std": 0.05,
+    "flip_left_right": true
+  }
+}

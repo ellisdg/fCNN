@@ -3,10 +3,11 @@ import torch
 import numpy as np
 
 
-from ..sequences import (WholeBrainRegressionSequence, HCPRegressionSequence, nib_load_files, get_metric_data,
+from ..sequences import (WholeBrainRegressionSequence, HCPRegressionSequence, get_metric_data,
                          WholeBrainAutoEncoder, WholeBrainLabeledAutoEncoder, WindowedAutoEncoder,
                          SubjectPredictionSequence, fetch_data_for_point, WholeVolumeCiftiSupervisedRegressionSequence,
                          WholeVolumeSupervisedRegressionSequence)
+from ..utils import nib_load_files
 
 
 class WholeBrainCIFTI2DenseScalarDataset(WholeBrainRegressionSequence, Dataset):

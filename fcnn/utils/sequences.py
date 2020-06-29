@@ -3,36 +3,58 @@ import numpy as np
 import nibabel as nib
 from keras.utils import Sequence
 from nilearn.image import new_img_like
+import random
 
-from .nilearn_custom_utils.nilearn_utils import crop_img, reorder_affine
+from .nilearn_custom_utils.nilearn_utils import crop_img
 from .radiomic_utils import binary_classification, multilabel_classification, fetch_data, pick_random_list_elements, \
     fetch_data_for_point
-from .radiomic_utils import load_single_image
-from .hcp import (nib_load_files, extract_gifti_surface_vertices, get_vertices_from_scalar, get_metric_data,
+from .hcp import (extract_gifti_surface_vertices, get_vertices_from_scalar, get_metric_data,
                   get_nibabel_data, extract_cifti_volumetric_data)
-from .utils import (combine_images, zero_mean_normalize_image_data, copy_image,
+from .utils import (zero_mean_normalize_image_data, copy_image,
                     zero_floor_normalize_image_data, zero_one_window, compile_one_hot_encoding,
-                    foreground_zero_mean_normalize_image_data)
+                    foreground_zero_mean_normalize_image_data, nib_load_files, load_image, load_single_image)
 from .resample import resample
-from .augment import scale_affine, add_noise
+from .augment import scale_affine, add_noise, affine_swap_axis, translate_affine, random_blur
 from .affine import resize_affine
 
 
-def load_image(filename, feature_axis=3, resample_unequal_affines=True, interpolation="linear", force_4d=False):
-    """
-    :param feature_axis: axis along which to combine the images, if necessary.
-    :param filename: can be either string path to the file or a list of paths.
-    :return: image containing either the 1 image in the filename or a combined image based on multiple filenames.
-    """
+def augment_affine(affine, shape, augment_scale_std=None, flip_left_right=False, augment_translation_std=None):
+    if augment_scale_std:
+        scale = np.random.normal(1, augment_scale_std, 3)
+        affine = scale_affine(affine, shape, scale)
+    if flip_left_right and bool(random.getrandbits(1)):  # flips the left and right sides of the image randomly
+        affine = affine_swap_axis(affine, shape=shape, axis=0)
+    if augment_translation_std:
+        affine = translate_affine(affine, shape,
+                                  translation_scales=np.random.normal(loc=0, scale=augment_translation_std, size=3))
+    return affine
 
-    if type(filename) != list:
-        if not force_4d:
-            return nib.load(filename)
-        else:
-            filename = [filename]
 
-    return combine_images(nib_load_files(filename), axis=feature_axis,
-                          resample_unequal_affines=resample_unequal_affines, interpolation=interpolation)
+def augment_image(image, augment_blur_mean=None, augment_blur_std=None, additive_noise_std=None):
+    if not (augment_blur_mean is None or augment_blur_std is None):
+        image = random_blur(image, mean=augment_blur_mean, std=augment_blur_std)
+    if additive_noise_std:
+        image.dataobj[:] = add_noise(image.dataobj, sigma_factor=additive_noise_std)
+    return image
+
+
+def format_feature_image(feature_image, window, crop=False, augment_scale_std=None, cropping_pad_width=1,
+                         additive_noise_std=None, flip_left_right=False, augment_translation_std=None,
+                         augment_blur_mean=None, augment_blur_std=None):
+    affine = feature_image.affine.copy()
+    shape = feature_image.shape
+    if crop:
+        affine, shape = crop_img(feature_image, return_affine=True, pad=cropping_pad_width)
+    affine = augment_affine(affine, shape,
+                            augment_scale_std=augment_scale_std,
+                            augment_translation_std=augment_translation_std,
+                            flip_left_right=flip_left_right)
+    feature_image = augment_image(feature_image,
+                                  augment_blur_mean=augment_blur_mean,
+                                  augment_blur_std=augment_blur_std,
+                                  additive_noise_std=additive_noise_std)
+    affine = resize_affine(affine, shape, window)
+    return feature_image, affine
 
 
 class SingleSiteSequence(Sequence):
@@ -259,7 +281,7 @@ class SubjectPredictionSequence(HCPParent, Sequence):
     def __init__(self, feature_filename, surface_filenames, surface_names, reference_metric_filename,
                  batch_size=50, window=(64, 64, 64), flip=False, spacing=(1, 1, 1), reorder=False):
         super().__init__(surface_names=surface_names, window=window, flip=flip, reorder=reorder, spacing=spacing)
-        self.feature_image = load_image(feature_filename)
+        self.feature_image = load_single_image(feature_filename, reorder=self.reorder)
         self.reference_metric = nib.load(reference_metric_filename)
         self.vertices = self.extract_vertices(surface_filenames=surface_filenames, metrics=[self.reference_metric])
         self.batch_size = batch_size
@@ -303,19 +325,11 @@ class WholeBrainRegressionSequence(HCPRegressionSequence):
         return np.asarray(x), np.asarray(y)
 
     def resample_input(self, feature_filename):
-        feature_image = load_image(feature_filename)
-        affine = feature_image.affine.copy()
-        shape = feature_image.shape
-        if self.reorder:
-            affine = reorder_affine(affine, shape)
-        if self.crop:
-            affine, shape = crop_img(feature_image, return_affine=True, pad=self.cropping_pad_width)
-        if self.augment_scale_std:
-            scale = np.random.normal(1, self.augment_scale_std, 3)
-            affine = scale_affine(affine, shape, scale)
-        if self.additive_noise_std:
-            feature_image.dataobj[:] = add_noise(feature_image.dataobj, sigma_factor=self.additive_noise_std)
-        affine = resize_affine(affine, shape, self.window)
+        feature_image = load_image(feature_filename, reorder=self.reorder)
+        feature_image, affine = format_feature_image(feature_image=feature_image, crop=self.crop,
+                                                     augment_scale_std=self.augment_scale_std, window=self.window,
+                                                     cropping_pad_width=self.cropping_pad_width,
+                                                     additive_noise_std=self.additive_noise_std)
         input_img = resample(feature_image, affine, self.window, interpolation=self.resample)
         return self.normalization_func(get_nibabel_data(input_img))
 
@@ -348,21 +362,19 @@ class WholeBrainAutoEncoder(WholeBrainRegressionSequence):
 
     def resample_image(self, input_filenames, normalize=True, feature_index=0, target_index=None, target_resample=None):
         feature_filename = input_filenames[feature_index]
-        feature_image = load_image(feature_filename, force_4d=True)
+        feature_image = load_image(feature_filename, force_4d=True, reorder=self.reorder, interpolation=self.resample)
         if normalize:
             feature_image = normalize_image_with_function(feature_image, self.normalization_func)
-        affine = feature_image.affine.copy()
-        shape = feature_image.shape
-        if self.reorder:
-            affine = reorder_affine(affine, shape)
-        if self.crop:
-            affine, shape = crop_img(feature_image, return_affine=True, pad=self.cropping_pad_width)
-        if self.augment_scale_std:
-            scale = np.random.normal(1, self.augment_scale_std, 3)
-            affine = scale_affine(affine, shape, scale)
-        affine = resize_affine(affine, shape, self.window)
-        target_image = self.resample_target(self.load_target_image(feature_image, input_filenames,
-                                                                   target_index=target_index),
+        feature_image, affine = format_feature_image(feature_image=feature_image,
+                                                     crop=self.crop,
+                                                     augment_scale_std=self.augment_scale_std,
+                                                     window=self.window,
+                                                     cropping_pad_width=self.cropping_pad_width,
+                                                     additive_noise_std=None)
+        target_image = self.resample_target(self.load_target_image(feature_image,
+                                                                   input_filenames,
+                                                                   target_index=target_index,
+                                                                   reorder=self.reorder),
                                             target_resample=target_resample,
                                             affine=affine)
         if self.additive_noise_std:
@@ -370,11 +382,11 @@ class WholeBrainAutoEncoder(WholeBrainRegressionSequence):
         input_image = resample(feature_image, affine, self.window, interpolation=self.resample)
         return input_image, target_image
 
-    def load_target_image(self, feature_image, input_filenames, target_index=None):
+    def load_target_image(self, feature_image, input_filenames, target_index=None, reorder=False):
         if target_index is None:
             target_image = copy_image(feature_image)
         else:
-            target_image = load_image(input_filenames[target_index], force_4d=True)
+            target_image = load_image(input_filenames[target_index], force_4d=True, reorder=reorder)
         return target_image
 
     def resample_target(self, target_image, affine, target_resample=None):
@@ -454,9 +466,9 @@ class WholeVolumeSupervisedRegressionSequence(WholeBrainAutoEncoder):
         self.normalize_target = target_normalization is not None
         self.target_normalization_func = normalization_name_to_function(target_normalization)
 
-    def load_target_image(self, feature_image, input_filenames, target_index=None):
+    def load_target_image(self, feature_image, input_filenames, target_index=None, resample=False):
         target_image_filename = input_filenames[self.target_index]
-        target_image = nib.load(target_image_filename)
+        target_image = load_single_image(target_image_filename, reorder=self.reorder)
         if self.normalize_target:
             image_data = self.target_normalization_func(target_image.get_fdata())
             return new_img_like(ref_niimg=feature_image, data=image_data,
@@ -472,7 +484,7 @@ class WholeVolumeCiftiSupervisedRegressionSequence(WholeVolumeSupervisedRegressi
                          target_normalization=target_normalization, **kwargs)
         self.subject_id_index = subject_id_index
 
-    def load_target_image(self, feature_image, input_filenames, target_index=None):
+    def load_target_image(self, feature_image, input_filenames, target_index=None, reorder=False):
         target_image_filename = input_filenames[self.target_index]
         cifti_target_image = nib.load(target_image_filename)
         image_data = extract_cifti_volumetric_data(cifti_image=cifti_target_image,

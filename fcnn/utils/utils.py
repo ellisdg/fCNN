@@ -1,7 +1,9 @@
 import sys
+
+import nibabel as nib
 import numpy as np
 import json
-from nilearn.image import resample_to_img
+from nilearn.image import resample_to_img, reorder_img
 
 
 def load_json(filename):
@@ -172,7 +174,11 @@ def compile_one_hot_encoding(data, n_labels, labels=None, dtype=np.int8):
     y = np.zeros(new_shape, dtype=dtype)
     for label_index in range(n_labels):
         if labels is not None:
-            y[:, label_index][data[:, 0] == labels[label_index]] = 1
+            if type(labels[label_index]) == list:
+                for label in labels[label_index]:
+                    y[:, label_index][data[:, 0] == label] = 1
+            else:
+                y[:, label_index][data[:, 0] == labels[label_index]] = 1
         else:
             y[:, label_index][data[:, 0] == (label_index + 1)] = 1
     return y
@@ -241,3 +247,35 @@ def move_channels_last(data):
 
 def move_channels_first(data):
     return np.moveaxis(data, -1, 0)
+
+
+def nib_load_files(filenames, reorder=False, interpolation="linear"):
+    if type(filenames) != list:
+        filenames = [filenames]
+    return [load_image(filename, reorder=reorder, interpolation=interpolation, force_4d=False)
+            for filename in filenames]
+
+
+def load_image(filename, feature_axis=3, resample_unequal_affines=True, interpolation="linear", force_4d=False,
+               reorder=False):
+    """
+    :param feature_axis: axis along which to combine the images, if necessary.
+    :param filename: can be either string path to the file or a list of paths.
+    :return: image containing either the 1 image in the filename or a combined image based on multiple filenames.
+    """
+
+    if type(filename) != list:
+        if not force_4d:
+            return load_single_image(filename=filename, resample=interpolation, reorder=reorder)
+        else:
+            filename = [filename]
+
+    return combine_images(nib_load_files(filename, reorder=reorder, interpolation=interpolation), axis=feature_axis,
+                          resample_unequal_affines=resample_unequal_affines, interpolation=interpolation)
+
+
+def load_single_image(filename, resample=None, reorder=True):
+    image = nib.load(filename)
+    if reorder:
+        return reorder_img(image, resample=resample)
+    return image

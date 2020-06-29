@@ -1,12 +1,14 @@
 import numpy as np
 import nibabel as nib
-from nilearn.image import new_img_like, resample_to_img
+from nilearn.image import new_img_like, resample_to_img, smooth_img
 from nilearn.image.resampling import BoundingBoxError
 import random
 import itertools
 from collections.abc import Iterable
+from scipy.ndimage.interpolation import map_coordinates
+from scipy.ndimage.filters import gaussian_filter
 
-from .affine import get_extent_from_image, get_spacing_from_affine
+from .affine import get_extent_from_image, get_spacing_from_affine, assert_affine_is_diagonal
 from .resample import resample
 from .nilearn_custom_utils.nilearn_utils import get_background_values
 from .utils import copy_image
@@ -206,24 +208,16 @@ def add_noise(data, mean=0., sigma_factor=0.1):
     return np.add(data, noise)
 
 
-def translate_image(image, translation_scales, copy=False):
+def translate_affine(affine, shape, translation_scales, copy=True):
     """
-
-    :param image: (NiBabel-like image)
-    :param translation_scales: (tuple) Contains x, y, and z translations on scales from -1 to 1. 0 is no translation.
+    :param translation_scales: (tuple) Contains x, y, and z translations scales from -1 to 1. 0 is no translation.
     1 is a forward (RAS-wise) translation of the entire image extent for that direction. -1 is a translation in the
     negative direction of the entire image extent. A translation of 1 is impractical for most purposes, though, as it
-    moves the image out of the original field of view almost entirely.
-    :return:
+    moves the image out of the original field of view almost entirely. To perform a random translation, you can
+    use numpy.random.normal(loc=0, scale=sigma, size=3) where sigma is the percent of image translation that would be
+    randomly translated on average (0.05 for example).
+    :return: affine
     """
-    if copy:
-        image = copy_image(image)
-    translation = np.multiply(translation_scales, get_extent_from_image(image))
-    image.affine[:3, 3] += translation
-    return image
-
-
-def translate_affine(affine, shape, translation_scales, copy=True):
     if copy:
         affine = np.copy(affine)
     spacing = get_spacing_from_affine(affine)
@@ -233,16 +227,49 @@ def translate_affine(affine, shape, translation_scales, copy=True):
     return affine
 
 
-def rotate_affine(affine, rotation):
+def translate_image(image, translation_scales, interpolation="linear"):
+    """
+    :param image: (NiBabel-like image)
+    :param translation_scales: (tuple) Contains x, y, and z translations scales from -1 to 1. 0 is no translation.
+    1 is a forward (RAS-wise) translation of the entire image extent for that direction. -1 is a translation in the
+    negative direction of the entire image extent. A translation of 1 is impractical for most purposes, though, as it
+    moves the image out of the original field of view almost entirely. To perform a random translation, you can
+    use numpy.random.normal(loc=0, scale=sigma, size=3) where sigma is the percent of image translation that would be
+    randomly translated on average (0.05 for example).
+    :return: translated image
+    """
+    affine = np.copy(image.affine)
+    translation = np.multiply(translation_scales, get_extent_from_image(image))
+    affine[:3, 3] += translation
+    return resample(image, target_affine=affine, target_shape=image.shape, interpolation=interpolation)
+
+
+def _rotate_affine(affine, shape, rotation):
+    """
+    Work in progress. Does not work yet.
+    :param affine:
+    :param shape:
+    :param rotation:
+    :return:
+    """
+    assert_affine_is_diagonal(affine)
+    # center the image on (0, 0, 0)
+    temp_origin = (affine.diagonal()[:3] * np.asarray(shape)) / 2
+    temp_affine = np.copy(affine)
+    temp_affine[:, :3] = temp_origin
+
     rotation_affine = np.diag(np.ones(4))
     theta_x, theta_y, theta_z = rotation
     affine_x = np.copy(rotation_affine)
     affine_x[1, 1] = np.cos(theta_x)
     affine_x[1, 2] = -np.sin(theta_x)
     affine_x[2, 1] = np.sin(theta_x)
-    affine_x[2, 2] = np.sin(theta_x)
-
-    return affine * affine_x
+    affine_x[2, 2] = np.cos(theta_x)
+    print(affine_x)
+    x_rotated_affine = np.dot(affine, affine_x)
+    new_affine = np.copy(x_rotated_affine)
+    new_affine[:, :3] = affine[:, :3]
+    return new_affine
 
 
 def find_image_center(image, ndim=3):
@@ -289,3 +316,44 @@ def scale_affine(affine, shape, scale, ndim=3):
     s = np.diag(list(1 / scale) + [1])
     affine = np.matmul(affine, s)
     return affine
+
+
+def elastic_transform(image, alpha, sigma, target_image, random_state=None):
+    """Elastic deformation of images as described in [Simard2003]_.
+    .. [Simard2003] Simard, Steinkraus and Platt, "Best Practices for
+       Convolutional Neural Networks applied to Visual Document Analysis", in
+       Proc. of the International Conference on Document Analysis and
+       Recognition, 2003.
+       Modified from: https://gist.github.com/erniejunior/601cdf56d2b424757de5
+    """
+    if random_state is None:
+        random_state = np.random.RandomState(None)
+
+    shape = image.shape
+    dx = gaussian_filter((random_state.rand(*shape) * 2 - 1), sigma, mode="constant", cval=0) * alpha
+    dy = gaussian_filter((random_state.rand(*shape) * 2 - 1), sigma, mode="constant", cval=0) * alpha
+    dz = gaussian_filter((random_state.rand(*shape) * 2 - 1), sigma, mode="constant", cval=0) * alpha
+    x, y, z, c = np.meshgrid(np.arange(shape[0]), np.arange(shape[1]), np.arange(shape[2]), np.arange(shape[3]),
+                             indexing="ij")
+    indices = np.reshape(x+dx, (-1, 1)), np.reshape(y+dy, (-1, 1)), np.reshape(z+dz, (-1, 1)), np.reshape(c, (-1, 1))
+
+    distored_image = map_coordinates(image, indices, order=1, mode='reflect')
+    distored_target_image = map_coordinates(target_image, indices, order=1, mode='reflect')
+    return distored_image.reshape(image.shape), distored_target_image.reshape(image.shape)
+
+
+def random_blur(image, mean, std):
+    """
+    mean: mean fwhm in millimeters.
+    std: standard deviation of fwhm in millimeters.
+    """
+    return smooth_img(image, fwhm=np.abs(np.random.normal(mean, std, 3)))
+
+
+def affine_swap_axis(affine, shape, axis=0):
+    assert_affine_is_diagonal(affine)
+    new_affine = np.copy(affine)
+    origin = affine[axis, 3]
+    new_affine[axis, 3] = origin + shape[axis] * affine[axis, axis]
+    new_affine[axis, axis] = -affine[axis, axis]
+    return new_affine

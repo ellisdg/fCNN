@@ -41,3 +41,12 @@ def resize_affine(affine, shape, target_shape, copy=True):
     target_spacing = np.multiply(spacing, scale)
     affine = adjust_affine_spacing(affine, target_spacing)
     return affine
+
+
+def is_diag(x):
+    return np.count_nonzero(x - np.diag(np.diagonal(x))) == 0
+
+
+def assert_affine_is_diagonal(affine):
+    if not is_diag(affine[:3, :3]):
+        raise NotImplementedError("Hemisphere swapping for non-diagonal affines is not yet implemented.")

@@ -6,7 +6,7 @@ from nilearn.image import reorder_img, resample_to_img
 import matplotlib.pyplot as plt
 import nibabel as nib
 
-from .utils import update_progress, move_channels_first, move_channels_last
+from .utils import update_progress, move_channels_first, move_channels_last, load_single_image
 from .utils import zero_mean_normalize_image_data as unet3d_normalize
 from .resample import resample as unet3d_resample
 from .augment import permute_data, random_permutation_key
@@ -140,13 +140,6 @@ def get_label_indices(image):
 def load_subject_image(subject_directory, basename, resample=None, reorder=True):
     image_filename = os.path.join(subject_directory, basename)
     return load_single_image(image_filename, resample=resample, reorder=reorder)
-    
-    
-def load_single_image(filename, resample=None, reorder=True):
-    image = nib.load(filename)
-    if reorder:
-        return reorder_img(image, resample=resample)
-    return image
 
 
 def index_to_point(index, affine):

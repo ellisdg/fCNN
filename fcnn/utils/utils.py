@@ -162,12 +162,13 @@ def hist_match(source, template):
     return interp_t_values[bin_idx].reshape(oldshape)
 
 
-def compile_one_hot_encoding(data, n_labels, labels=None, dtype=np.int8):
+def compile_one_hot_encoding(data, n_labels, labels=None, dtype=np.uint8):
     """
     Translates a label map into a set of binary labels.
     :param data: numpy array containing the label map with shape: (n_samples, 1, ...).
     :param n_labels: number of labels.
     :param labels: integer values of the labels.
+    :param dtype: output type of the array
     :return: binary numpy array of shape: (n_samples, n_labels, ...)
     """
     new_shape = [data.shape[0], n_labels] + list(data.shape[2:])

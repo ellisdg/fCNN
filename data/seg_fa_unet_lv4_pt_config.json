@@ -22,13 +22,13 @@
   "decay_patience": 5,
   "decay_factor": 0.5,
   "early_stopping_patience": 20,
-  "batch_size": 4,
-  "validation_batch_size": 4,
+  "batch_size": 8,
+  "validation_batch_size": 8,
   "initial_learning_rate": 1e-04,
   "model_name": "UNet",
   "model_kwargs": {
     "base_width":  16,
-    "encoder_blocks": [2, 2, 2, 2, 2],
+    "encoder_blocks": [2, 2, 2, 2],
     "decoder_mirrors_encoder": true,
     "input_shape": [144, 160, 144],
     "activation": "sigmoid"

@@ -22,6 +22,7 @@ def parse_args():
     parser.add_argument('--nthreads', type=int, default=1)
     parser.add_argument('--submit', action='store_true', default=False)
     parser.add_argument('--split_output', action='store_true', default=False)
+    parser.add_argument('--verbose', action='store_true', default=False)
     parser.add_argument('--subject_dir')
     return vars(parser.parse_args())
 
@@ -87,7 +88,7 @@ def main():
         if args['multi_b_value']:
             process_func = process_multi_b_value_dti
         else:
-            process_func = partial(process_dti, concatenate=not args['split_output'])
+            process_func = partial(process_dti, concatenate=not args['split_output'], verbose=args['verbose'])
         if args['nthreads'] > 1:
             pool = Pool(args['nthreads'])
             pool.map(process_func, subject_dirs)

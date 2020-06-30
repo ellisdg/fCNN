@@ -113,7 +113,7 @@ def compute_dti(image, bvals, bvecs, brainmask):
 
 
 def process_dti(subject_directory, output_basename='dti.nii.gz', overwrite=False, dti_compute_func=compute_dti,
-                concatenate=True):
+                concatenate=True, verbose=False):
     if concatenate:
         dti_output_filename = os.path.join(subject_directory, 'T1w', 'Diffusion', output_basename)
     else:
@@ -121,11 +121,15 @@ def process_dti(subject_directory, output_basename='dti.nii.gz', overwrite=False
         fa_filename = dti_output_filename
         md_filename = fa_filename.replace('fa.nii.gz', 'md.nii.gz')
     if overwrite or not os.path.exists(dti_output_filename):
+        if verbose:
+            print("Output:", dti_output_filename)
         try:
             image, bvals, bvecs, brainmask = load_dmri_data(subject_directory)
         except FileNotFoundError as error:
-            print(error)
+            print(error, "Not raising error.")
             return
+        if verbose:
+            print("Diffusion image:", image.get_filename())
         tenfit = dti_compute_func(image, bvals, bvecs, brainmask)
         if concatenate:
             dti_data = np.concatenate((tenfit.md[..., None], tenfit.color_fa), axis=3)
@@ -134,6 +138,8 @@ def process_dti(subject_directory, output_basename='dti.nii.gz', overwrite=False
         else:
             new_img_like(image, tenfit.color_fa).to_filename(fa_filename)
             new_img_like(image, tenfit.color_md).to_filename(md_filename)
+    elif verbose:
+        print("Output already exists:", dti_output_filename)
 
 
 def process_multi_b_value_dti(subject_directory, output_basename='dti_12.nii.gz', overwrite=False):

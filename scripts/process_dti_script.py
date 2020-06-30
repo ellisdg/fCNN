@@ -23,6 +23,7 @@ def parse_args():
     parser.add_argument('--submit', action='store_true', default=False)
     parser.add_argument('--split_output', action='store_true', default=False)
     parser.add_argument('--verbose', action='store_true', default=False)
+    parser.add_argument('--mem_per_cpu', type=int, default=8000)
     parser.add_argument('--subject_dir')
     return vars(parser.parse_args())
 
@@ -82,7 +83,7 @@ def main():
                 else:
                     flags.append(arg)
         flags = " ".join(flags)
-        submit_subject_dirs(subject_dirs, flags=flags, nthreads=args['nthreads'])
+        submit_subject_dirs(subject_dirs, flags=flags, nthreads=args['nthreads'], mem_per_cpu=args['mem_per_cpu'])
     else:
         from fcnn.dti import process_dti, process_multi_b_value_dti
         if args['multi_b_value']:

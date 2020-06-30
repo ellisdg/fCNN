@@ -137,7 +137,7 @@ def process_dti(subject_directory, output_basename='dti.nii.gz', overwrite=False
             dti_image.to_filename(dti_output_filename)
         else:
             new_img_like(image, tenfit.color_fa).to_filename(fa_filename)
-            new_img_like(image, tenfit.color_md).to_filename(md_filename)
+            new_img_like(image, tenfit.md).to_filename(md_filename)
     elif verbose:
         print("Output already exists:", dti_output_filename)
 

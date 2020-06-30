@@ -41,7 +41,7 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
     but the results should not vary based on whether multiprocessing is used or not.
     """
     window = np.asarray(config['window'])
-    spacing = np.asarray(config['spacing'])
+    spacing = np.asarray(config['spacing']) if 'spacing' in config else None
     if 'model_name' in config:
         model_name = config['model_name']
 

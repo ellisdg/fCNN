@@ -36,7 +36,7 @@
   "skip_validation": false,
   "iterations_per_epoch": 1,
   "n_outputs": 1,
-  "sequence": "WholeBrainLabeledAutoEncoderDataset",
+  "sequence": "LabeledAEDataset",
   "sequence_kwargs": {
     "normalization": null,
     "target_normalization": null,

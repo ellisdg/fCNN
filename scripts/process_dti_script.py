@@ -73,9 +73,14 @@ def main():
         hcp_dir = args["hcp_dir"]
         subject_dirs = [os.path.join(hcp_dir, subject) for subject in subjects]
     if args['submit']:
-        flags = ""
-        if args['multi_b_value']:
-            flags += " --multi_b_value"
+        flags = list()
+        for arg in sys.argv[1:]:
+            if arg != "--submit":
+                if os.path.isfile(arg) or os.path.isdir(arg):
+                    flags.append(os.path.abspath(arg))
+                else:
+                    flags.append(arg)
+        flags = " ".join(flags)
         submit_subject_dirs(subject_dirs, flags=flags, nthreads=args['nthreads'])
     else:
         from fcnn.dti import process_dti, process_multi_b_value_dti

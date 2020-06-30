@@ -39,7 +39,6 @@
   "sequence": "LabeledAEDataset",
   "sequence_kwargs": {
     "normalization": null,
-    "target_normalization": null,
     "crop": true,
     "resample": "linear",
     "labels": [[1024, 2024]]

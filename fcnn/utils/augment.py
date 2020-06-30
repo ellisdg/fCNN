@@ -347,7 +347,7 @@ def random_blur(image, mean, std):
     mean: mean fwhm in millimeters.
     std: standard deviation of fwhm in millimeters.
     """
-    return smooth_img(image, fwhm=np.abs(np.random.normal(mean, std, 3)))
+    return smooth_img(image, fwhm=np.abs(np.random.normal(mean, std, 3)).tolist())
 
 
 def affine_swap_axis(affine, shape, axis=0):

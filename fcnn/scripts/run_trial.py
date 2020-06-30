@@ -118,11 +118,11 @@ def main():
         key = name + "_filenames"
         if key not in config:
             config[key] = generate_hcp_filenames(system_config['directory'],
-                                                 config['surface_basename_template'],
+                                                 config['surface_basename_template'] if "surface_basename_template" in config else None,
                                                  config['target_basenames'],
                                                  config['feature_basenames'],
                                                  config[name],
-                                                 config['hemispheres'])
+                                                 config['hemispheres'] if 'hemispheres' in config else None)
     if "directory" in system_config:
         directory = system_config.pop("directory")
     else:

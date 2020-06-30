@@ -2,10 +2,6 @@
   "subjects_filename": "data/subjects_seg.json",
   "feature_basenames": "T1w/Diffusion/fa.nii.gz",
   "target_basenames": "T1w/wmparc.nii.gz",
-  "hemispheres": [
-    "L",
-    "R"
-  ],
   "window": [
     144,
     160,

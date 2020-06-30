@@ -36,7 +36,7 @@ def submit_subject_dirs(subject_dirs, python="/home/aizenberg/dgellis/.conda/env
         submit_slurm_script(slurm_script_filename=slurm_script_filename,
                             python=python, nthreads=nthreads,
                             mem_per_cpu=mem_per_cpu,
-                            flags="--subject_dir " + os.path.basename(subject_dir) + " " + flags,
+                            flags="--subject_dir " + os.path.abspath(subject_dir) + " " + flags,
                             delete_script=delete_script, python_file=python_file,
                             job_name="DTI_" + os.path.basename(subject_dir))
 

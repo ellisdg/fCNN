@@ -12,6 +12,11 @@ from .pytorch_training_utils import epoch_training, epoch_validatation, collate_
 from ..utils.pytorch import functions
 
 
+def in_config(string, dictionary, if_not_in_config_return=None):
+    return dictionary[string] if string in dictionary else if_not_in_config_return
+
+
+
 def build_optimizer(optimizer_name, model_parameters, learning_rate=1e-4):
     return getattr(torch.optim, optimizer_name)(model_parameters, lr=learning_rate)
 
@@ -109,21 +114,21 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
 
     # 4. Create datasets
     training_dataset = sequence_class(filenames=config['training_filenames'],
-                                      flip=config['flip'],
+                                      flip=in_config('flip', config, False),
                                       reorder=config['reorder'],
                                       window=window,
                                       spacing=spacing,
-                                      points_per_subject=config['points_per_subject'],
-                                      surface_names=config['surface_names'],
-                                      metric_names=config['metric_names'],
+                                      points_per_subject=in_config('points_per_subject', config, 1),
+                                      surface_names=in_config('surface_names', config, None),
+                                      metric_names=in_config('metric_names', config, None),
                                       base_directory=directory,
                                       subject_ids=config["training"],
-                                      iterations_per_epoch=config["iterations_per_epoch"],
+                                      iterations_per_epoch=in_config("iterations_per_epoch", config, 1),
                                       **train_kwargs,
                                       **sequence_kwargs)
 
     training_loader = DataLoader(training_dataset,
-                                 batch_size=config["batch_size"]//config['points_per_subject'],
+                                 batch_size=config["batch_size"]//in_config('points_per_subject', config, 1),
                                  shuffle=True,
                                  num_workers=n_workers,
                                  collate_fn=collate_fn)
@@ -151,12 +156,13 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
                                             reorder=config['reorder'],
                                             window=window,
                                             spacing=spacing,
-                                            points_per_subject=config['validation_points_per_subject'],
-                                            surface_names=config['surface_names'],
-                                            metric_names=config['metric_names'],
+                                            points_per_subject=in_config('validation_points_per_subject', config, 1),
+                                            surface_names=in_config('surface_names', config, None),
+                                            metric_names=in_config('metric_names', config, None),
                                             **sequence_kwargs)
         validation_loader = DataLoader(validation_dataset,
-                                       batch_size=config["validation_batch_size"]//config["points_per_subject"],
+                                       batch_size=config["validation_batch_size"]//in_config("points_per_subject",
+                                                                                             config, 1),
                                        shuffle=False,
                                        num_workers=n_workers,
                                        collate_fn=collate_fn)

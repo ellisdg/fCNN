@@ -3,7 +3,7 @@ import sys
 import nibabel as nib
 import numpy as np
 import json
-from nilearn.image import resample_to_img, reorder_img
+from nilearn.image import resample_to_img, reorder_img, new_img_like
 
 
 def load_json(filename):
@@ -280,3 +280,8 @@ def load_single_image(filename, resample=None, reorder=True):
     if reorder:
         return reorder_img(image, resample=resample)
     return image
+
+
+def extract_sub_volumes(image, sub_volume_indices):
+    data = image.dataobj[..., sub_volume_indices]
+    return new_img_like(ref_niimg=image, data=data)

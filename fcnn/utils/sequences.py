@@ -10,7 +10,7 @@ from .radiomic_utils import binary_classification, multilabel_classification, fe
     fetch_data_for_point
 from .hcp import (extract_gifti_surface_vertices, get_vertices_from_scalar, get_metric_data,
                   get_nibabel_data, extract_cifti_volumetric_data)
-from .utils import (zero_mean_normalize_image_data, copy_image,
+from .utils import (zero_mean_normalize_image_data, copy_image, extract_sub_volumes,
                     zero_floor_normalize_image_data, zero_one_window, compile_one_hot_encoding,
                     foreground_zero_mean_normalize_image_data, nib_load_files, load_image, load_single_image)
 from .resample import resample
@@ -344,13 +344,28 @@ class WholeBrainRegressionSequence(HCPRegressionSequence):
 
 
 class WholeBrainAutoEncoder(WholeBrainRegressionSequence):
-    def __init__(self, *args, target_resample=None, target_index=None, **kwargs):
+    def __init__(self, *args, target_resample=None, target_index=None, feature_index=0, extract_sub_volumes=False,
+                 feature_sub_volumes_index=1, target_sub_volumes_index=3, **kwargs):
+        """
+
+        :param args:
+        :param target_resample:
+        :param target_index:
+        :param feature_index:
+        :param extract_sub_volumes: if True, the sequence will expect a set of indices that will be used to extract
+        specific volumes out of the volumes being read. (default=False)
+        :param kwargs:
+        """
         super().__init__(*args, **kwargs)
         if target_resample is None:
             self.target_resample = self.resample
         else:
             self.target_resample = target_resample
         self.target_index = target_index
+        self.feature_index = feature_index
+        self.extract_sub_volumes = extract_sub_volumes
+        self.feature_sub_volumes_index = feature_sub_volumes_index
+        self.target_sub_volumes_index = target_sub_volumes_index
 
     def __getitem__(self, idx):
         x_batch = list()
@@ -363,15 +378,11 @@ class WholeBrainAutoEncoder(WholeBrainRegressionSequence):
         return np.asarray(x_batch), np.asarray(y_batch)
 
     def resample_input(self, input_filenames, normalize=True):
-        input_image, target_image = self.resample_image(input_filenames,
-                                                        normalize=normalize,
-                                                        target_resample=self.target_resample,
-                                                        target_index=self.target_index)
+        input_image, target_image = self.resample_image(input_filenames, normalize=normalize)
         return get_nibabel_data(input_image), get_nibabel_data(target_image)
 
-    def resample_image(self, input_filenames, normalize=True, feature_index=0, target_index=None, target_resample=None):
-        feature_filename = input_filenames[feature_index]
-        feature_image = load_image(feature_filename, force_4d=True, reorder=self.reorder, interpolation=self.resample)
+    def resample_image(self, input_filenames, normalize=True):
+        feature_image = self.load_feature_image(input_filenames)
         if normalize:
             feature_image = normalize_image_with_function(feature_image, self.normalization_func)
         feature_image, affine = format_feature_image(feature_image=feature_image,
@@ -384,11 +395,8 @@ class WholeBrainAutoEncoder(WholeBrainRegressionSequence):
                                                      augment_blur_std=None,  # added later
                                                      flip_left_right=self.flip_left_right,
                                                      augment_translation_std=self.augment_translation_std)
-        target_image = self.resample_target(self.load_target_image(feature_image,
-                                                                   input_filenames,
-                                                                   target_index=target_index,
-                                                                   reorder=self.reorder),
-                                            target_resample=target_resample,
+        target_image = self.resample_target(self.load_target_image(feature_image, input_filenames),
+                                            target_resample=self.target_resample,
                                             affine=affine)
         feature_image = augment_image(feature_image,
                                       additive_noise_std=self.additive_noise_std,
@@ -397,11 +405,31 @@ class WholeBrainAutoEncoder(WholeBrainRegressionSequence):
         input_image = resample(feature_image, affine, self.window, interpolation=self.resample)
         return input_image, target_image
 
-    def load_target_image(self, feature_image, input_filenames, target_index=None, reorder=False):
-        if target_index is None:
+    def load_image(self, filenames, index, force_4d=True, interpolation="linear", sub_volume_indices=None):
+        filename = filenames[index]
+        image = load_image(filename, force_4d=force_4d, reorder=self.reorder, interpolation=interpolation)
+        if sub_volume_indices:
+            image = extract_sub_volumes(image, sub_volume_indices)
+        return image
+
+    def load_feature_image(self, input_filenames):
+        if self.extract_sub_volumes:
+            sub_volume_indices = input_filenames[self.feature_sub_volumes_index]
+        else:
+            sub_volume_indices = None
+        return self.load_image(input_filenames, self.feature_index, force_4d=True, interpolation=self.resample,
+                               sub_volume_indices=sub_volume_indices)
+
+    def load_target_image(self, feature_image, input_filenames):
+        if self.target_index is None:
             target_image = copy_image(feature_image)
         else:
-            target_image = load_image(input_filenames[target_index], force_4d=True, reorder=reorder)
+            if self.extract_sub_volumes:
+                sub_volume_indices = input_filenames[self.target_sub_volumes_index]
+            else:
+                sub_volume_indices = None
+            target_image = self.load_image(input_filenames, self.target_index, force_4d=True,
+                                           sub_volume_indices=sub_volume_indices, interpolation=self.target_resample)
         return target_image
 
     def resample_target(self, target_image, affine, target_resample=None):
@@ -412,9 +440,7 @@ class WholeBrainAutoEncoder(WholeBrainRegressionSequence):
 
     def get_image(self, idx, normalize=True):
         input_image, target_image = self.resample_image(self.epoch_filenames[idx],
-                                                        normalize=normalize,
-                                                        target_resample=self.target_resample,
-                                                        target_index=self.target_index)
+                                                        normalize=normalize)
         return input_image, target_image
 
 
@@ -428,8 +454,7 @@ class WholeBrainLabeledAutoEncoder(WholeBrainAutoEncoder):
     def resample_input(self, input_filenames, normalize=True):
         input_image, target_image = self.resample_image(input_filenames,
                                                         normalize=normalize,
-                                                        target_resample=self.target_resample,
-                                                        target_index=self.target_index)
+                                                        target_resample=self.target_resample)
         target_data = target_image.get_fdata()
         if self.labels is None:
             self.labels = np.unique(target_data)
@@ -481,7 +506,7 @@ class WholeVolumeSupervisedRegressionSequence(WholeBrainAutoEncoder):
         self.normalize_target = target_normalization is not None
         self.target_normalization_func = normalization_name_to_function(target_normalization)
 
-    def load_target_image(self, feature_image, input_filenames, target_index=None, resample=False):
+    def load_target_image(self, feature_image, input_filenames, resample=False):
         target_image_filename = input_filenames[self.target_index]
         target_image = load_single_image(target_image_filename, reorder=self.reorder)
         if self.normalize_target:
@@ -499,8 +524,8 @@ class WholeVolumeCiftiSupervisedRegressionSequence(WholeVolumeSupervisedRegressi
                          target_normalization=target_normalization, **kwargs)
         self.subject_id_index = subject_id_index
 
-    def load_target_image(self, feature_image, input_filenames, target_index=None, reorder=False):
-        target_image_filename = input_filenames[self.target_index]
+    def load_target_image(self, feature_image, input_filenames, reorder=False):
+        target_image_filename = self.select_target_filename(input_filenames)
         cifti_target_image = nib.load(target_image_filename)
         image_data = extract_cifti_volumetric_data(cifti_image=cifti_target_image,
                                                    map_names=self.metric_names,

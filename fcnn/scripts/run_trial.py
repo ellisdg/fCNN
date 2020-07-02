@@ -11,7 +11,7 @@ from fcnn.utils.sequences import (WholeBrainRegressionSequence, HCPRegressionSeq
 from fcnn.utils.pytorch import dataset as pytorch_datasets
 from fcnn.utils.pytorch.dataset import (WholeBrainCIFTI2DenseScalarDataset, HCPRegressionDataset, AEDataset,
                                         LabeledAEDataset, WindowedAEDataset)
-from fcnn.utils.utils import load_json
+from fcnn.utils.utils import load_json, load_image
 from fcnn.utils.custom import get_metric_data_from_config
 from fcnn.models.keras.resnet.resnet import compare_scores
 
@@ -51,6 +51,32 @@ def generate_hcp_filenames(directory, surface_basename_template, target_basename
         else:
             metric_filenames = None
         rows.append([feature_filenames, surface_filenames, metric_filenames, subject_id])
+    return rows
+
+
+def generate_paired_filenames(directory, subject_ids, group, keys, basename, raise_if_not_exist=False):
+    rows = list()
+    pair = keys["all"]
+    pair_key = list(keys["all"].keys())[0]
+    volume_numbers = dict()
+    for subject_id in subject_ids:
+        subject_id = str(subject_id)
+        template = os.path.join(directory, subject_id, basename)
+        for key in keys[group]:
+            for value in keys[group][key]:
+                format_kwargs1 = {key: value, pair_key: pair[pair_key][0]}
+                format_kwargs2 = {key: value, pair_key: pair[pair_key][1]}
+                filename1 = template.format(**format_kwargs1)
+                filename2 = template.format(**format_kwargs2)
+                if os.path.exists(filename1) and os.path.exists(filename2):
+                    if value not in volume_numbers:
+                        volume_numbers[value] = load_image(filename1, force_4d=True).shape[-1]
+                    for volume_number in volume_numbers[value]:
+                        rows.append([filename1, volume_number, filename2, volume_number])
+                        rows.append([filename2, volume_number, filename1, volume_number])
+                elif raise_if_not_exist:
+                    for filename in (filename1, filename2):
+                        raise FileNotFoundError(filename)
     return rows
 
 
@@ -117,12 +143,18 @@ def main():
     for name in ("training", "validation"):
         key = name + "_filenames"
         if key not in config:
-            config[key] = generate_hcp_filenames(system_config['directory'],
-                                                 config['surface_basename_template'] if "surface_basename_template" in config else None,
-                                                 config['target_basenames'],
-                                                 config['feature_basenames'],
-                                                 config[name],
-                                                 config['hemispheres'] if 'hemispheres' in config else None)
+            if "generate_filenames" not in config or config["generate_filenames"] == "classic":
+                config[key] = generate_hcp_filenames(system_config['directory'],
+                                                     config['surface_basename_template'] if "surface_basename_template" in config else None,
+                                                     config['target_basenames'],
+                                                     config['feature_basenames'],
+                                                     config[name],
+                                                     config['hemispheres'] if 'hemispheres' in config else None)
+            elif config["generate_filenames"] == "paired":
+                config[key] = generate_paired_filenames(system_config['directory'],
+                                                        config[name],
+                                                        name,
+                                                        **config["generate_filenames_kwargs"])
     if "directory" in system_config:
         directory = system_config.pop("directory")
     else:

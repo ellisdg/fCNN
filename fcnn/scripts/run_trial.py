@@ -70,10 +70,10 @@ def generate_paired_filenames(directory, subject_ids, group, keys, basename, rai
                 filename2 = template.format(**format_kwargs2)
                 if os.path.exists(filename1) and os.path.exists(filename2):
                     if value not in volume_numbers:
-                        volume_numbers[value] = load_image(filename1, force_4d=True).shape[-1]
+                        volume_numbers[value] = range(load_image(filename1, force_4d=True).shape[-1])
                     for volume_number in volume_numbers[value]:
-                        rows.append([filename1, volume_number, filename2, volume_number])
-                        rows.append([filename2, volume_number, filename1, volume_number])
+                        rows.append([filename1, [volume_number], filename2, [volume_number]])
+                        rows.append([filename2, [volume_number], filename1, [volume_number]])
                 elif raise_if_not_exist:
                     for filename in (filename1, filename2):
                         raise FileNotFoundError(filename)

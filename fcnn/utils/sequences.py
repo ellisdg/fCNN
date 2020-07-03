@@ -507,8 +507,7 @@ class WholeVolumeSupervisedRegressionSequence(WholeBrainAutoEncoder):
         self.target_normalization_func = normalization_name_to_function(target_normalization)
 
     def load_target_image(self, feature_image, input_filenames, resample=False):
-        target_image_filename = input_filenames[self.target_index]
-        target_image = load_single_image(target_image_filename, reorder=self.reorder)
+        target_image = super().load_target_image(feature_image, input_filenames)
         if self.normalize_target:
             image_data = self.target_normalization_func(target_image.get_fdata())
             return new_img_like(ref_niimg=feature_image, data=image_data,

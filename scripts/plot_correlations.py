@@ -1,4 +1,3 @@
-import sys
 import os
 import argparse
 import seaborn
@@ -160,6 +159,10 @@ def mean_correlations(array, axis=None):
     return np.tanh(z_mean)
 
 
+def mean_diagonal(matrix):
+    return mean_correlations(matrix.diagonal())
+
+
 def self_vs_other_correlation(corr_matrix):
     diagonal_mask = np.diag(np.ones(corr_matrix.shape[0], dtype=bool))
     diag_values = corr_matrix[diagonal_mask]
@@ -219,9 +222,14 @@ def compare_overall_correlation_models_and_methods(correlation_files, labels, ou
     print(correlations.shape)
 
     plot_self_vs_other_correlations(correlations, model_labels, method_labels, output_directory,
-         metric_func=self_vs_other_correlation,
-         output_filename="compared_increase_correlation_over_mean_correlation_average",
-         xlabel="Self vs other increase (in %)")
+                                    metric_func=self_vs_other_correlation,
+                                    output_filename="compared_increase_correlation_over_mean_correlation_average",
+                                    xlabel="Self vs other increase (in %)")
+
+    plot_self_vs_other_correlations(correlations, model_labels, method_labels, output_directory,
+                                    metric_func=mean_diagonal,
+                                    output_filename="compared_mean_correlation",
+                                    xlabel="Mean Correlation")
 
 
 def plot_per_domain(corr_matrices, domains, metric_names, method_labels, labels, output_dir, average_per_domain=True,

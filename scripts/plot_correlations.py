@@ -188,8 +188,9 @@ def plot_self_vs_other_correlations(corr_matrices, model_labels, method_labels, 
     ax.set_xlabel(xlabel)
     ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
     seaborn.despine(ax=ax, top=True)
-    save_fig(fig, os.path.join(output_dir, output_filename.format("_".join(method_labels + model_labels))),
-             bbox_inches="tight")
+    if "{}" in output_filename:
+        output_filename = "_".join(method_labels + model_labels)
+    save_fig(fig, os.path.join(output_dir, output_filename), bbox_inches="tight")
 
 
 def compare_overall_correlation_models_and_methods(correlation_files, labels, output_directory):
@@ -219,7 +220,7 @@ def compare_overall_correlation_models_and_methods(correlation_files, labels, ou
 
     plot_self_vs_other_correlations(correlations, model_labels, method_labels, output_directory,
          metric_func=self_vs_other_correlation,
-         output_filename="{}_increase_correlation_over_mean_correlation_average",
+         output_filename="compared_increase_correlation_over_mean_correlation_average",
          xlabel="Self vs other increase (in %)")
 
 

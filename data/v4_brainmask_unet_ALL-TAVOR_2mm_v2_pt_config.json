@@ -5,7 +5,7 @@
     "CortexRight"
   ],
   "surface_basename_template": null,
-  "feature_basenames": "T1w/T1w_acpc_dc_restore_subcortical.nii.gz",
+  "feature_basenames": "T1w/brainmask_fs.nii.gz",
   "target_basenames": "T1w/Results/tfMRI_ALL/tfMRI_ALL_hp200_s2_level2.feat/{}_tfMRI_ALL_level2_zstat_hp200_s2_TAVOR.nii.gz",
   "hemispheres": [
     "L",
@@ -110,12 +110,11 @@
       "{}_tfMRI_GAMBLING_level2_PUNISH-REWARD_hp200_s2"
   ],
   "sequence_kwargs": {
-    "normalization": "zero_one_window",
+    "normalization": null,
+    "interpolation": "nearest",
     "target_normalization": null,
     "crop": true,
-    "cropping_pad_width": 7,
-    "augment_scale_std": 0.1,
-    "additive_noise_std": 0.1
+    "cropping_pad_width": 7
   },
-  "additional_training_args": {}
+  "additional_training_args": {"augment_scale_std": 0.1}
 }

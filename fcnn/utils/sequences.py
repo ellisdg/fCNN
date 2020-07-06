@@ -4,18 +4,41 @@ import nibabel as nib
 from keras.utils import Sequence
 from nilearn.image import new_img_like
 import random
+import warnings
 
 from .nilearn_custom_utils.nilearn_utils import crop_img
 from .radiomic_utils import binary_classification, multilabel_classification, fetch_data, pick_random_list_elements, \
     fetch_data_for_point
 from .hcp import (extract_gifti_surface_vertices, get_vertices_from_scalar, get_metric_data,
                   get_nibabel_data, extract_cifti_volumetric_data)
-from .utils import (zero_mean_normalize_image_data, copy_image, extract_sub_volumes,
+from .utils import (zero_mean_normalize_image_data, copy_image, extract_sub_volumes, mask,
                     zero_floor_normalize_image_data, zero_one_window, compile_one_hot_encoding,
                     foreground_zero_mean_normalize_image_data, nib_load_files, load_image, load_single_image)
 from .resample import resample
 from .augment import scale_affine, add_noise, affine_swap_axis, translate_affine, random_blur
 from .affine import resize_affine
+
+
+def normalization_name_to_function(normalization_name):
+    if normalization_name == "zero_mean":
+        return zero_mean_normalize_image_data
+    elif normalization_name == "foreground_zero_mean":
+        return foreground_zero_mean_normalize_image_data
+    elif normalization_name == "zero_floor":
+        return zero_floor_normalize_image_data
+    elif normalization_name == "zero_one_window":
+        return zero_one_window
+    elif normalization_name == "mask":
+        return mask
+    elif normalization_name is not None:
+        raise NotImplementedError(normalization_name + " normalization is not available.")
+    else:
+        return lambda x, **kwargs: x
+
+
+def normalize_image_with_function(image, function):
+    image.dataobj[:] = function(image.dataobj)
+    return image
 
 
 def augment_affine(affine, shape, augment_scale_std=None, flip_left_right=False, augment_translation_std=None):
@@ -178,24 +201,6 @@ class HCPParent(object):
         return np.asarray(vertices)
 
 
-def normalization_name_to_function(normalization_name):
-    if normalization_name == "zero_mean":
-        return zero_mean_normalize_image_data
-    elif normalization_name == "foreground_zero_mean":
-        return foreground_zero_mean_normalize_image_data
-    elif normalization_name == "zero_floor":
-        return zero_floor_normalize_image_data
-    elif normalization_name == "zero_one_window":
-        return zero_one_window
-    else:
-        return lambda x, **kwargs: x
-
-
-def normalize_image_with_function(image, function):
-    image.dataobj[:] = function(image.dataobj)
-    return image
-
-
 class HCPRegressionSequence(SingleSiteSequence, HCPParent):
     def __init__(self, filenames, batch_size, window, spacing, metric_names, classification=None,
                  surface_names=('CortexLeft', 'CortexRight'), normalization="zero_mean", **kwargs):
@@ -300,11 +305,13 @@ class SubjectPredictionSequence(HCPParent, Sequence):
 
 
 class WholeBrainRegressionSequence(HCPRegressionSequence):
-    def __init__(self, resample='linear', crop=True, cropping_pad_width=1, augment_scale_std=0, additive_noise_std=0,
-                 augment_blur_mean=None, augment_blur_std=None, augment_translation_std=None, flip_left_right=False,
-                 **kwargs):
+    def __init__(self, interpolation='linear', crop=True, cropping_pad_width=1, augment_scale_std=0,
+                 additive_noise_std=0, augment_blur_mean=None, augment_blur_std=None, augment_translation_std=None,
+                 flip_left_right=False, resample=None, **kwargs):
         super().__init__(**kwargs)
-        self.resample = resample
+        self.interpolation = interpolation
+        if resample is not None:
+            warnings.warn("'resample' arguemnt is depricated. Use 'interpolation'.", DeprecationWarning)
         self.crop = crop
         self.augment_scale_std = augment_scale_std
         self.additive_noise_std = additive_noise_std
@@ -339,7 +346,7 @@ class WholeBrainRegressionSequence(HCPRegressionSequence):
                                                      augment_blur_std=self.augment_blur_std,
                                                      flip_left_right=self.flip_left_right,
                                                      augment_translation_std=self.augment_translation_std)
-        input_img = resample(feature_image, affine, self.window, interpolation=self.resample)
+        input_img = resample(feature_image, affine, self.window, interpolation=self.interpolation)
         return self.normalization_func(get_nibabel_data(input_img))
 
 
@@ -358,7 +365,7 @@ class WholeBrainAutoEncoder(WholeBrainRegressionSequence):
         """
         super().__init__(*args, **kwargs)
         if target_resample is None:
-            self.target_resample = self.resample
+            self.target_resample = self.interpolation
         else:
             self.target_resample = target_resample
         self.target_index = target_index
@@ -402,7 +409,7 @@ class WholeBrainAutoEncoder(WholeBrainRegressionSequence):
                                       additive_noise_std=self.additive_noise_std,
                                       augment_blur_mean=self.augment_blur_mean,
                                       augment_blur_std=self.augment_blur_std)
-        input_image = resample(feature_image, affine, self.window, interpolation=self.resample)
+        input_image = resample(feature_image, affine, self.window, interpolation=self.interpolation)
         return input_image, target_image
 
     def load_image(self, filenames, index, force_4d=True, interpolation="linear", sub_volume_indices=None):
@@ -417,7 +424,7 @@ class WholeBrainAutoEncoder(WholeBrainRegressionSequence):
             sub_volume_indices = input_filenames[self.feature_sub_volumes_index]
         else:
             sub_volume_indices = None
-        return self.load_image(input_filenames, self.feature_index, force_4d=True, interpolation=self.resample,
+        return self.load_image(input_filenames, self.feature_index, force_4d=True, interpolation=self.interpolation,
                                sub_volume_indices=sub_volume_indices)
 
     def load_target_image(self, feature_image, input_filenames):
@@ -434,13 +441,12 @@ class WholeBrainAutoEncoder(WholeBrainRegressionSequence):
 
     def resample_target(self, target_image, affine, target_resample=None):
         if target_resample is None:
-            target_resample = self.resample
+            target_resample = self.interpolation
         target_image = resample(target_image, affine, self.window, interpolation=target_resample)
         return target_image
 
     def get_image(self, idx, normalize=True):
-        input_image, target_image = self.resample_image(self.epoch_filenames[idx],
-                                                        normalize=normalize)
+        input_image, target_image = self.resample_image(self.epoch_filenames[idx], normalize=normalize)
         return input_image, target_image
 
 
@@ -452,9 +458,7 @@ class WholeBrainLabeledAutoEncoder(WholeBrainAutoEncoder):
         self.labels = labels
 
     def resample_input(self, input_filenames, normalize=True):
-        input_image, target_image = self.resample_image(input_filenames,
-                                                        normalize=normalize,
-                                                        target_resample=self.target_resample)
+        input_image, target_image = self.resample_image(input_filenames, normalize=normalize)
         target_data = target_image.get_fdata()
         if self.labels is None:
             self.labels = np.unique(target_data)
@@ -524,7 +528,7 @@ class WholeVolumeCiftiSupervisedRegressionSequence(WholeVolumeSupervisedRegressi
         self.subject_id_index = subject_id_index
 
     def load_target_image(self, feature_image, input_filenames, reorder=False):
-        target_image_filename = self.select_target_filename(input_filenames)
+        target_image_filename = input_filenames[self.target_index]
         cifti_target_image = nib.load(target_image_filename)
         image_data = extract_cifti_volumetric_data(cifti_image=cifti_target_image,
                                                    map_names=self.metric_names,

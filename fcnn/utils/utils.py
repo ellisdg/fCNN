@@ -285,3 +285,7 @@ def load_single_image(filename, resample=None, reorder=True):
 def extract_sub_volumes(image, sub_volume_indices):
     data = image.dataobj[..., sub_volume_indices]
     return new_img_like(ref_niimg=image, data=data)
+
+
+def mask(data, threshold=0):
+    return np.ones(data > threshold)

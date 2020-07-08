@@ -51,7 +51,7 @@ def submit_slurm_script(python="/home/aizenberg/dgellis/.conda/envs/dti/bin/pyth
              "#SBATCH --ntasks-per-node={1}\n" \
              "#SBATCH --job-name={2}\n" \
              "#SBATCH --error=/work/aizenberg/dgellis/fCNN/logs/job.{3}.err\n" \
-             "#SBATCH --output=/work/aizenberg/dgellis/fCNN/logs/job.{3}.err\n" \
+             "#SBATCH --output=/work/aizenberg/dgellis/fCNN/logs/job.{3}.out\n" \
              "module load anaconda\n" \
              "source /home/aizenberg/dgellis/.conda/envs/dti/bin/activate dti\n" \
              "export PYTHONPATH=/home/aizenberg/dgellis/fCNN:/home/aizenberg/dgellis/3DUnetCNN/:$PYTHONPATH\n" \

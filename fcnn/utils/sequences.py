@@ -36,8 +36,11 @@ def normalization_name_to_function(normalization_name):
         return lambda x, **kwargs: x
 
 
-def normalize_image_with_function(image, function):
-    image.dataobj[:] = function(image.dataobj)
+def normalize_image_with_function(image, function, volume_indices=None, **kwargs):
+    if volume_indices is not None:
+        image.dataobj[..., volume_indices] = function(image.dataobj[..., volume_indices], **kwargs)
+    else:
+        image.dataobj[:] = function(image.dataobj[:], **kwargs)
     return image
 
 
@@ -206,12 +209,17 @@ class HCPParent(object):
 
 class HCPRegressionSequence(BaseSequence, HCPParent):
     def __init__(self, filenames, batch_size, window, spacing, metric_names, classification=None,
-                 surface_names=('CortexLeft', 'CortexRight'), normalization="zero_mean", **kwargs):
+                 surface_names=('CortexLeft', 'CortexRight'), normalization="zero_mean", normalization_args=None,
+                 **kwargs):
         super().__init__(filenames=filenames, batch_size=batch_size, target_labels=tuple(), window=window,
                          spacing=spacing, classification=classification, **kwargs)
         self.metric_names = metric_names
         self.surface_names = surface_names
         self.normalization_func = normalization_name_to_function(normalization)
+        if normalization_args is not None:
+            self.normalization_kwargs = normalization_args
+        else:
+            self.normalization_kwargs = dict()
 
     def __getitem__(self, idx):
         return self.fetch_hcp_regression_batch(idx)
@@ -258,6 +266,10 @@ class HCPRegressionSequence(BaseSequence, HCPParent):
         random_vertices, indices = self.select_random_vertices(vertices)
         random_target_values = all_metric_data[indices]
         return random_vertices, random_target_values
+
+    def normalize_image(self, image):
+        image.dataobj[:] = normalize_image_with_function(image, self.normalization_func, **self.normalization_kwargs)
+        return image
 
 
 class ParcelBasedSequence(HCPRegressionSequence):
@@ -350,7 +362,7 @@ class WholeVolumeToSurfaceSequence(HCPRegressionSequence):
                                                      flip_left_right=self.flip_left_right,
                                                      augment_translation_std=self.augment_translation_std)
         input_img = resample(feature_image, affine, self.window, interpolation=self.interpolation)
-        return self.normalization_func(get_nibabel_data(input_img))
+        return get_nibabel_data(self.normalize_image(input_img))
 
 
 class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
@@ -394,7 +406,7 @@ class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
     def resample_image(self, input_filenames, normalize=True):
         feature_image = self.load_feature_image(input_filenames)
         if normalize:
-            feature_image = normalize_image_with_function(feature_image, self.normalization_func)
+            feature_image = self.normalize_image(feature_image)
         feature_image, affine = format_feature_image(feature_image=feature_image,
                                                      crop=self.crop,
                                                      augment_scale_std=self.augment_scale_std,
@@ -489,17 +501,13 @@ class WindowedAutoEncoderSequence(HCPRegressionSequence):
         batch_x = list()
         batch_y = list()
         feature_image = load_single_image(feature_filename, resample=self.resample, reorder=self.reorder)
-        normalized_image = self.normalize(feature_image)
+        normalized_image = self.normalize_image(feature_image)
         for vertex in random_vertices:
             x = fetch_data_for_point(vertex, normalized_image, window=self.window, flip=self.flip, spacing=self.spacing,
                                      normalization_func=None)
             batch_x.append(self.augment(x))
             batch_y.append(x)
         return batch_x, batch_y
-
-    def normalize(self, feature_image, **kwargs):
-        feature_image.dataobj[:] = self.normalization_func(feature_image.dataobj, **kwargs)
-        return feature_image
 
     def augment(self, x):
         if self.additive_noise_std > 0:

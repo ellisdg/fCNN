@@ -88,13 +88,14 @@ def zero_floor_normalize_image_data(data, axis=(0, 1, 2), floor_percentile=1, fl
     return np.divide(data, std).filled(floor)
 
 
-def zero_one_window(data, axis=(0, 1, 2), ceiling_percentile=99, floor_percentile=1, floor=0, ceiling=1, channels_axis=None):
+def zero_one_window(data, axis=(0, 1, 2), ceiling_percentile=99, floor_percentile=1, floor=0, ceiling=1,
+                    channels_axis=None):
     data = np.copy(data)
     if len(axis) != data.ndim:
         floor_threshold = np.percentile(data, floor_percentile, axis=axis)
         if channels_axis is None:
             for i in range(data.ndim):
-                if i not in axis and (i - data.ndim) not in axis:
+                if i not in axis and (i - data.ndim) not in axis:  # I don't understand the second part of this
                     channels_axis = i
         data = np.moveaxis(data, channels_axis, 0)
         for channel in range(data.shape[0]):

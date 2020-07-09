@@ -55,7 +55,8 @@ def generate_hcp_filenames(directory, surface_basename_template, target_basename
     return rows
 
 
-def generate_paired_filenames(directory, subject_ids, group, keys, basename, raise_if_not_exist=False):
+def generate_paired_filenames(directory, subject_ids, group, keys, basename, additional_feature_basename=None,
+                              raise_if_not_exist=False):
     rows = list()
     pair = keys["all"]
     pair_key = list(keys["all"].keys())[0]
@@ -63,6 +64,14 @@ def generate_paired_filenames(directory, subject_ids, group, keys, basename, rai
     for subject_id in subject_ids:
         subject_id = str(subject_id)
         template = os.path.join(directory, subject_id, basename)
+        if additional_feature_basename is not None:
+            additional_feature_filename = os.path.join(directory, subject_id, basename)
+            if not os.path.exists(additional_feature_filename):
+                if raise_if_not_exist:
+                    raise FileNotFoundError(additional_feature_filename)
+                continue
+        else:
+            additional_feature_filename = None
         for key in keys[group]:
             for value in keys[group][key]:
                 format_kwargs1 = {key: value, pair_key: pair[pair_key][0]}
@@ -73,7 +82,13 @@ def generate_paired_filenames(directory, subject_ids, group, keys, basename, rai
                     if value not in volume_numbers:
                         volume_numbers[value] = range(load_image(filename1, force_4d=True).shape[-1])
                     for volume_number in volume_numbers[value]:
-                        rows.append([filename1, [volume_number], filename2, [volume_number]])
+                        if additional_feature_filename is not None:
+                            rows.append([[additional_feature_filename, filename1], [0, volume_number + 1],
+                                         filename2, [volume_number]])
+                            rows.append([[additional_feature_filename, filename2], [0, volume_number + 1],
+                                         filename1, [volume_number]])
+                        else:
+                            rows.append([filename1, [volume_number], filename2, [volume_number]])
                         rows.append([filename2, [volume_number], filename1, [volume_number]])
                 elif raise_if_not_exist:
                     for filename in (filename1, filename2):

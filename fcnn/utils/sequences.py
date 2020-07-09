@@ -268,8 +268,7 @@ class HCPRegressionSequence(BaseSequence, HCPParent):
         return random_vertices, random_target_values
 
     def normalize_image(self, image):
-        image.dataobj[:] = normalize_image_with_function(image, self.normalization_func, **self.normalization_kwargs)
-        return image
+        return normalize_image_with_function(image, self.normalization_func, **self.normalization_kwargs)
 
 
 class ParcelBasedSequence(HCPRegressionSequence):

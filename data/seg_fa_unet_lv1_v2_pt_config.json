@@ -1,0 +1,89 @@
+{
+  "subjects_filename": "data/subjects_seg.json",
+  "generate_filenames": "templates",
+  "generate_filenames_kwargs": {
+    "feature_templates": {
+      "HCP": "/work/aizenberg/dgellis/HCP/HCP_1200/{subject}/T1w/Diffusion/fa.nii.gz",
+      "LICP1": "/work/aizenberg/dgellis/BIDS/LICP/derivatives/mrtrix3/sub-{subject}/dwi/sub-{subject}_run-1_dwi_mdfa.nii.gz",
+      "LICP2": "/work/aizenberg/dgellis/BIDS/LICP/derivatives/mrtrix3/sub-{subject}/dwi/sub-{subject}_run-2_dwi_mdfa.nii.gz",
+      "FG": "/work/aizenberg/dgellis/BIDS/FG/derivatives/sub-{subject}/dwi/sub-{subject}_dwi_mdfa.nii.gz"
+  },
+    "target_templates": {
+      "HCP": "/work/aizenberg/dgellis/HCP/HCP_1200/{subject}/T1w/wmparc.nii.gz",
+      "LICP1": "/work/aizenberg/dgellis/BIDS/LICP/derivatives/freesurfer-6.0.0/sub-{subject}/mri/wmparc.mgz",
+      "LICP2": "/work/aizenberg/dgellis/BIDS/LICP/derivatives/freesurfer-6.0.0/sub-{subject}/mri/wmparc.mgz",
+      "FG": "/work/aizenberg/dgellis/BIDS/FG/derivatives/sub-{subject}/anat/sub-{subject}_T1w_wmparc.nii.gz"
+  },
+    "feature_sub_volumes": {
+      "HCP": null,
+      "LICP1": [1, 2, 3],
+      "LICP2": [1, 2, 3],
+      "FG": [1, 2, 3]
+    }
+  },
+  "window": [
+    144,
+    160,
+    144
+  ],
+  "n_features": 3,
+  "optimizer": "Adam",
+  "package": "pytorch",
+  "loss": "dice_loss",
+  "evaluation_metric": "dice_loss",
+  "weights": null,
+  "custom_loss": true,
+  "regularized": false,
+  "reorder": true,
+  "save_best_only": false,
+  "n_epochs": 2000,
+  "min_learning_rate": 1e-08,
+  "decay_patience": 5,
+  "decay_factor": 0.5,
+  "early_stopping_patience": 20,
+  "batch_size": 4,
+  "validation_batch_size": 4,
+  "initial_learning_rate": 1e-04,
+  "model_name": "UNet",
+  "model_kwargs": {
+    "base_width":  16,
+    "encoder_blocks": [2],
+    "decoder_mirrors_encoder": true,
+    "input_shape": [144, 160, 144],
+    "activation": "sigmoid"
+  },
+  "skip_validation": false,
+  "iterations_per_epoch": 1,
+  "n_outputs": 1,
+  "sequence": "WholeVolumeSegmentationDataset",
+  "sequence_kwargs": {
+    "normalization": null,
+    "crop": true,
+    "interpolation": "linear",
+    "labels": [[1024, 2024]],
+    "extract_sub_volumes": true
+  },
+  "additional_training_args": {
+    "cropping_pad_width": 5,
+    "augment_scale_std": 0.1,
+    "additive_noise_std": 0.1,
+    "augment_blur_mean": 2.0,
+    "augment_blur_std":  1.0,
+    "augment_translation_std": 0.05,
+    "flip_left_right": true,
+    "inputs_per_epoch": {
+      "HCP": 96,
+      "LICP1": "all",
+      "LICP2": "all",
+      "FG": "all"
+    }
+  },
+  "additional_validation_args": {
+    "inputs_per_epoch": {
+      "HCP": 0,
+      "LICP1": "all",
+      "LICP2": "all",
+      "FG": "all"
+    }
+}
+}

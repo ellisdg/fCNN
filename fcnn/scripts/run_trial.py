@@ -81,12 +81,12 @@ def generate_paired_filenames(directory, subject_ids, group, keys, basename, rai
     return rows
 
 
-def generate_filenames_from_templates(subject_ids, group, feature_templates, target_templates, feature_sub_volumes=None,
+def generate_filenames_from_templates(subject_ids, feature_templates, target_templates, feature_sub_volumes=None,
                                       target_sub_volumes=None, raise_if_not_exists=False):
     filenames = dict()
     for dataset in subject_ids:
         filenames[dataset] = list()
-        for subject_id in subject_ids[dataset][group]:
+        for subject_id in subject_ids[dataset]:
             feature_filename = feature_templates[dataset].format(subject=subject_id)
             target_filename = target_templates[dataset].format(subject=subject_id)
             if feature_sub_volumes is not None:
@@ -120,7 +120,7 @@ def generate_filenames(config, name, system_config):
                                          name,
                                          **config["generate_filenames_kwargs"])
     elif config["generate_filenames"] == "templates":
-        return generate_filenames_from_templates(config[name], name, **config["generate_filenames_kwargs"])
+        return generate_filenames_from_templates(config[name], **config["generate_filenames_kwargs"])
 
 
 def load_subject_ids(config):

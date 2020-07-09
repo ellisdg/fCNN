@@ -314,7 +314,7 @@ class WholeVolumeToSurfaceSequence(HCPRegressionSequence):
         super().__init__(**kwargs)
         self.interpolation = interpolation
         if resample is not None:
-            warnings.warn("'resample' arguemnt is depricated. Use 'interpolation'.", DeprecationWarning)
+            warnings.warn("'resample' argument is deprecated. Use 'interpolation'.", DeprecationWarning)
         self.crop = crop
         self.augment_scale_std = augment_scale_std
         self.additive_noise_std = additive_noise_std

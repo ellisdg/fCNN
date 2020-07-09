@@ -59,7 +59,7 @@
   "sequence_kwargs": {
     "normalization": null,
     "crop": true,
-    "resample": "linear",
+    "interpolation": "linear",
     "labels": [[1024, 2024]],
     "extract_sub_volumes": true
   },

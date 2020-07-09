@@ -82,7 +82,7 @@ def generate_paired_filenames(directory, subject_ids, group, keys, basename, rai
 
 
 def generate_filenames_from_templates(subject_ids, group, feature_templates, target_templates, feature_sub_volumes=None,
-                                      target_sub_volumes=None):
+                                      target_sub_volumes=None, raise_if_not_exists=False):
     filenames = dict()
     for dataset in subject_ids:
         filenames[dataset] = list()
@@ -97,7 +97,11 @@ def generate_filenames_from_templates(subject_ids, group, feature_templates, tar
                 _target_sub_volumes = target_sub_volumes[dataset]
             else:
                 _target_sub_volumes = None
-            filenames[dataset].append([feature_filename, feature_sub_volumes, target_filename, target_sub_volumes])
+            if os.path.exists(feature_filename) and os.path.exists(target_filename):
+                filenames[dataset].append([feature_filename, feature_sub_volumes, target_filename, target_sub_volumes])
+            elif raise_if_not_exists:
+                for filename in (feature_filename, target_filename):
+                    raise FileNotFoundError(filename)
     return filenames
 
 

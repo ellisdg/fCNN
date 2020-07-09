@@ -15,7 +15,7 @@
       "FG": "/work/aizenberg/dgellis/BIDS/FG/derivatives/sub-{subject}/anat/sub-{subject}_T1w_wmparc.nii.gz"
   },
     "feature_sub_volumes": {
-      "HCP": [0, 1, 2],
+      "HCP": null,
       "LICP1": [1, 2, 3],
       "LICP2": [1, 2, 3],
       "FG": [1, 2, 3]

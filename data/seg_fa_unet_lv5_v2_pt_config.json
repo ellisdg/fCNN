@@ -10,8 +10,8 @@
   },
     "target_templates": {
       "HCP": "/work/aizenberg/dgellis/HCP/HCP_1200/{subject}/T1w/wmparc.nii.gz",
-      "LICP1": "/work/aizenberg/dgellis/BIDS/LICP/derivatives/freesurfer/sub-{subject}/mri/wmparc.mgz",
-      "LICP2": "/work/aizenberg/dgellis/BIDS/LICP/derivatives/freesurfer/sub-{subject}/mri/wmparc.mgz",
+      "LICP1": "/work/aizenberg/dgellis/BIDS/LICP/derivatives/freesurfer-6.0.0/sub-{subject}/mri/wmparc.mgz",
+      "LICP2": "/work/aizenberg/dgellis/BIDS/LICP/derivatives/freesurfer-6.0.0/sub-{subject}/mri/wmparc.mgz",
       "FG": "/work/aizenberg/dgellis/BIDS/FG/derivatives/sub-{subject}/anat/sub-{subject}_T1w_wmparc.nii.gz"
   },
     "feature_sub_volumes": {

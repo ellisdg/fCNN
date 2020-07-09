@@ -65,7 +65,7 @@ def generate_paired_filenames(directory, subject_ids, group, keys, basename, add
         subject_id = str(subject_id)
         template = os.path.join(directory, subject_id, basename)
         if additional_feature_basename is not None:
-            additional_feature_filename = os.path.join(directory, subject_id, basename)
+            additional_feature_filename = os.path.join(directory, subject_id, additional_feature_basename)
             if not os.path.exists(additional_feature_filename):
                 if raise_if_not_exist:
                     raise FileNotFoundError(additional_feature_filename)

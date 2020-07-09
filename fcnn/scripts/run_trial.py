@@ -98,7 +98,8 @@ def generate_filenames_from_templates(subject_ids, feature_templates, target_tem
             else:
                 _target_sub_volumes = None
             if os.path.exists(feature_filename) and os.path.exists(target_filename):
-                filenames[dataset].append([feature_filename, feature_sub_volumes, target_filename, target_sub_volumes])
+                filenames[dataset].append([feature_filename, _feature_sub_volumes,
+                                           target_filename, _target_sub_volumes])
             elif raise_if_not_exists:
                 for filename in (feature_filename, target_filename):
                     raise FileNotFoundError(filename)

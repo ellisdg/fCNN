@@ -179,7 +179,9 @@ class BaseSequence(Sequence):
             if self.inputs_per_epoch[key] == "all":
                 filenames.extend(self.filenames_dict[key])
             else:
-                filenames.extend(np.random.choice(self.filenames_dict[key], self.inputs_per_epoch[key], replace=False))
+                _filenames = list(self.filenames_dict[key])
+                np.random.shuffle(_filenames)
+                filenames.extend(_filenames[:self.inputs_per_epoch[key]])
         self.filenames = filenames
 
 

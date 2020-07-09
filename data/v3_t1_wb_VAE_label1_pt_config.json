@@ -48,7 +48,7 @@
   "skip_validation": false,
   "iterations_per_epoch": 1,
   "n_outputs": 5,
-  "sequence": "LabeledAEDataset",
+  "sequence": "WholeVolumeSegmentationDataset",
   "n_dense_layers": 1,
   "freeze_bias": false,
   "metric_names": null,

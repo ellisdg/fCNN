@@ -80,16 +80,23 @@ def format_feature_image(feature_image, window, crop=False, augment_scale_std=No
     return feature_image, affine
 
 
-class SingleSiteSequence(Sequence):
+class BaseSequence(Sequence):
     def __init__(self, filenames, batch_size, target_labels, window, spacing, classification='binary', shuffle=True,
-                 points_per_subject=1, flip=False, reorder=False, iterations_per_epoch=1,
-                 deformation_augmentation=None, base_directory=None, subject_ids=None):
+                 points_per_subject=1, flip=False, reorder=False, iterations_per_epoch=1, deformation_augmentation=None,
+                 base_directory=None, subject_ids=None, inputs_per_epoch=None):
         self.deformation_augmentation = deformation_augmentation
         self.base_directory = base_directory
         self.subject_ids = subject_ids
         self.batch_size = batch_size
         self.shuffle = shuffle
         self.filenames = filenames
+        self.inputs_per_epoch = inputs_per_epoch
+        if self.inputs_per_epoch is not None:
+            if not type(self.filenames) == dict:
+                raise ValueError("'inputs_per_epoch' is not None, but 'filenames' is not a dictionary.")
+            self.filenames_dict = self.filenames
+        else:
+            self.filenames_dict = None
         self.target_labels = target_labels
         self.window = window
         self.points_per_subject = points_per_subject
@@ -105,7 +112,7 @@ class SingleSiteSequence(Sequence):
             self._classify = multilabel_classification
         else:
             self._classify = classification
-        self.generate_epoch_filenames()
+        self.on_epoch_end()
 
     def get_number_of_subjects_per_epoch(self):
         return self.get_number_of_subjects() * self.iterations_per_epoch
@@ -114,6 +121,8 @@ class SingleSiteSequence(Sequence):
         return len(self.filenames)
 
     def generate_epoch_filenames(self):
+        if self.inputs_per_epoch is not None:
+            self.sample_filenames()
         _filenames = list(self.filenames)
         epoch_filenames = list()
         for i in range(self.iterations_per_epoch):
@@ -161,25 +170,17 @@ class SingleSiteSequence(Sequence):
     def on_epoch_end(self):
         self.generate_epoch_filenames()
 
-
-class MultiScannerSequence(SingleSiteSequence):
-    def __init__(self, filenames, supplemental_filenames, batch_size, n_supplemental, target_labels, window, spacing,
-                 classification='binary', points_per_subject=1, flip=False, reorder=False):
-        self.n_supplemental = n_supplemental
-        self.supplemental_filenames = supplemental_filenames
-        super().__init__(filenames, batch_size, target_labels, window, spacing, classification, points_per_subject,
-                         flip, reorder)
-
-    def get_number_of_subjects_per_epoch(self):
-        return len(self.filenames) + self.n_supplemental
-
-    def generate_epoch_filenames(self):
-        supplemental = pick_random_list_elements(self.supplemental_filenames,
-                                                 self.n_supplemental,
-                                                 replace=False)
-        epoch_filenames = list(self.filenames) + list(supplemental)
-        np.random.shuffle(epoch_filenames)
-        self.epoch_filenames = list(epoch_filenames)
+    def sample_filenames(self):
+        """
+        Sample the filenames.
+        """
+        filenames = list()
+        for key in self.filenames_dict:
+            if self.inputs_per_epoch[key] == "all":
+                filenames.extend(self.filenames_dict[key])
+            else:
+                filenames.extend(np.random.choice(self.filenames_dict[key], self.inputs_per_epoch[key], replace=False))
+        self.filenames = filenames
 
 
 class HCPParent(object):
@@ -201,7 +202,7 @@ class HCPParent(object):
         return np.asarray(vertices)
 
 
-class HCPRegressionSequence(SingleSiteSequence, HCPParent):
+class HCPRegressionSequence(BaseSequence, HCPParent):
     def __init__(self, filenames, batch_size, window, spacing, metric_names, classification=None,
                  surface_names=('CortexLeft', 'CortexRight'), normalization="zero_mean", **kwargs):
         super().__init__(filenames=filenames, batch_size=batch_size, target_labels=tuple(), window=window,
@@ -304,7 +305,7 @@ class SubjectPredictionSequence(HCPParent, Sequence):
         return np.asarray(batch)
 
 
-class WholeBrainRegressionSequence(HCPRegressionSequence):
+class WholeVolumeToSurfaceSequence(HCPRegressionSequence):
     def __init__(self, interpolation='linear', crop=True, cropping_pad_width=1, augment_scale_std=0,
                  additive_noise_std=0, augment_blur_mean=None, augment_blur_std=None, augment_translation_std=None,
                  flip_left_right=False, resample=None, **kwargs):
@@ -322,12 +323,12 @@ class WholeBrainRegressionSequence(HCPRegressionSequence):
         self.flip_left_right = flip_left_right
 
     def __len__(self):
-        return int(np.ceil(np.divide(len(self.filenames) * self.iterations_per_epoch, self.batch_size)))
+        return int(np.ceil(np.divide(len(self.epoch_filenames), self.batch_size)))
 
     def __getitem__(self, idx):
         x = list()
         y = list()
-        batch_filenames = self.filenames[idx * self.batch_size:(idx + 1) * self.batch_size]
+        batch_filenames = self.epoch_filenames[idx * self.batch_size:(idx + 1) * self.batch_size]
         for feature_filename, surface_filenames, metric_filenames, subject_id in batch_filenames:
             if self.deformation_augmentation:
                 feature_filename = self.switch_to_augmented_filename(subject_id=subject_id, filename=feature_filename)
@@ -350,7 +351,7 @@ class WholeBrainRegressionSequence(HCPRegressionSequence):
         return self.normalization_func(get_nibabel_data(input_img))
 
 
-class WholeBrainAutoEncoder(WholeBrainRegressionSequence):
+class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
     def __init__(self, *args, target_resample=None, target_index=None, feature_index=0, extract_sub_volumes=False,
                  feature_sub_volumes_index=1, target_sub_volumes_index=3, **kwargs):
         """
@@ -450,7 +451,7 @@ class WholeBrainAutoEncoder(WholeBrainRegressionSequence):
         return input_image, target_image
 
 
-class WholeBrainLabeledAutoEncoder(WholeBrainAutoEncoder):
+class WholeVolumeSegmentationSequence(WholeVolumeAutoEncoderSequence):
     def __init__(self, *args, target_resample="nearest", target_index=2, labels=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.target_resample = target_resample
@@ -468,7 +469,7 @@ class WholeBrainLabeledAutoEncoder(WholeBrainAutoEncoder):
         return input_image.get_fdata(), target_data
 
 
-class WindowedAutoEncoder(HCPRegressionSequence):
+class WindowedAutoEncoderSequence(HCPRegressionSequence):
     def __init__(self, *args, resample="linear", additive_noise_std=0, **kwargs):
         super().__init__(*args, **kwargs)
         self.additive_noise_std = additive_noise_std
@@ -504,7 +505,7 @@ class WindowedAutoEncoder(HCPRegressionSequence):
         return x
 
 
-class WholeVolumeSupervisedRegressionSequence(WholeBrainAutoEncoder):
+class WholeVolumeSupervisedRegressionSequence(WholeVolumeAutoEncoderSequence):
     def __init__(self, *args, target_normalization=None, target_resample=None, target_index=2, **kwargs):
         super().__init__(*args, target_index=target_index, target_resample=target_resample, **kwargs)
         self.normalize_target = target_normalization is not None

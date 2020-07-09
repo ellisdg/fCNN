@@ -3,14 +3,14 @@ import torch
 import numpy as np
 
 
-from ..sequences import (WholeBrainRegressionSequence, HCPRegressionSequence, get_metric_data,
-                         WholeBrainAutoEncoder, WholeBrainLabeledAutoEncoder, WindowedAutoEncoder,
+from ..sequences import (WholeVolumeToSurfaceSequence, HCPRegressionSequence, get_metric_data,
+                         WholeVolumeAutoEncoderSequence, WholeVolumeSegmentationSequence, WindowedAutoEncoderSequence,
                          SubjectPredictionSequence, fetch_data_for_point, WholeVolumeCiftiSupervisedRegressionSequence,
                          WholeVolumeSupervisedRegressionSequence)
 from ..utils import nib_load_files
 
 
-class WholeBrainCIFTI2DenseScalarDataset(WholeBrainRegressionSequence, Dataset):
+class WholeBrainCIFTI2DenseScalarDataset(WholeVolumeToSurfaceSequence, Dataset):
     def __init__(self, *args, batch_size=1, shuffle=False, **kwargs):
         super().__init__(*args, batch_size=batch_size, shuffle=shuffle, **kwargs)
 
@@ -58,7 +58,7 @@ class HCPSubjectDataset(SubjectPredictionSequence):
                                     spacing=self.spacing)
 
 
-class AEDataset(WholeBrainAutoEncoder, Dataset):
+class AEDataset(WholeVolumeAutoEncoderSequence, Dataset):
     def __init__(self, *args, batch_size=1, shuffle=False, metric_names=None, **kwargs):
         super().__init__(*args, batch_size=batch_size, shuffle=shuffle, metric_names=metric_names, **kwargs)
 
@@ -72,7 +72,7 @@ class AEDataset(WholeBrainAutoEncoder, Dataset):
                 torch.from_numpy(np.moveaxis(np.asarray(y), -1, 0)).float())
 
 
-class LabeledAEDataset(WholeBrainLabeledAutoEncoder, Dataset):
+class WholeVolumeSegmentationDataset(WholeVolumeSegmentationSequence, Dataset):
     def __init__(self, *args, batch_size=1, shuffle=False, metric_names=None, **kwargs):
         super().__init__(*args, batch_size=batch_size, shuffle=shuffle, metric_names=metric_names, **kwargs)
 
@@ -105,7 +105,7 @@ class WholeVolumeCiftiSupervisedRegressionDataset(WholeVolumeCiftiSupervisedRegr
     pass
 
 
-class WindowedAEDataset(WindowedAutoEncoder, Dataset):
+class WindowedAEDataset(WindowedAutoEncoderSequence, Dataset):
     def __init__(self, *args, points_per_subject=1, **kwargs):
         super().__init__(*args, batch_size=points_per_subject, **kwargs)
 

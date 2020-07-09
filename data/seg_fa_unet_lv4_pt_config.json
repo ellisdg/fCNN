@@ -36,7 +36,7 @@
   "skip_validation": false,
   "iterations_per_epoch": 1,
   "n_outputs": 1,
-  "sequence": "LabeledAEDataset",
+  "sequence": "WholeVolumeSegmentationDataset",
   "sequence_kwargs": {
     "normalization": null,
     "crop": true,

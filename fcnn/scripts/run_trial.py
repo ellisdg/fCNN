@@ -2,18 +2,19 @@ import sys
 import os
 from functools import partial, update_wrapper
 import pandas as pd
-fcnn_path = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname((__file__)))))
-sys.path.append(fcnn_path)
 from fcnn.train import run_training
 from fcnn.utils import sequences as keras_sequences
-from fcnn.utils.sequences import (WholeBrainRegressionSequence, HCPRegressionSequence, ParcelBasedSequence,
-                                  WindowedAutoEncoder)
+from fcnn.utils.sequences import (WholeVolumeToSurfaceSequence, HCPRegressionSequence, ParcelBasedSequence,
+                                  WindowedAutoEncoderSequence)
 from fcnn.utils.pytorch import dataset as pytorch_datasets
 from fcnn.utils.pytorch.dataset import (WholeBrainCIFTI2DenseScalarDataset, HCPRegressionDataset, AEDataset,
-                                        LabeledAEDataset, WindowedAEDataset)
+                                        WholeVolumeSegmentationDataset, WindowedAEDataset)
 from fcnn.utils.utils import load_json, load_image
 from fcnn.utils.custom import get_metric_data_from_config
 from fcnn.models.keras.resnet.resnet import compare_scores
+
+
+fcnn_path = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 
 def wrapped_partial(func, *args, **kwargs):
@@ -80,6 +81,44 @@ def generate_paired_filenames(directory, subject_ids, group, keys, basename, rai
     return rows
 
 
+def generate_filenames_from_templates(subject_ids, group, feature_templates, target_templates, feature_sub_volumes=None,
+                                      target_sub_volumes=None):
+    filenames = dict()
+    for dataset in subject_ids:
+        filenames[dataset] = list()
+        for subject_id in subject_ids[dataset][group]:
+            feature_filename = feature_templates[dataset].format(subject=subject_id)
+            target_filename = target_templates[dataset].format(subject=subject_id)
+            if feature_sub_volumes is not None:
+                _feature_sub_volumes = feature_sub_volumes[dataset]
+            else:
+                _feature_sub_volumes = None
+            if target_sub_volumes is not None:
+                _target_sub_volumes = target_sub_volumes[dataset]
+            else:
+                _target_sub_volumes = None
+            filenames[dataset].append([feature_filename, feature_sub_volumes, target_filename, target_sub_volumes])
+    return filenames
+
+
+def generate_filenames(config, name, system_config):
+    if "generate_filenames" not in config or config["generate_filenames"] == "classic":
+        return generate_hcp_filenames(system_config['directory'],
+                                      config[
+                                          'surface_basename_template'] if "surface_basename_template" in config else None,
+                                      config['target_basenames'],
+                                      config['feature_basenames'],
+                                      config[name],
+                                      config['hemispheres'] if 'hemispheres' in config else None)
+    elif config["generate_filenames"] == "paired":
+        return generate_paired_filenames(system_config['directory'],
+                                         config[name],
+                                         name,
+                                         **config["generate_filenames_kwargs"])
+    elif config["generate_filenames"] == "templates":
+        return generate_filenames_from_templates(config[name], name, **config["generate_filenames_kwargs"])
+
+
 def load_subject_ids(config):
     if "subjects_filename" in config:
         subjects = load_json(os.path.join(fcnn_path, config["subjects_filename"]))
@@ -143,18 +182,7 @@ def main():
     for name in ("training", "validation"):
         key = name + "_filenames"
         if key not in config:
-            if "generate_filenames" not in config or config["generate_filenames"] == "classic":
-                config[key] = generate_hcp_filenames(system_config['directory'],
-                                                     config['surface_basename_template'] if "surface_basename_template" in config else None,
-                                                     config['target_basenames'],
-                                                     config['feature_basenames'],
-                                                     config[name],
-                                                     config['hemispheres'] if 'hemispheres' in config else None)
-            elif config["generate_filenames"] == "paired":
-                config[key] = generate_paired_filenames(system_config['directory'],
-                                                        config[name],
-                                                        name,
-                                                        **config["generate_filenames_kwargs"])
+            config[key] = generate_filenames(config, name, system_config)
     if "directory" in system_config:
         directory = system_config.pop("directory")
     else:
@@ -166,14 +194,14 @@ def main():
         if "package" in config and config["package"] == "pytorch":
             if config["sequence"] == "AEDataset":
                 sequence_class = AEDataset
-            elif config["sequence"] == "LabeledAEDataset":
-                sequence_class = LabeledAEDataset
+            elif config["sequence"] == "WholeVolumeSegmentationDataset":
+                sequence_class = WholeVolumeSegmentationDataset
             else:
                 sequence_class = WholeBrainCIFTI2DenseScalarDataset
         else:
-            sequence_class = WholeBrainRegressionSequence
-    elif config["sequence"] == "WindowedAutoEncoder":
-        sequence_class = WindowedAutoEncoder
+            sequence_class = WholeVolumeToSurfaceSequence
+    elif config["sequence"] == "WindowedAutoEncoderSequence":
+        sequence_class = WindowedAutoEncoderSequence
     elif config["sequence"] == "WindowedAEDataset":
         sequence_class = WindowedAEDataset
     elif "_pb_" in os.path.basename(config_filename):

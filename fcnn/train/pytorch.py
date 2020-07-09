@@ -1,4 +1,5 @@
 import os
+import warnings
 import numpy as np
 import nibabel as nib
 import pandas as pd
@@ -14,7 +15,6 @@ from ..utils.pytorch import functions
 
 def in_config(string, dictionary, if_not_in_config_return=None):
     return dictionary[string] if string in dictionary else if_not_in_config_return
-
 
 
 def build_optimizer(optimizer_name, model_parameters, learning_rate=1e-4):
@@ -99,6 +99,11 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
     else:
         train_kwargs = dict()
 
+    if "additional_validation_args" in config:
+        validation_kwargs = config["additional_validation_args"]
+    else:
+        validation_kwargs = dict()
+
     if "sequence_kwargs" in config:
         sequence_kwargs = config["sequence_kwargs"]
     else:
@@ -159,7 +164,8 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
                                             points_per_subject=in_config('validation_points_per_subject', config, 1),
                                             surface_names=in_config('surface_names', config, None),
                                             metric_names=in_config('metric_names', config, None),
-                                            **sequence_kwargs)
+                                            **sequence_kwargs,
+                                            **validation_kwargs)
         validation_loader = DataLoader(validation_dataset,
                                        batch_size=config["validation_batch_size"]//in_config("points_per_subject",
                                                                                              config, 1),
@@ -204,7 +210,11 @@ def train(model, optimizer, criterion, n_epochs, training_loader, validation_loa
         # train the model
         loss = epoch_training(training_loader, model, criterion, optimizer=optimizer, epoch=epoch, n_gpus=n_gpus,
                               regularized=regularized, vae=vae)
-
+        try:
+            training_loader.dataset.on_epoch_end()
+        except AttributeError:
+            warnings.warn("'on_epoch_end' method not implemented for the {} dataset.".format(
+                type(training_loader.dataset)))
         # predict validation data
         if validation_loader:
             val_loss = epoch_validatation(validation_loader, model, criterion, n_gpus=n_gpus, regularized=regularized,

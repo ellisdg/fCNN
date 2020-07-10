@@ -83,7 +83,7 @@
   "sequence_kwargs": {
     "normalization": null,
     "crop": true,
-    "resample": "linear",
+    "interpolation": "linear",
     "cropping_pad_width": 2,
     "extract_sub_volumes": true
   },

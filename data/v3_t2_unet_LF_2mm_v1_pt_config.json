@@ -57,7 +57,7 @@
     "normalization": "zero_one_window",
     "target_normalization": null,
     "crop": true,
-    "resample": "linear",
+    "interpolation": "linear",
     "cropping_pad_width": 3
   },
   "additional_training_args": {}

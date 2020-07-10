@@ -56,7 +56,7 @@
   "sequence_kwargs": {
     "normalization": "zero_one_window",
     "crop": true,
-    "resample": "linear"
+    "interpolation": "linear"
   },
   "additional_training_args": {}
 }

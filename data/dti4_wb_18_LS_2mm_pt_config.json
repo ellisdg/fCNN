@@ -947,5 +947,5 @@
       "{}_tfMRI_LANGUAGE_level2_STORY_hp200_s2"
     ]
   ],
-  "additional_generator_args": {"augment_scale_std": 0, "crop": true, "resample": "linear"}
+  "additional_generator_args": {"augment_scale_std": 0, "crop": true, "interpolation": "linear"}
 }

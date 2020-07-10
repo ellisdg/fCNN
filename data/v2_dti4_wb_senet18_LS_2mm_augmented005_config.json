@@ -948,7 +948,7 @@
   "additional_generator_args": {
     "augment_scale_std": 0,
     "crop": true,
-    "resample": "linear",
+    "interpolation": "linear",
     "additive_noise_std": 0.05
   }
 }

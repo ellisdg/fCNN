@@ -57,7 +57,7 @@
   "additional_generator_args": {
     "augment_scale_std": 0.1,
     "crop": true,
-    "resample": "linear",
+    "interpolation": "linear",
     "additive_noise_std": 0.1,
     "deformation_augmentation": "{base_directory}/{random_subject_id}/T1w/Diffusion/augmented/{subject_id}_{basename}"}
 }

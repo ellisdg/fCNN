@@ -104,7 +104,7 @@
     "normalization": "zero_one_window",
     "target_normalization": null,
     "crop": true,
-    "resample": "linear",
+    "interpolation": "linear",
     "cropping_pad_width": 3,
     "augment_scale_std": 0.1,
     "additive_noise_std": 0.1

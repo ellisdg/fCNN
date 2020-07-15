@@ -7,15 +7,14 @@ import random
 import warnings
 
 from .nilearn_custom_utils.nilearn_utils import crop_img
-from .radiomic_utils import binary_classification, multilabel_classification, fetch_data, pick_random_list_elements, \
-    fetch_data_for_point
+from .radiomic_utils import binary_classification, multilabel_classification, fetch_data, fetch_data_for_point
 from .hcp import (extract_gifti_surface_vertices, get_vertices_from_scalar, get_metric_data,
                   get_nibabel_data, extract_cifti_volumetric_data)
 from .utils import (zero_mean_normalize_image_data, copy_image, extract_sub_volumes, mask,
                     zero_floor_normalize_image_data, zero_one_window, compile_one_hot_encoding,
                     foreground_zero_mean_normalize_image_data, nib_load_files, load_image, load_single_image)
 from .resample import resample
-from .augment import scale_affine, add_noise, affine_swap_axis, translate_affine, random_blur
+from .augment import scale_affine, add_noise, affine_swap_axis, translate_affine, random_blur, random_permutation_x_y
 from .affine import resize_affine
 
 
@@ -86,7 +85,7 @@ def format_feature_image(feature_image, window, crop=False, augment_scale_std=No
 class BaseSequence(Sequence):
     def __init__(self, filenames, batch_size, target_labels, window, spacing, classification='binary', shuffle=True,
                  points_per_subject=1, flip=False, reorder=False, iterations_per_epoch=1, deformation_augmentation=None,
-                 base_directory=None, subject_ids=None, inputs_per_epoch=None):
+                 base_directory=None, subject_ids=None, inputs_per_epoch=None, channel_axis=-1):
         self.deformation_augmentation = deformation_augmentation
         self.base_directory = base_directory
         self.subject_ids = subject_ids
@@ -115,6 +114,7 @@ class BaseSequence(Sequence):
             self._classify = multilabel_classification
         else:
             self._classify = classification
+        self.channel_axis = channel_axis
         self.on_epoch_end()
 
     def get_number_of_subjects_per_epoch(self):
@@ -366,7 +366,7 @@ class WholeVolumeToSurfaceSequence(HCPRegressionSequence):
 
 class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
     def __init__(self, *args, target_resample=None, target_index=None, feature_index=0, extract_sub_volumes=False,
-                 feature_sub_volumes_index=1, target_sub_volumes_index=3, **kwargs):
+                 feature_sub_volumes_index=1, target_sub_volumes_index=3, random_permutation=False, **kwargs):
         """
 
         :param args:
@@ -387,6 +387,7 @@ class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
         self.extract_sub_volumes = extract_sub_volumes
         self.feature_sub_volumes_index = feature_sub_volumes_index
         self.target_sub_volumes_index = target_sub_volumes_index
+        self.random_permutation = random_permutation
 
     def __getitem__(self, idx):
         x_batch = list()
@@ -400,7 +401,10 @@ class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
 
     def resample_input(self, input_filenames, normalize=True):
         input_image, target_image = self.resample_image(input_filenames, normalize=normalize)
-        return get_nibabel_data(input_image), get_nibabel_data(target_image)
+        x, y = get_nibabel_data(input_image), get_nibabel_data(target_image)
+        if self.random_permutation:
+            x, y = random_permutation_x_y(x, y, channel_axis=self.channel_axis)
+        return x, y
 
     def resample_image(self, input_filenames, normalize=True):
         feature_image = self.load_feature_image(input_filenames)

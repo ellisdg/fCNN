@@ -1,5 +1,5 @@
 {
-  "subjects_filename": "data/subjects_brats.json",
+  "subjects_filename": "data/subjects_brats_half-n-half.json",
   "generate_filenames": "templates",
   "generate_filenames_kwargs": {
     "directory": "/work/aizenberg/dgellis/MICCAI_BraTS2020/MICCAI_BraTS2020_TrainingData/BraTS20_Training_{subject}",
@@ -16,7 +16,7 @@
     160,
     144
   ],
-  "n_features": 3,
+  "n_features": 4,
   "optimizer": "Adam",
   "package": "pytorch",
   "loss": "dice_loss",
@@ -60,6 +60,5 @@
     "augment_translation_std": 0.05,
     "flip_left_right": true
   },
-  "additional_validation_args": {
-}
+  "additional_validation_args": {}
 }

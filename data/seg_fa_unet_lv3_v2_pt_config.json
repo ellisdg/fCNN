@@ -1,6 +1,6 @@
 {
   "subjects_filename": "data/subjects_seg.json",
-  "generate_filenames": "templates",
+  "generate_filenames": "multisource_templates",
   "generate_filenames_kwargs": {
     "feature_templates": {
       "HCP": "/work/aizenberg/dgellis/HCP/HCP_1200/{subject}/T1w/Diffusion/fa.nii.gz",

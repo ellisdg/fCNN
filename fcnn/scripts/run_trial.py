@@ -95,28 +95,53 @@ def generate_paired_filenames(directory, subject_ids, group, keys, basename, add
     return rows
 
 
+def format_templates(templates, **kwargs):
+    if type(templates) == str:
+        return templates.format(**kwargs)
+    else:
+        return [template.format(**kwargs) for template in templates]
+
+
+def exists(filenames):
+    if type(filenames) == str:
+        filenames = [filenames]
+    return all([os.path.exists(filename) for filename in filenames])
+
+
 def generate_filenames_from_templates(subject_ids, feature_templates, target_templates, feature_sub_volumes=None,
                                       target_sub_volumes=None, raise_if_not_exists=False):
+    filenames = list()
+    for subject_id in subject_ids:
+        feature_filename = format_templates(feature_templates, subject=subject_id)
+        target_filename = format_templates(target_templates, subject=subject_id)
+        if feature_sub_volumes is not None:
+            _feature_sub_volumes = feature_sub_volumes
+        else:
+            _feature_sub_volumes = None
+        if target_sub_volumes is not None:
+            _target_sub_volumes = target_sub_volumes
+        else:
+            _target_sub_volumes = None
+        if exists(feature_filename) and exists(target_filename):
+            filenames.append([feature_filename, _feature_sub_volumes, target_filename, _target_sub_volumes])
+        elif raise_if_not_exists:
+            for filename in (feature_filename, target_filename):
+                if not exists(filename):
+                    raise FileNotFoundError(filename)
+    return filenames
+
+
+def generate_filenames_from_multisource_templates(subject_ids, feature_templates, target_templates,
+                                                  feature_sub_volumes=None, target_sub_volumes=None,
+                                                  raise_if_not_exists=False):
     filenames = dict()
     for dataset in subject_ids:
-        filenames[dataset] = list()
-        for subject_id in subject_ids[dataset]:
-            feature_filename = feature_templates[dataset].format(subject=subject_id)
-            target_filename = target_templates[dataset].format(subject=subject_id)
-            if feature_sub_volumes is not None:
-                _feature_sub_volumes = feature_sub_volumes[dataset]
-            else:
-                _feature_sub_volumes = None
-            if target_sub_volumes is not None:
-                _target_sub_volumes = target_sub_volumes[dataset]
-            else:
-                _target_sub_volumes = None
-            if os.path.exists(feature_filename) and os.path.exists(target_filename):
-                filenames[dataset].append([feature_filename, _feature_sub_volumes,
-                                           target_filename, _target_sub_volumes])
-            elif raise_if_not_exists:
-                for filename in (feature_filename, target_filename):
-                    raise FileNotFoundError(filename)
+        filenames[dataset] = generate_filenames_from_templates(subject_ids[dataset],
+                                                               feature_templates[dataset],
+                                                               target_templates[dataset],
+                                                               feature_sub_volumes[dataset],
+                                                               target_sub_volumes[dataset],
+                                                               raise_if_not_exists=raise_if_not_exists)
     return filenames
 
 
@@ -134,6 +159,8 @@ def generate_filenames(config, name, system_config):
                                          config[name],
                                          name,
                                          **config["generate_filenames_kwargs"])
+    elif config["generate_filenames"] == "multisource_templates":
+        return generate_filenames_from_multisource_templates(config[name], **config["generate_filenames_kwargs"])
     elif config["generate_filenames"] == "templates":
         return generate_filenames_from_templates(config[name], **config["generate_filenames_kwargs"])
 

@@ -36,11 +36,12 @@ def normalization_name_to_function(normalization_name):
 
 
 def normalize_image_with_function(image, function, volume_indices=None, **kwargs):
+    data = get_nibabel_data(image)
     if volume_indices is not None:
-        image.dataobj[..., volume_indices] = function(image.dataobj[..., volume_indices], **kwargs)
+        data[..., volume_indices] = function(data[..., volume_indices], **kwargs)
     else:
-        image.dataobj[:] = function(image.dataobj[:], **kwargs)
-    return image
+        data[:] = function(data[:], **kwargs)
+    return new_img_like(image, data=data, affine=image.affine)
 
 
 def augment_affine(affine, shape, augment_scale_std=None, flip_left_right=False, augment_translation_std=None):

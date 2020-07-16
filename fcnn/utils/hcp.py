@@ -151,5 +151,5 @@ def extract_cifti_volumetric_data(cifti_image, map_names, subject_id=None, model
     return volume_data
 
 
-def get_nibabel_data(cifti_object):
-    return cifti_object.get_fdata()
+def get_nibabel_data(nibabel_image):
+    return nibabel_image.get_fdata()

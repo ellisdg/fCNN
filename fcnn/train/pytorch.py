@@ -141,6 +141,7 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
     if test_input:
         for index in range(test_input):
             x, y = training_dataset[index]
+            print("x type:", x.type(), "y type:", y.type())
             if not isinstance(x, np.ndarray):
                 x = x.numpy()
                 y = y.numpy()

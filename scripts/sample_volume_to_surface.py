@@ -49,7 +49,8 @@ def download(f1, f2, include=None, exclude=None, verbose=False):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--volume_template', required=True)
+    parser.add_argument('--volume_template', required=True,
+                        help="Filename with '{subject}' in place of the subject id.")
     parser.add_argument('--config', default="/home/aizenberg/dgellis/fCNN/data/subjects_v4-retest.json")
     parser.add_argument('--hcp_dir', default="/work/aizenberg/dgellis/HCP/HCP_1200")
     parser.add_argument('--surface_name', default="midthickness")

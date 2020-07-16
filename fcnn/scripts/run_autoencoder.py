@@ -1,22 +1,34 @@
-import sys
 import os
+import argparse
 from fcnn.utils.utils import load_json
 from fcnn.predict import whole_brain_autoencoder_predictions
 from fcnn.scripts.run_trial import load_subject_ids, load_sequence
 
 
-def main(config_filename, model_filename, machine_config_filename, output_directory, subject_key="validation"):
-    print("Config: ", config_filename)
-    config = load_json(config_filename)
-    print("Model: ", model_filename)
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config_filename", required=True)
+    parser.add_argument("--model_filename", required=True)
+    parser.add_argument("--output_directory", required=True)
+    parser.add_argument("--machine_config_filename",
+                        default="/home/aizenberg/dgellis/fCNN/data/hcc_v100_1gpu_config.json")
+    parser.add_argument("--group", default="test")
+    return parser.parse_args()
 
-    print("Machine config: ", machine_config_filename)
-    machine_config = load_json(machine_config_filename)
 
-    print("Output Directory:", output_directory)
+def main():
+    namespace = parse_args()
+    print("Config: ", namespace.config_filename)
+    config = load_json(namespace.config_filename)
+    print("Model: ", namespace.model_filename)
 
-    if not os.path.exists(output_directory):
-        os.makedirs(output_directory)
+    print("Machine config: ", namespace.machine_config_filename)
+    machine_config = load_json(namespace.machine_config_filename)
+
+    print("Output Directory:", namespace.output_directory)
+
+    if not os.path.exists(namespace.output_directory):
+        os.makedirs(namespace.output_directory)
 
     load_subject_ids(config)
 
@@ -43,10 +55,10 @@ def main(config_filename, model_filename, machine_config_filename, output_direct
     else:
         sequence = None
 
-    return whole_brain_autoencoder_predictions(model_filename=model_filename,
-                                               subject_ids=config[subject_key],
+    return whole_brain_autoencoder_predictions(model_filename=namespace.model_filename,
+                                               subject_ids=config[namespace.group],
                                                hcp_dir=machine_config["directory"],
-                                               output_dir=output_directory,
+                                               output_dir=namespace.output_directory,
                                                feature_basenames=config["feature_basenames"],
                                                model_name=config["model_name"],
                                                n_features=config["n_features"],
@@ -65,5 +77,4 @@ def main(config_filename, model_filename, machine_config_filename, output_direct
 
 
 if __name__ == '__main__':
-    main(config_filename=sys.argv[1], model_filename=sys.argv[2], machine_config_filename=sys.argv[3],
-         output_directory=sys.argv[4], subject_key=sys.argv[5])
+    main()

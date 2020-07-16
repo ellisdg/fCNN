@@ -40,7 +40,7 @@
     "encoder_blocks": [2, 2, 2, 2, 2],
     "decoder_mirrors_encoder": true,
     "input_shape": [144, 160, 144],
-    "activation": "softmax"
+    "activation": "sigmoid"
   },
   "skip_validation": false,
   "iterations_per_epoch": 1,

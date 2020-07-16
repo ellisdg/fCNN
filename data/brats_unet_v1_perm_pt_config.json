@@ -59,7 +59,7 @@
     "augment_blur_std":  1.0,
     "augment_translation_std": 0.05,
     "flip_left_right": false,
-    "random_permutations": true
+    "random_permutation": true
   },
   "additional_validation_args": {}
 }

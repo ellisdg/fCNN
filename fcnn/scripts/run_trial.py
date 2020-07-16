@@ -95,11 +95,11 @@ def generate_paired_filenames(directory, subject_ids, group, keys, basename, add
     return rows
 
 
-def format_templates(templates, **kwargs):
+def format_templates(templates, directory="", **kwargs):
     if type(templates) == str:
-        return templates.format(**kwargs)
+        return os.path.join(directory, templates).format(**kwargs)
     else:
-        return [template.format(**kwargs) for template in templates]
+        return [os.path.join(directory, template).format(**kwargs) for template in templates]
 
 
 def exists(filenames):
@@ -109,11 +109,11 @@ def exists(filenames):
 
 
 def generate_filenames_from_templates(subject_ids, feature_templates, target_templates, feature_sub_volumes=None,
-                                      target_sub_volumes=None, raise_if_not_exists=False):
+                                      target_sub_volumes=None, raise_if_not_exists=False, directory=""):
     filenames = list()
     for subject_id in subject_ids:
-        feature_filename = format_templates(feature_templates, subject=subject_id)
-        target_filename = format_templates(target_templates, subject=subject_id)
+        feature_filename = format_templates(feature_templates, directory=directory, subject=subject_id)
+        target_filename = format_templates(target_templates, directory=directory, subject=subject_id)
         if feature_sub_volumes is not None:
             _feature_sub_volumes = feature_sub_volumes
         else:
@@ -133,7 +133,7 @@ def generate_filenames_from_templates(subject_ids, feature_templates, target_tem
 
 def generate_filenames_from_multisource_templates(subject_ids, feature_templates, target_templates,
                                                   feature_sub_volumes=None, target_sub_volumes=None,
-                                                  raise_if_not_exists=False):
+                                                  raise_if_not_exists=False, directory=""):
     filenames = dict()
     for dataset in subject_ids:
         filenames[dataset] = generate_filenames_from_templates(subject_ids[dataset],
@@ -141,7 +141,8 @@ def generate_filenames_from_multisource_templates(subject_ids, feature_templates
                                                                target_templates[dataset],
                                                                feature_sub_volumes[dataset],
                                                                target_sub_volumes[dataset],
-                                                               raise_if_not_exists=raise_if_not_exists)
+                                                               raise_if_not_exists=raise_if_not_exists,
+                                                               directory=directory)
     return filenames
 
 

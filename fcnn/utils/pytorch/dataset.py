@@ -83,7 +83,7 @@ class WholeVolumeSegmentationDataset(WholeVolumeSegmentationSequence, Dataset):
         item = self.epoch_filenames[idx]
         x, y = self.resample_input(item)
         return (torch.from_numpy(np.moveaxis(np.asarray(x), -1, 0)).float(),
-                torch.from_numpy(np.moveaxis(np.asarray(y), -1, 0)).float())
+                torch.from_numpy(np.moveaxis(np.asarray(y), -1, 0)).byte())
 
 
 class WholeVolumeSupervisedRegressionDataset(WholeVolumeSupervisedRegressionSequence, Dataset):

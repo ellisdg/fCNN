@@ -484,10 +484,12 @@ class WholeVolumeSegmentationSequence(WholeVolumeAutoEncoderSequence):
         target_data = get_nibabel_data(target_image)
         if self.labels is None:
             self.labels = np.unique(target_data)
+        print(target_data.shape)
         assert len(target_data.shape) == 3  # assuming a 3d label map
         target_data = np.moveaxis(compile_one_hot_encoding(target_data,
                                                            n_labels=len(self.labels),
                                                            labels=self.labels), 1, -1)
+        print(target_data.shape)
         return self.permute_inputs(get_nibabel_data(input_image), np.squeeze(target_data))
 
 

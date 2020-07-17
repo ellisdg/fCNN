@@ -192,9 +192,7 @@ def compile_one_hot_encoding(data, n_labels, labels=None, dtype=np.uint8, return
             y[:, label_index][data[:, 0] == (label_index + 1)] = 1
     if return_4d:
         assert y.shape[0] == 1
-        print("one hot pre 4d: ", y.shape)
         y = y[0]
-    print("final one hot:", y.shape)
     return y
 
 

@@ -486,7 +486,7 @@ class WholeVolumeSegmentationSequence(WholeVolumeAutoEncoderSequence):
             self.labels = np.unique(target_data)
         print(target_data.shape)
         assert len(target_data.shape) == 4
-        assert target_data.shape[0] == 1
+        assert target_data.shape[3] == 1
         target_data = np.moveaxis(compile_one_hot_encoding(np.squeeze(target_data),
                                                            n_labels=len(self.labels),
                                                            labels=self.labels), 1, -1)

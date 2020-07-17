@@ -487,10 +487,10 @@ class WholeVolumeSegmentationSequence(WholeVolumeAutoEncoderSequence):
         print("resample y", target_data.shape)
         assert len(target_data.shape) == 4
         assert target_data.shape[3] == 1
-        target_data = np.moveaxis(compile_one_hot_encoding(np.moveaxis(target_data, -1, 0),
+        target_data = np.moveaxis(compile_one_hot_encoding(np.moveaxis(target_data, 3, 0),
                                                            n_labels=len(self.labels),
                                                            labels=self.labels,
-                                                           return_4d=True), 0, -1)
+                                                           return_4d=True), 0, 3)
         print("encoded y", target_data.shape)
         return self.permute_inputs(get_nibabel_data(input_image), target_data)
 

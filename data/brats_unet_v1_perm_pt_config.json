@@ -12,15 +12,15 @@
     "target_templates": "BraTS20_Training_{subject}_seg.nii.gz"
   },
   "window": [
-    144,
     160,
-    144
+    160,
+    160
   ],
   "n_features": 4,
   "optimizer": "Adam",
   "package": "pytorch",
-  "loss": "dice_loss",
-  "evaluation_metric": "dice_loss",
+  "loss": "per_channel_dice_loss",
+  "evaluation_metric": "per_channel_dice_loss",
   "weights": null,
   "custom_loss": true,
   "regularized": false,
@@ -39,7 +39,7 @@
     "base_width":  32,
     "encoder_blocks": [2, 2, 2, 2, 2],
     "decoder_mirrors_encoder": true,
-    "input_shape": [144, 160, 144],
+    "input_shape": [160, 160, 160],
     "activation": "sigmoid"
   },
   "skip_validation": false,
@@ -55,8 +55,8 @@
   "additional_training_args": {
     "augment_scale_std": 0.1,
     "additive_noise_std": 0.1,
-    "augment_blur_mean": 2.0,
-    "augment_blur_std":  1.0,
+    "augment_blur_mean": 1.5,
+    "augment_blur_std":  0.5,
     "augment_translation_std": 0.05,
     "flip_left_right": false,
     "random_permutation": true

@@ -57,6 +57,9 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
 
     if "model_kwargs" in config:
         model_kwargs = config["model_kwargs"]
+        if "input_shape" not in config["model_kwargs"]:
+            # assume that the model will take in the whole image window
+            config["model_kwargs"]["input_shape"] = window
     else:
         model_kwargs = dict()
 

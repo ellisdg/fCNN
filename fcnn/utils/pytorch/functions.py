@@ -1,5 +1,10 @@
 from torch.nn.functional import l1_loss, mse_loss
 import torch
+from .pt3dunet import compute_per_channel_dice
+
+
+def per_channel_dice_loss(x, y, **kwargs):
+    return 1 - compute_per_channel_dice(x, y, **kwargs)
 
 
 def variational_regularized_loss(predicted, vae_x, mu, logvar, x, y, pred_loss=l1_loss, decoder_loss=mse_loss,

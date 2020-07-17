@@ -166,7 +166,7 @@ def hist_match(source, template):
     return interp_t_values[bin_idx].reshape(oldshape)
 
 
-def compile_one_hot_encoding(data, n_labels, labels=None, dtype=np.uint8):
+def compile_one_hot_encoding(data, n_labels, labels=None, dtype=np.uint8, return_4d=True):
     """
     Translates a label map into a set of binary labels.
     :param data: numpy array containing the label map with shape: (n_samples, 1, ...).
@@ -176,8 +176,9 @@ def compile_one_hot_encoding(data, n_labels, labels=None, dtype=np.uint8):
     :return: binary numpy array of shape: (n_samples, n_labels, ...)
     """
     data = np.asarray(data)
-    if len(data.shape) == 3:
+    while len(data.shape) < 5:
         data = data[None]
+    assert data.shape[1] == 1
     new_shape = [data.shape[0], n_labels] + list(data.shape[2:])
     y = np.zeros(new_shape, dtype=dtype)
     for label_index in range(n_labels):
@@ -189,7 +190,11 @@ def compile_one_hot_encoding(data, n_labels, labels=None, dtype=np.uint8):
                 y[:, label_index][data[:, 0] == labels[label_index]] = 1
         else:
             y[:, label_index][data[:, 0] == (label_index + 1)] = 1
-    return y
+    if return_4d:
+        assert y.shape[0] == 1
+        return y[1:]
+    else:
+        return y
 
 
 def convert_one_hot_to_label_map(one_hot_encoding, labels, axis=1):

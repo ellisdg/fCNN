@@ -167,6 +167,7 @@ def random_permutation_x_y(x_data, y_data, channel_axis=0):
     :return: the permuted data
     """
     key = random_permutation_key()
+    print(key)
     if channel_axis != 0:
         return [np.moveaxis(permute_data(np.moveaxis(data, channel_axis, 0), key), 0, channel_axis)
                 for data in (x_data, y_data)]

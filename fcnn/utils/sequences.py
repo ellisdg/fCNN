@@ -403,6 +403,9 @@ class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
     def resample_input(self, input_filenames, normalize=True):
         input_image, target_image = self.resample_image(input_filenames, normalize=normalize)
         x, y = get_nibabel_data(input_image), get_nibabel_data(target_image)
+        return self.permute_inputs(x, y)
+
+    def permute_inputs(self, x, y):
         if self.random_permutation:
             x, y = random_permutation_x_y(x, y, channel_axis=self.channel_axis)
         return x, y
@@ -478,13 +481,13 @@ class WholeVolumeSegmentationSequence(WholeVolumeAutoEncoderSequence):
 
     def resample_input(self, input_filenames, normalize=True):
         input_image, target_image = self.resample_image(input_filenames, normalize=normalize)
-        target_data = target_image.get_fdata()
+        target_data = get_nibabel_data(target_image)
         if self.labels is None:
             self.labels = np.unique(target_data)
         target_data = np.moveaxis(compile_one_hot_encoding(np.moveaxis(target_data, -1, 1),
                                                            n_labels=len(self.labels),
                                                            labels=self.labels), 1, -1)
-        return input_image.get_fdata(), target_data
+        return self.permute_inputs(get_nibabel_data(input_image), target_data)
 
 
 class WindowedAutoEncoderSequence(HCPRegressionSequence):

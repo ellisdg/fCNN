@@ -175,6 +175,7 @@ def compile_one_hot_encoding(data, n_labels, labels=None, dtype=np.uint8):
     :param dtype: output type of the array
     :return: binary numpy array of shape: (n_samples, n_labels, ...)
     """
+    print(data.shape)
     new_shape = [data.shape[0], n_labels] + list(data.shape[2:])
     y = np.zeros(new_shape, dtype=dtype)
     for label_index in range(n_labels):

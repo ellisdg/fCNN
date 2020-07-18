@@ -44,43 +44,61 @@ def normalize_image_with_function(image, function, volume_indices=None, **kwargs
     return new_img_like(image, data=data, affine=image.affine)
 
 
-def augment_affine(affine, shape, augment_scale_std=None, flip_left_right=False, augment_translation_std=None):
-    if augment_scale_std:
+def augment_affine(affine, shape, augment_scale_std=None, augment_scale_probability=1,
+                   flip_left_right_probability=0, augment_translation_std=None, augment_translation_probability=1):
+    if augment_scale_std and decision(augment_scale_probability):
         scale = np.random.normal(1, augment_scale_std, 3)
         affine = scale_affine(affine, shape, scale)
-    if flip_left_right and bool(random.getrandbits(1)):  # flips the left and right sides of the image randomly
+    if decision(flip_left_right_probability):  # flips the left and right sides of the image randomly
         affine = affine_swap_axis(affine, shape=shape, axis=0)
-    if augment_translation_std:
+    if augment_translation_std and decision(augment_translation_probability):
         affine = translate_affine(affine, shape,
                                   translation_scales=np.random.normal(loc=0, scale=augment_translation_std, size=3))
     return affine
 
 
-def augment_image(image, augment_blur_mean=None, augment_blur_std=None, additive_noise_std=None):
-    if not (augment_blur_mean is None or augment_blur_std is None):
+def augment_image(image, augment_blur_mean=None, augment_blur_std=None, augment_blur_probability=1,
+                  additive_noise_std=None, additive_noise_probability=1):
+    if not (augment_blur_mean is None or augment_blur_std is None) and decision(augment_blur_probability):
         image = random_blur(image, mean=augment_blur_mean, std=augment_blur_std)
-    if additive_noise_std:
+    if additive_noise_std and decision(additive_noise_probability):
         image.dataobj[:] = add_noise(image.dataobj, sigma_factor=additive_noise_std)
     return image
 
 
-def format_feature_image(feature_image, window, crop=False, augment_scale_std=None, cropping_pad_width=1,
-                         additive_noise_std=None, flip_left_right=False, augment_translation_std=None,
-                         augment_blur_mean=None, augment_blur_std=None):
+def format_feature_image(feature_image, window, crop=False, cropping_pad_width=1, cropping_percentile=None,
+                         augment_scale_std=None, augment_scale_probability=1, additive_noise_std=None,
+                         additive_noise_probability=0, flip_left_right_probability=0, augment_translation_std=None,
+                         augment_translation_probability=0, augment_blur_mean=None, augment_blur_std=None,
+                         augment_blur_probability=0):
     affine = feature_image.affine.copy()
     shape = feature_image.shape
     if crop:
-        affine, shape = crop_img(feature_image, return_affine=True, pad=cropping_pad_width)
+        affine, shape = crop_img(feature_image, return_affine=True, pad=cropping_pad_width,
+                                 percentile=cropping_percentile)
     affine = augment_affine(affine, shape,
                             augment_scale_std=augment_scale_std,
+                            augment_scale_probability=augment_scale_probability,
                             augment_translation_std=augment_translation_std,
-                            flip_left_right=flip_left_right)
+                            augment_translation_probability=augment_translation_probability,
+                            flip_left_right_probability=flip_left_right_probability)
     feature_image = augment_image(feature_image,
                                   augment_blur_mean=augment_blur_mean,
                                   augment_blur_std=augment_blur_std,
-                                  additive_noise_std=additive_noise_std)
+                                  augment_blur_probability=augment_blur_probability,
+                                  additive_noise_std=additive_noise_std,
+                                  additive_noise_probability=additive_noise_probability)
     affine = resize_affine(affine, shape, window)
     return feature_image, affine
+
+
+def decision(probability):
+    if probability >= 1:
+        return True
+    elif probability <= 0:
+        return False
+    else:
+        return random.random() < probability
 
 
 class BaseSequence(Sequence):
@@ -320,21 +338,47 @@ class SubjectPredictionSequence(HCPParent, Sequence):
 
 
 class WholeVolumeToSurfaceSequence(HCPRegressionSequence):
-    def __init__(self, interpolation='linear', crop=True, cropping_pad_width=1, augment_scale_std=0,
-                 additive_noise_std=0, augment_blur_mean=None, augment_blur_std=None, augment_translation_std=None,
-                 flip_left_right=False, resample=None, **kwargs):
+    def __init__(self, interpolation='linear', crop=True, cropping_pad_width=1, cropping_percentile=None,
+                 augment_scale_std=0, augment_scale_probability=1, additive_noise_std=0, additive_noise_probability=1,
+                 augment_blur_mean=None, augment_blur_std=None, augment_blur_probability=1,
+                 augment_translation_std=None, augment_translation_probability=1, flip_left_right_probability=0,
+                 resample=None, **kwargs):
+        """
+
+        :param interpolation: interpolation to use when formatting the feature image.
+        :param crop: if true, images will be cropped to remove the background from the feature image.
+        :param cropping_pad_width: width of the padding around the foreground after cropping.
+        :param augment_scale_std: randomly augment the scale with this standard deviation (mean of 1). If None, 0 or
+        False, no augmentation will be done.
+        :param augment_scale_probability: If the scale augmentation is set, randomly pick when to implement.
+        :param additive_noise_std:
+        :param additive_noise_probability:
+        :param augment_blur_mean:
+        :param augment_blur_std:
+        :param augment_blur_probability:
+        :param augment_translation_std:
+        :param augment_translation_probability:
+        :param flip_left_right_probability:
+        :param resample: deprecated
+        :param kwargs:
+        """
         super().__init__(**kwargs)
         self.interpolation = interpolation
         if resample is not None:
             warnings.warn("'resample' argument is deprecated. Use 'interpolation'.", DeprecationWarning)
         self.crop = crop
         self.augment_scale_std = augment_scale_std
+        self.augment_scale_probability = augment_scale_probability
         self.additive_noise_std = additive_noise_std
+        self.additive_noise_probability = additive_noise_probability
         self.cropping_pad_width = cropping_pad_width
+        self.cropping_percentile = cropping_percentile
         self.augment_blur_mean = augment_blur_mean
         self.augment_blur_std = augment_blur_std
+        self.augment_blur_probability = augment_blur_probability
         self.augment_translation_std = augment_translation_std
-        self.flip_left_right = flip_left_right
+        self.augment_translation_probability = augment_translation_probability
+        self.flip_left_right_probability = flip_left_right_probability
 
     def __len__(self):
         return int(np.ceil(np.divide(len(self.epoch_filenames), self.batch_size)))
@@ -353,21 +397,26 @@ class WholeVolumeToSurfaceSequence(HCPRegressionSequence):
 
     def resample_input(self, feature_filename):
         feature_image = load_image(feature_filename, reorder=self.reorder)
-        feature_image, affine = format_feature_image(feature_image=feature_image, crop=self.crop,
-                                                     augment_scale_std=self.augment_scale_std, window=self.window,
+        feature_image, affine = format_feature_image(feature_image=feature_image, window=self.window, crop=self.crop,
                                                      cropping_pad_width=self.cropping_pad_width,
+                                                     cropping_percentile=self.cropping_percentile,
+                                                     augment_scale_std=self.augment_scale_std,
+                                                     augment_scale_probability=self.augment_scale_probability,
                                                      additive_noise_std=self.additive_noise_std,
+                                                     additive_noise_probability=self.additive_noise_probability,
                                                      augment_blur_mean=self.augment_blur_mean,
                                                      augment_blur_std=self.augment_blur_std,
-                                                     flip_left_right=self.flip_left_right,
-                                                     augment_translation_std=self.augment_translation_std)
+                                                     augment_blur_probability=self.augment_blur_probability,
+                                                     flip_left_right_probability=self.flip_left_right_probability,
+                                                     augment_translation_std=self.augment_translation_std,
+                                                     augment_translation_probability=self.augment_translation_probability)
         input_img = resample(feature_image, affine, self.window, interpolation=self.interpolation)
         return get_nibabel_data(self.normalize_image(input_img))
 
 
 class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
     def __init__(self, *args, target_resample=None, target_index=None, feature_index=0, extract_sub_volumes=False,
-                 feature_sub_volumes_index=1, target_sub_volumes_index=3, random_permutation=False, **kwargs):
+                 feature_sub_volumes_index=1, target_sub_volumes_index=3, random_permutation_probability=0, **kwargs):
         """
 
         :param args:
@@ -388,7 +437,7 @@ class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
         self.extract_sub_volumes = extract_sub_volumes
         self.feature_sub_volumes_index = feature_sub_volumes_index
         self.target_sub_volumes_index = target_sub_volumes_index
-        self.random_permutation = random_permutation
+        self.random_permutation_probability = random_permutation_probability
 
     def __getitem__(self, idx):
         x_batch = list()
@@ -406,7 +455,7 @@ class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
         return self.permute_inputs(x, y)
 
     def permute_inputs(self, x, y):
-        if self.random_permutation:
+        if decision(self.random_permutation_probability):
             x, y = random_permutation_x_y(x, y, channel_axis=self.channel_axis)
         return x, y
 
@@ -416,21 +465,26 @@ class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
             feature_image = self.normalize_image(feature_image)
         feature_image, affine = format_feature_image(feature_image=feature_image,
                                                      crop=self.crop,
-                                                     augment_scale_std=self.augment_scale_std,
-                                                     window=self.window,
                                                      cropping_pad_width=self.cropping_pad_width,
-                                                     additive_noise_std=None,  # added later
-                                                     augment_blur_mean=None,  # added later
-                                                     augment_blur_std=None,  # added later
-                                                     flip_left_right=self.flip_left_right,
-                                                     augment_translation_std=self.augment_translation_std)
+                                                     cropping_percentile=self.cropping_percentile,
+                                                     augment_scale_std=self.augment_scale_std,
+                                                     augment_scale_probability=self.augment_scale_probability,
+                                                     window=self.window,
+                                                     additive_noise_std=None,  # augmented later
+                                                     augment_blur_mean=None,  # augmented later
+                                                     augment_blur_std=None,  # augmented later
+                                                     flip_left_right_probability=self.flip_left_right_probability,
+                                                     augment_translation_std=self.augment_translation_std,
+                                                     augment_translation_probability=self.augment_translation_probability)
         target_image = self.resample_target(self.load_target_image(feature_image, input_filenames),
                                             target_resample=self.target_resample,
                                             affine=affine)
         feature_image = augment_image(feature_image,
                                       additive_noise_std=self.additive_noise_std,
+                                      additive_noise_probability=self.additive_noise_probability,
                                       augment_blur_mean=self.augment_blur_mean,
-                                      augment_blur_std=self.augment_blur_std)
+                                      augment_blur_std=self.augment_blur_std,
+                                      augment_blur_probability=self.augment_blur_probability)
         input_image = resample(feature_image, affine, self.window, interpolation=self.interpolation)
         return input_image, target_image
 

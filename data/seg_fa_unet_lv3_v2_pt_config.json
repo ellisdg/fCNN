@@ -70,7 +70,7 @@
     "augment_blur_mean": 2.0,
     "augment_blur_std":  1.0,
     "augment_translation_std": 0.05,
-    "flip_left_right": true,
+    "flip_left_right_probability": 0.5,
     "inputs_per_epoch": {
       "HCP": 96,
       "LICP1": "all",

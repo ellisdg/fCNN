@@ -91,6 +91,6 @@
     "augment_blur_mean": null,
     "augment_blur_std":  null,
     "augment_translation_std": null,
-    "flip_left_right": true
+    "flip_left_right_probability": 0.5
   }
 }

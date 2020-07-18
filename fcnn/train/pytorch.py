@@ -1,4 +1,5 @@
 import os
+import shutil
 import warnings
 import numpy as np
 import nibabel as nib
@@ -182,14 +183,14 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
           training_loader=training_loader, validation_loader=validation_loader, model_filename=model_filename,
           training_log_filename=training_log_filename, iterations_per_epoch=iterations_per_epoch,
           metric_to_monitor=metric_to_monitor, early_stopping_patience=config["early_stopping_patience"],
-          save_best_only=config["save_best_only"], learning_rate_decay_patience=config["decay_patience"],
+          save_best=config["save_best"], learning_rate_decay_patience=config["decay_patience"],
           regularized=regularized, n_gpus=n_gpus, vae=vae, decay_factor=config["decay_factor"],
           min_lr=config["min_learning_rate"])
 
 
 def train(model, optimizer, criterion, n_epochs, training_loader, validation_loader, training_log_filename,
           model_filename, iterations_per_epoch=1, metric_to_monitor="val_loss", early_stopping_patience=None,
-          learning_rate_decay_patience=None, save_best_only=False, n_gpus=1, verbose=True, regularized=False,
+          learning_rate_decay_patience=None, save_best=False, n_gpus=1, verbose=True, regularized=False,
           vae=False, decay_factor=0.1, min_lr=0.):
     training_log = list()
     if os.path.exists(training_log_filename):
@@ -240,8 +241,12 @@ def train(model, optimizer, criterion, n_epochs, training_loader, validation_loa
                 scheduler.step(loss)
 
         # save model
-        if not save_best_only or min_epoch == len(training_log) - 1:
-            torch.save(model.state_dict(), model_filename)
+        torch.save(model.state_dict(), model_filename)
+        if save_best and min_epoch == len(training_log) - 1:
+            best_filename = model_filename.replace(".h5", "_best.h5")
+            if os.path.exists(best_filename):
+                os.remove(best_filename)
+            shutil.copy(model_filename, best_filename)
 
 
 def get_lr(optimizer):

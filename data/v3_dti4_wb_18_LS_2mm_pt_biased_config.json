@@ -30,7 +30,7 @@
   "points_per_subject": 1,
   "reorder": false,
   "validation_points_per_subject": 1,
-  "save_best_only": false,
+  "save_best": false,
   "n_epochs": 2000,
   "min_learning_rate": 1e-08,
   "decay_patience": 20,

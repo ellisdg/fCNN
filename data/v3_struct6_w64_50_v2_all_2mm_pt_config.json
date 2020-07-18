@@ -44,7 +44,7 @@
   "decay_patience": 5,
   "decay_factor": 0.5,
   "early_stopping_patience": 50,
-  "save_best_only": false,
+  "save_best": false,
   "flip": false,
   "model_name": "resnet_50",
   "model_kwargs": {},

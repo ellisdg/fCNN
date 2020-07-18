@@ -58,7 +58,7 @@
     "augment_blur_mean": 1.5,
     "augment_blur_std":  0.5,
     "augment_translation_std": 0.05,
-    "flip_left_right": false,
+    "flip_left_right_probability": false,
     "random_permutation_probability": 1
   },
   "additional_validation_args": {}

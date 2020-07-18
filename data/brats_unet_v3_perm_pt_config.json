@@ -62,7 +62,7 @@
     "augment_blur_probability": 0.5,
     "augment_translation_std": 0.05,
     "augment_translation_probability": 0.5,
-    "flip_left_right": 0.5,
+    "flip_left_right_probability": 0.5,
     "random_permutation_probability": 0.5
   },
   "additional_validation_args": {}

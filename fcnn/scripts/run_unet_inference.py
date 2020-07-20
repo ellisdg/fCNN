@@ -33,7 +33,7 @@ def main():
     key = namespace.group + "_filenames"
     
     if namespace.directory_template is not None:
-        config["generate_filenames_kwargs"] = namespace.directory_template
+        config["generate_filenames_kwargs"]["directory"] = namespace.directory_template
     
     if key not in config:
         filenames = generate_filenames(config, namespace.group, namespace.machine_config_filename,

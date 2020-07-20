@@ -148,6 +148,7 @@ def generate_filenames_from_multisource_templates(subject_ids, feature_templates
 
 
 def generate_filenames(config, name, system_config, skip_targets=False):
+    load_subject_ids(config)
     if "generate_filenames" not in config or config["generate_filenames"] == "classic":
         return generate_hcp_filenames(system_config['directory'],
                                       config[
@@ -225,8 +226,6 @@ def main():
             metric_to_monitor = "loss"
         else:
             metric_to_monitor = "val_loss"
-
-    load_subject_ids(config)
 
     for name in ("training", "validation"):
         key = name + "_filenames"

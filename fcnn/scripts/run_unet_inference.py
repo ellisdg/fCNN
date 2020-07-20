@@ -31,7 +31,7 @@ def main():
     key = namespace.group + "_filenames"
     if key not in config:
         filenames = generate_filenames(config, namespace.group, namespace.machine_config_filename,
-                                       skip_targets=namespace.eval)
+                                       skip_targets=(not namespace.eval))
     else:
         filenames = config[key]
 

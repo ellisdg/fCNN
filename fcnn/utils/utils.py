@@ -304,3 +304,7 @@ def mask(data, threshold=0, dtype=np.float):
 
 def get_nibabel_data(nibabel_image):
     return nibabel_image.get_fdata()
+
+
+def in_config(string, dictionary, if_not_in_config_return=None):
+    return dictionary[string] if string in dictionary else if_not_in_config_return

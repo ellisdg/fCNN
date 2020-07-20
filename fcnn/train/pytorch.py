@@ -12,10 +12,7 @@ from ..models.pytorch.build import build_or_load_model
 from ..utils.pytorch import WholeBrainCIFTI2DenseScalarDataset
 from .pytorch_training_utils import epoch_training, epoch_validatation, collate_flatten, collate_5d_flatten
 from ..utils.pytorch import functions
-
-
-def in_config(string, dictionary, if_not_in_config_return=None):
-    return dictionary[string] if string in dictionary else if_not_in_config_return
+from ..utils.utils import in_config
 
 
 def build_optimizer(optimizer_name, model_parameters, learning_rate=1e-4):
@@ -137,7 +134,7 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
                                       **sequence_kwargs)
 
     training_loader = DataLoader(training_dataset,
-                                 batch_size=config["batch_size"]//in_config('points_per_subject', config, 1),
+                                 batch_size=config["batch_size"] // in_config('points_per_subject', config, 1),
                                  shuffle=True,
                                  num_workers=n_workers,
                                  collate_fn=collate_fn)
@@ -173,8 +170,8 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
                                             **sequence_kwargs,
                                             **validation_kwargs)
         validation_loader = DataLoader(validation_dataset,
-                                       batch_size=config["validation_batch_size"]//in_config("points_per_subject",
-                                                                                             config, 1),
+                                       batch_size=config["validation_batch_size"] // in_config("points_per_subject",
+                                                                                               config, 1),
                                        shuffle=False,
                                        num_workers=n_workers,
                                        collate_fn=collate_fn)

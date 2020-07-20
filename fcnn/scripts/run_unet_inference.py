@@ -1,6 +1,6 @@
 import os
 import argparse
-from fcnn.utils.utils import load_json
+from fcnn.utils.utils import load_json, in_config
 from fcnn.predict import volumetric_predictions
 from fcnn.scripts.run_trial import load_subject_ids, load_sequence, generate_filenames
 
@@ -86,7 +86,7 @@ def main():
                                   sequence_kwargs=sequence_kwargs,
                                   sequence=sequence,
                                   n_outputs=config["n_outputs"],
-                                  metric_names=config["metric_names"],
+                                  metric_names=in_config("metric_names", config, None),
                                   evaluate_predictions=namespace.eval,
                                   resample_predictions=(not namespace.no_resample),
                                   interpolation=namespace.interpolation)

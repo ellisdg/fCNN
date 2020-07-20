@@ -333,7 +333,7 @@ def pytorch_volumetric_predictions(model_filename, model_name, n_features, filen
             batch_references.append((x_image, ref_image))
             batch_subjects.append(dataset.epoch_filenames[idx][-1])
             if len(batch) >= batch_size:
-                batch_x = torch.tensor(np.moveaxis(batch, -1, 1))
+                batch_x = torch.tensor(np.moveaxis(batch, -1, 1)).float()
                 if n_gpus > 0:
                     batch_x = batch_x.cuda()
                 if hasattr(model, "test"):

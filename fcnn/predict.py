@@ -289,7 +289,7 @@ def pytorch_volumetric_predictions(model_filename, model_name, n_features, filen
                                    n_gpus=1, n_workers=1, batch_size=1, model_kwargs=None, n_outputs=None,
                                    sequence_kwargs=None, spacing=None, sequence=None,
                                    strict_model_loading=True, metric_names=None,
-                                   print_prediction_time=True,
+                                   print_prediction_time=True, verbose=True,
                                    evaluate_predictions=False, resample_predictions=False, interpolation="linear"):
     from .train.pytorch import load_criterion
     from fcnn.models.pytorch.build import build_or_load_model
@@ -320,6 +320,9 @@ def pytorch_volumetric_predictions(model_filename, model_name, n_features, filen
         batch_references = list()
         batch_subjects = list()
         for idx in range(len(dataset)):
+            x_filename = dataset.epoch_filenames[idx][dataset.feature_index]
+            if verbose:
+                print("Reading:", x_filename)
             if resample_predictions:
                 x_image, ref_image = dataset.get_feature_image(idx, return_unmodified=True)
             else:
@@ -330,7 +333,7 @@ def pytorch_volumetric_predictions(model_filename, model_name, n_features, filen
             batch_references.append((x_image, ref_image))
             batch_subjects.append(dataset.epoch_filenames[idx][-1])
             if len(batch) >= batch_size:
-                batch_x = torch.tensor(np.moveaxis(batch, 1, -1))
+                batch_x = torch.tensor(np.moveaxis(batch, -1, 1))
                 if n_gpus > 0:
                     batch_x = batch_x.cuda()
                 if hasattr(model, "test"):
@@ -343,11 +346,13 @@ def pytorch_volumetric_predictions(model_filename, model_name, n_features, filen
                     if batch_references[batch_idx][1] is not None:
                         pred_image = resample_to_img(pred_image, batch_references[batch_idx][1],
                                                      interpolation=interpolation)
-                        pred_image.to_filename(os.path.join(prediction_dir,
-                                                            "_".join([batch_subjects[batch_idx],
-                                                                      basename,
-                                                                      os.path.basename(
-                                                                          dataset.epoch_filenames[idx][0])])))
+                        pred_filename = os.path.join(prediction_dir,
+                                                     "_".join([batch_subjects[batch_idx],
+                                                               basename,
+                                                               os.path.basename(x_filename)]))
+                        if verbose:
+                            print("Writing:", pred_filename)
+                        pred_image.to_filename(pred_filename)
                 batch = list()
                 batch_references = list()
                 batch_subjects = list()

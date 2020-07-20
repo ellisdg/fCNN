@@ -12,6 +12,8 @@ def parse_args():
     parser.add_argument("--output_directory", required=True)
     parser.add_argument("--machine_config_filename",
                         default="/home/aizenberg/dgellis/fCNN/data/hcc_v100_2gpu_config.json")
+    parser.add_argument("--directory_template", help="Set this if directory template for running the predictions is "
+                                                     "different from the directory used for training.")
     parser.add_argument("--group", default="test")
     parser.add_argument("--eval", default=False, action="store_true",
                         help="Scores the predictions according to the validation criteria and saves the results to a"
@@ -29,6 +31,10 @@ def main():
     print("Config: ", namespace.config_filename)
     config = load_json(namespace.config_filename)
     key = namespace.group + "_filenames"
+    
+    if namespace.directory_template is not None:
+        config["generate_filenames_kwargs"] = namespace.directory_template
+    
     if key not in config:
         filenames = generate_filenames(config, namespace.group, namespace.machine_config_filename,
                                        skip_targets=(not namespace.eval))

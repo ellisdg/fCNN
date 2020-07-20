@@ -346,6 +346,9 @@ def pytorch_volumetric_predictions(model_filename, model_name, n_features, filen
                     if batch_references[batch_idx][1] is not None:
                         pred_image = resample_to_img(pred_image, batch_references[batch_idx][1],
                                                      interpolation=interpolation)
+                        x_filename = dataset.epoch_filenames[(idx - (batch_size - batch_idx - 1))][dataset.feature_index]
+                        if type(x_filename) == list:
+                            x_filename = x_filename[0]
                         pred_filename = os.path.join(prediction_dir,
                                                      "_".join([batch_subjects[batch_idx],
                                                                basename,

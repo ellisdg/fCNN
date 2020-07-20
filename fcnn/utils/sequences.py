@@ -234,6 +234,7 @@ class HCPRegressionSequence(BaseSequence, HCPParent):
                          spacing=spacing, classification=classification, **kwargs)
         self.metric_names = metric_names
         self.surface_names = surface_names
+        self.normalize = normalization is not None
         self.normalization_func = normalization_name_to_function(normalization)
         if normalization_args is not None:
             self.normalization_kwargs = normalization_args
@@ -287,7 +288,9 @@ class HCPRegressionSequence(BaseSequence, HCPParent):
         return random_vertices, random_target_values
 
     def normalize_image(self, image):
-        return normalize_image_with_function(image, self.normalization_func, **self.normalization_kwargs)
+        if self.normalize:
+            return normalize_image_with_function(image, self.normalization_func, **self.normalization_kwargs)
+        return image
 
 
 class ParcelBasedSequence(HCPRegressionSequence):
@@ -449,8 +452,8 @@ class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
             y_batch.append(y)
         return np.asarray(x_batch), np.asarray(y_batch)
 
-    def resample_input(self, input_filenames, normalize=True):
-        input_image, target_image = self.resample_image(input_filenames, normalize=normalize)
+    def resample_input(self, input_filenames):
+        input_image, target_image = self.resample_image(input_filenames)
         x, y = get_nibabel_data(input_image), get_nibabel_data(target_image)
         return self.permute_inputs(x, y)
 
@@ -459,10 +462,9 @@ class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
             x, y = random_permutation_x_y(x, y, channel_axis=self.channel_axis)
         return x, y
 
-    def resample_image(self, input_filenames, normalize=True):
+    def resample_image(self, input_filenames):
         feature_image = self.load_feature_image(input_filenames)
-        if normalize:
-            feature_image = self.normalize_image(feature_image)
+        feature_image = self.normalize_image(feature_image)
         feature_image, affine = format_feature_image(feature_image=feature_image,
                                                      crop=self.crop,
                                                      cropping_pad_width=self.cropping_pad_width,
@@ -521,8 +523,8 @@ class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
         target_image = resample(target_image, affine, self.window, interpolation=target_resample)
         return target_image
 
-    def get_image(self, idx, normalize=True):
-        input_image, target_image = self.resample_image(self.epoch_filenames[idx], normalize=normalize)
+    def get_image(self, idx):
+        input_image, target_image = self.resample_image(self.epoch_filenames[idx])
         return input_image, target_image
 
 
@@ -533,8 +535,8 @@ class WholeVolumeSegmentationSequence(WholeVolumeAutoEncoderSequence):
         self.target_index = target_index
         self.labels = labels
 
-    def resample_input(self, input_filenames, normalize=True):
-        input_image, target_image = self.resample_image(input_filenames, normalize=normalize)
+    def resample_input(self, input_filenames):
+        input_image, target_image = self.resample_image(input_filenames)
         target_data = get_nibabel_data(target_image)
         if self.labels is None:
             self.labels = np.unique(target_data)

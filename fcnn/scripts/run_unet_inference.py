@@ -23,6 +23,7 @@ def parse_args():
                              "save on the storage space as the images can always be resampled back into the original"
                              "space when needed.")
     parser.add_argument("--interpolation", default="linear")
+    parser.add_argument("--replace", nargs=2)
     return parser.parse_args()
 
 
@@ -32,9 +33,20 @@ def main():
     config = load_json(namespace.config_filename)
     key = namespace.group + "_filenames"
     
+    if namespace.replace is not None:
+        for key in ("directory", "feature_templates", "target_templates"):
+            if key in config["generate_filenames_kwargs"]:
+                if type(config["generate_filenames_kwargs"][key]) == str:
+                    config["generate_filenames_kwargs"][key] = config["generate_filenames_kwargs"][key].replace(
+                        namespace.replace[0], namespace.replace[1])
+                else:
+                    config["generate_filenames_kwargs"][key] = [template.replace(namespace.replace[0],
+                                                                                 namespace.replace[1]) for template in
+                                                                config["generate_filenames_kwargs"][key]]
+
     if namespace.directory_template is not None:
         config["generate_filenames_kwargs"]["directory"] = namespace.directory_template
-    
+
     if key not in config:
         filenames = generate_filenames(config, namespace.group, namespace.machine_config_filename,
                                        skip_targets=(not namespace.eval))

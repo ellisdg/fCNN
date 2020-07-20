@@ -1,8 +1,8 @@
 import os
 import argparse
 from fcnn.utils.utils import load_json
-from fcnn.predict import whole_brain_autoencoder_predictions
-from fcnn.scripts.run_trial import load_subject_ids, load_sequence
+from fcnn.predict import volumetric_predictions
+from fcnn.scripts.run_trial import load_subject_ids, load_sequence, generate_filenames
 
 
 def parse_args():
@@ -13,6 +13,7 @@ def parse_args():
     parser.add_argument("--machine_config_filename",
                         default="/home/aizenberg/dgellis/fCNN/data/hcc_v100_1gpu_config.json")
     parser.add_argument("--group", default="test")
+    parser.add_argument("--eval", default=False, action="store_true")
     return parser.parse_args()
 
 
@@ -20,6 +21,12 @@ def main():
     namespace = parse_args()
     print("Config: ", namespace.config_filename)
     config = load_json(namespace.config_filename)
+    key = namespace.group + "_filenames"
+    if key not in config:
+        filenames = generate_filenames(config, namespace.group, namespace.machine_config_filename)
+    else:
+        filenames = config[key]
+
     print("Model: ", namespace.model_filename)
 
     print("Machine config: ", namespace.machine_config_filename)
@@ -44,6 +51,7 @@ def main():
 
     if "sequence_kwargs" in config:
         sequence_kwargs = config["sequence_kwargs"]
+        # make sure any augmentations are set to None
         for key in ["augment_scale_std", "additive_noise_std"]:
             if key in sequence_kwargs:
                 sequence_kwargs[key] = None
@@ -55,25 +63,23 @@ def main():
     else:
         sequence = None
 
-    return whole_brain_autoencoder_predictions(model_filename=namespace.model_filename,
-                                               subject_ids=config[namespace.group],
-                                               hcp_dir=machine_config["directory"],
-                                               output_dir=namespace.output_directory,
-                                               feature_basenames=config["feature_basenames"],
-                                               model_name=config["model_name"],
-                                               n_features=config["n_features"],
-                                               window=config["window"],
-                                               criterion_name=criterion_name,
-                                               package=config['package'],
-                                               n_gpus=machine_config['n_gpus'],
-                                               batch_size=config['validation_batch_size'],
-                                               n_workers=machine_config["n_workers"],
-                                               model_kwargs=model_kwargs,
-                                               sequence_kwargs=sequence_kwargs,
-                                               sequence=sequence,
-                                               n_outputs=config["n_outputs"],
-                                               target_basenames=config["target_basenames"],
-                                               metric_names=config["metric_names"])
+    return volumetric_predictions(model_filename=namespace.model_filename,
+                                  filenames=filenames,
+                                  output_dir=namespace.output_directory,
+                                  model_name=config["model_name"],
+                                  n_features=config["n_features"],
+                                  window=config["window"],
+                                  criterion_name=criterion_name,
+                                  package=config['package'],
+                                  n_gpus=machine_config['n_gpus'],
+                                  batch_size=config['validation_batch_size'],
+                                  n_workers=machine_config["n_workers"],
+                                  model_kwargs=model_kwargs,
+                                  sequence_kwargs=sequence_kwargs,
+                                  sequence=sequence,
+                                  n_outputs=config["n_outputs"],
+                                  metric_names=config["metric_names"],
+                                  evaluate_predictions=namespace.eval)
 
 
 if __name__ == '__main__':

@@ -5,7 +5,7 @@ import nibabel as nib
 
 from fcnn.utils.resample import resample
 
-from fcnn.utils.augment import scale_affine
+from fcnn.utils.augment import scale_affine, generate_permutation_keys, permute_data
 
 
 class TestAugmentation(TestCase):
@@ -40,3 +40,12 @@ class TestAugmentation(TestCase):
         self.assertEqual(np.sum(new_data[..., :1]), 0)
         self.assertEqual(np.sum(new_data[..., -1:]), 0)
 
+    def test_permutations(self):
+        permutation_keys = generate_permutation_keys()
+        assert len(permutation_keys) == 48
+        permutations = list()
+        for key in permutation_keys:
+            data = permute_data(self.data[None], key)
+            if any([np.array_equal(data, other) for other in permutations]):
+                raise ValueError("Key {} generates a permuted data array that is not unique.".format(key))
+            permutations.append(data)

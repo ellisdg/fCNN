@@ -187,30 +187,27 @@ def whole_brain_scalar_predictions(model_filename, subject_ids, hcp_dir, output_
         raise ValueError("Predictions not yet implemented for {}".format(package))
 
 
-def whole_brain_autoencoder_predictions(model_filename, subject_ids, hcp_dir, output_dir, feature_basenames,
-                                        model_name, n_features, window, criterion_name, package="keras",
-                                        n_gpus=1, n_workers=1, batch_size=1, model_kwargs=None, n_outputs=None,
-                                        sequence_kwargs=None, sequence=None, target_basenames=None, metric_names=None):
-    from .scripts.run_trial import generate_hcp_filenames
-    filenames = generate_hcp_filenames(directory=hcp_dir, surface_basename_template=None,
-                                       target_basenames=target_basenames,
-                                       feature_basenames=feature_basenames, subject_ids=subject_ids, hemispheres=None)
+def volumetric_predictions(model_filename, filenames, output_dir, model_name, n_features, window,
+                           criterion_name, package="keras", n_gpus=1, n_workers=1, batch_size=1,
+                           model_kwargs=None, n_outputs=None, sequence_kwargs=None, sequence=None,
+                           metric_names=None, evaluate_predictions=False):
     if package == "pytorch":
-        pytorch_whole_brain_autoencoder_predictions(model_filename=model_filename,
-                                                    model_name=model_name,
-                                                    n_outputs=n_outputs,
-                                                    n_features=n_features,
-                                                    filenames=filenames,
-                                                    prediction_dir=output_dir,
-                                                    window=window,
-                                                    criterion_name=criterion_name,
-                                                    n_gpus=n_gpus,
-                                                    n_workers=n_workers,
-                                                    batch_size=batch_size,
-                                                    model_kwargs=model_kwargs,
-                                                    sequence_kwargs=sequence_kwargs,
-                                                    sequence=sequence,
-                                                    metric_names=metric_names)
+        pytorch_volumetric_predictions(model_filename=model_filename,
+                                       model_name=model_name,
+                                       n_outputs=n_outputs,
+                                       n_features=n_features,
+                                       filenames=filenames,
+                                       prediction_dir=output_dir,
+                                       window=window,
+                                       criterion_name=criterion_name,
+                                       n_gpus=n_gpus,
+                                       n_workers=n_workers,
+                                       batch_size=batch_size,
+                                       model_kwargs=model_kwargs,
+                                       sequence_kwargs=sequence_kwargs,
+                                       sequence=sequence,
+                                       metric_names=metric_names,
+                                       evaluate_predictions=evaluate_predictions)
     else:
         raise ValueError("Predictions not yet implemented for {}".format(package))
 
@@ -283,12 +280,13 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
         pd.DataFrame(results, columns=columns).to_csv(output_csv)
 
 
-def pytorch_whole_brain_autoencoder_predictions(model_filename, model_name, n_features, filenames, window,
-                                                criterion_name, prediction_dir=None, output_csv=None, reference=None,
-                                                n_gpus=1, n_workers=1, batch_size=1, model_kwargs=None, n_outputs=None,
-                                                sequence_kwargs=None, spacing=None, sequence=None,
-                                                strict_model_loading=True, metric_names=None,
-                                                print_prediction_time=True):
+def pytorch_volumetric_predictions(model_filename, model_name, n_features, filenames, window,
+                                   criterion_name, prediction_dir=None, output_csv=None, reference=None,
+                                   n_gpus=1, n_workers=1, batch_size=1, model_kwargs=None, n_outputs=None,
+                                   sequence_kwargs=None, spacing=None, sequence=None,
+                                   strict_model_loading=True, metric_names=None,
+                                   print_prediction_time=True, print_prediction_times=False,
+                                   evaluate_predictions=False):
     from .train.pytorch import load_criterion
     from fcnn.models.pytorch.build import build_or_load_model
     from .utils.pytorch.dataset import AEDataset
@@ -308,8 +306,6 @@ def pytorch_whole_brain_autoencoder_predictions(model_filename, model_name, n_fe
                                 n_features=n_features, n_gpus=n_gpus, strict=strict_model_loading, **model_kwargs)
     model.eval()
     basename = os.path.basename(model_filename).split(".")[0]
-    if prediction_dir and not output_csv:
-        output_csv = os.path.join(prediction_dir, str(basename) + "_prediction_scores.csv")
     dataset = sequence(filenames=filenames, window=window, spacing=spacing, batch_size=1, metric_names=metric_names,
                        **sequence_kwargs)
     criterion = load_criterion(criterion_name, n_gpus=n_gpus)
@@ -341,7 +337,6 @@ def pytorch_whole_brain_autoencoder_predictions(model_filename, model_name, n_fe
             else:
                 mu = None
                 logvar = None
-            score = criterion(pred_x, y).cpu().numpy()
             pred_x = np.moveaxis(pred_x.cpu().numpy(), 1, -1).squeeze()
             pred_image = new_img_like(ref_niimg=image,
                                       data=pred_x,
@@ -360,13 +355,17 @@ def pytorch_whole_brain_autoencoder_predictions(model_filename, model_name, n_fe
                                                        subject_id,
                                                        basename,
                                                        os.path.basename(dataset.epoch_filenames[idx][0])])))
-            results.append([subject_id, score, mu, logvar])
+            if evaluate_predictions:
+                score = criterion(pred_x, y).cpu().numpy()
+                results.append([subject_id, score, mu, logvar])
 
-    if output_csv is not None:
-        columns = ["subject_id", criterion_name, "mu", "logvar"]
-        if reference is not None:
-            columns.append("reference_" + criterion_name)
-        pd.DataFrame(results, columns=columns).to_csv(output_csv, sep=";")
+    if evaluate_predictions:
+        if prediction_dir and not output_csv:
+            output_csv = os.path.join(prediction_dir, str(basename) + "_prediction_scores.csv")
+            columns = ["subject_id", criterion_name, "mu", "logvar"]
+            if reference is not None:
+                columns.append("reference_" + criterion_name)
+            pd.DataFrame(results, columns=columns).to_csv(output_csv, sep=";")
 
 
 def save_predictions(prediction, args, basename, metric_names, surface_names, prediction_dir):

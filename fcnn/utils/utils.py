@@ -300,3 +300,7 @@ def extract_sub_volumes(image, sub_volume_indices):
 
 def mask(data, threshold=0, dtype=np.float):
     return np.asarray(data > threshold, dtype=dtype)
+
+
+def get_nibabel_data(nibabel_image):
+    return nibabel_image.get_fdata()

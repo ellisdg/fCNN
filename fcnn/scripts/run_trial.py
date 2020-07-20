@@ -109,7 +109,8 @@ def exists(filenames):
 
 
 def generate_filenames_from_templates(subject_ids, feature_templates, target_templates, feature_sub_volumes=None,
-                                      target_sub_volumes=None, raise_if_not_exists=False, directory=""):
+                                      target_sub_volumes=None, raise_if_not_exists=False, directory="",
+                                      skip_targets=False):
     filenames = list()
     for subject_id in subject_ids:
         feature_filename = format_templates(feature_templates, directory=directory, subject=subject_id)
@@ -122,8 +123,8 @@ def generate_filenames_from_templates(subject_ids, feature_templates, target_tem
             _target_sub_volumes = target_sub_volumes
         else:
             _target_sub_volumes = None
-        if exists(feature_filename) and exists(target_filename):
-            filenames.append([feature_filename, _feature_sub_volumes, target_filename, _target_sub_volumes])
+        if exists(feature_filename) and (exists(target_filename) or skip_targets):
+            filenames.append([feature_filename, _feature_sub_volumes, target_filename, _target_sub_volumes, subject_id])
         elif raise_if_not_exists:
             for filename in (feature_filename, target_filename):
                 if not exists(filename):
@@ -146,7 +147,7 @@ def generate_filenames_from_multisource_templates(subject_ids, feature_templates
     return filenames
 
 
-def generate_filenames(config, name, system_config):
+def generate_filenames(config, name, system_config, skip_targets=False):
     if "generate_filenames" not in config or config["generate_filenames"] == "classic":
         return generate_hcp_filenames(system_config['directory'],
                                       config[
@@ -163,7 +164,8 @@ def generate_filenames(config, name, system_config):
     elif config["generate_filenames"] == "multisource_templates":
         return generate_filenames_from_multisource_templates(config[name], **config["generate_filenames_kwargs"])
     elif config["generate_filenames"] == "templates":
-        return generate_filenames_from_templates(config[name], **config["generate_filenames_kwargs"])
+        return generate_filenames_from_templates(config[name], **config["generate_filenames_kwargs"],
+                                                 skip_targets=skip_targets)
 
 
 def load_subject_ids(config):

@@ -2,17 +2,18 @@ import os
 import numpy as np
 import nibabel as nib
 from keras.utils import Sequence
-from nilearn.image import new_img_like
+from nilearn.image import new_img_like, resample_to_img
 import random
 import warnings
 
 from .nilearn_custom_utils.nilearn_utils import crop_img
 from .radiomic_utils import binary_classification, multilabel_classification, fetch_data, fetch_data_for_point
 from .hcp import (extract_gifti_surface_vertices, get_vertices_from_scalar, get_metric_data,
-                  get_nibabel_data, extract_cifti_volumetric_data)
+                  extract_cifti_volumetric_data)
 from .utils import (zero_mean_normalize_image_data, copy_image, extract_sub_volumes, mask,
                     zero_floor_normalize_image_data, zero_one_window, compile_one_hot_encoding,
-                    foreground_zero_mean_normalize_image_data, nib_load_files, load_image, load_single_image)
+                    foreground_zero_mean_normalize_image_data, nib_load_files, load_image, load_single_image,
+                    get_nibabel_data)
 from .resample import resample
 from .augment import scale_affine, add_noise, affine_swap_axis, translate_affine, random_blur, random_permutation_x_y
 from .affine import resize_affine
@@ -418,12 +419,12 @@ class WholeVolumeToSurfaceSequence(HCPRegressionSequence):
 
 
 class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
-    def __init__(self, *args, target_resample=None, target_index=None, feature_index=0, extract_sub_volumes=False,
+    def __init__(self, *args, target_interpolation=None, target_index=None, feature_index=0, extract_sub_volumes=False,
                  feature_sub_volumes_index=1, target_sub_volumes_index=3, random_permutation_probability=0, **kwargs):
         """
 
         :param args:
-        :param target_resample:
+        :param target_interpolation:
         :param target_index:
         :param feature_index:
         :param extract_sub_volumes: if True, the sequence will expect a set of indices that will be used to extract
@@ -431,10 +432,10 @@ class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
         :param kwargs:
         """
         super().__init__(*args, **kwargs)
-        if target_resample is None:
-            self.target_resample = self.interpolation
+        if target_interpolation is None:
+            self.target_interpolation = self.interpolation
         else:
-            self.target_resample = target_resample
+            self.target_interpolation = target_interpolation
         self.target_index = target_index
         self.feature_index = feature_index
         self.extract_sub_volumes = extract_sub_volumes
@@ -463,32 +464,16 @@ class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
         return x, y
 
     def resample_image(self, input_filenames):
-        feature_image = self.load_feature_image(input_filenames)
-        feature_image = self.normalize_image(feature_image)
-        feature_image, affine = format_feature_image(feature_image=feature_image,
-                                                     crop=self.crop,
-                                                     cropping_pad_width=self.cropping_pad_width,
-                                                     cropping_percentile=self.cropping_percentile,
-                                                     augment_scale_std=self.augment_scale_std,
-                                                     augment_scale_probability=self.augment_scale_probability,
-                                                     window=self.window,
-                                                     additive_noise_std=None,  # augmented later
-                                                     augment_blur_mean=None,  # augmented later
-                                                     augment_blur_std=None,  # augmented later
-                                                     flip_left_right_probability=self.flip_left_right_probability,
-                                                     augment_translation_std=self.augment_translation_std,
-                                                     augment_translation_probability=self.augment_translation_probability)
+        feature_image = self.format_feature_image(input_filenames=input_filenames)
         target_image = self.resample_target(self.load_target_image(feature_image, input_filenames),
-                                            target_resample=self.target_resample,
-                                            affine=affine)
+                                            feature_image)
         feature_image = augment_image(feature_image,
                                       additive_noise_std=self.additive_noise_std,
                                       additive_noise_probability=self.additive_noise_probability,
                                       augment_blur_mean=self.augment_blur_mean,
                                       augment_blur_std=self.augment_blur_std,
                                       augment_blur_probability=self.augment_blur_probability)
-        input_image = resample(feature_image, affine, self.window, interpolation=self.interpolation)
-        return input_image, target_image
+        return feature_image, target_image
 
     def load_image(self, filenames, index, force_4d=True, interpolation="linear", sub_volume_indices=None):
         filename = filenames[index]
@@ -505,6 +490,27 @@ class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
         return self.load_image(input_filenames, self.feature_index, force_4d=True, interpolation=self.interpolation,
                                sub_volume_indices=sub_volume_indices)
 
+    def format_feature_image(self, input_filenames, return_unmodified=False):
+        unmodified_image = self.load_feature_image(input_filenames)
+        image, affine = format_feature_image(feature_image=self.normalize_image(unmodified_image),
+                                             crop=self.crop,
+                                             cropping_pad_width=self.cropping_pad_width,
+                                             cropping_percentile=self.cropping_percentile,
+                                             augment_scale_std=self.augment_scale_std,
+                                             augment_scale_probability=self.augment_scale_probability,
+                                             window=self.window,
+                                             additive_noise_std=None,  # augmented later
+                                             augment_blur_mean=None,  # augmented later
+                                             augment_blur_std=None,  # augmented later
+                                             flip_left_right_probability=self.flip_left_right_probability,
+                                             augment_translation_std=self.augment_translation_std,
+                                             augment_translation_probability=self.augment_translation_probability)
+        resampled = resample(image, affine, self.window, interpolation=self.interpolation)
+        if return_unmodified:
+            return resampled, unmodified_image
+        else:
+            return resampled
+
     def load_target_image(self, feature_image, input_filenames):
         if self.target_index is None:
             target_image = copy_image(feature_image)
@@ -514,24 +520,26 @@ class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
             else:
                 sub_volume_indices = None
             target_image = self.load_image(input_filenames, self.target_index, force_4d=True,
-                                           sub_volume_indices=sub_volume_indices, interpolation=self.target_resample)
+                                           sub_volume_indices=sub_volume_indices,
+                                           interpolation=self.target_interpolation)
         return target_image
 
-    def resample_target(self, target_image, affine, target_resample=None):
-        if target_resample is None:
-            target_resample = self.interpolation
-        target_image = resample(target_image, affine, self.window, interpolation=target_resample)
+    def resample_target(self, target_image, feature_image):
+        target_image = resample_to_img(target_image, feature_image, interpolation=self.target_interpolation)
         return target_image
 
     def get_image(self, idx):
         input_image, target_image = self.resample_image(self.epoch_filenames[idx])
         return input_image, target_image
 
+    def get_feature_image(self, idx, return_unmodified=False):
+        return self.format_feature_image(self.epoch_filenames[idx], return_unmodified=return_unmodified)
+
 
 class WholeVolumeSegmentationSequence(WholeVolumeAutoEncoderSequence):
-    def __init__(self, *args, target_resample="nearest", target_index=2, labels=None, **kwargs):
+    def __init__(self, *args, target_interpolation="nearest", target_index=2, labels=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.target_resample = target_resample
+        self.target_interpolation = target_interpolation
         self.target_index = target_index
         self.labels = labels
 
@@ -582,8 +590,8 @@ class WindowedAutoEncoderSequence(HCPRegressionSequence):
 
 
 class WholeVolumeSupervisedRegressionSequence(WholeVolumeAutoEncoderSequence):
-    def __init__(self, *args, target_normalization=None, target_resample=None, target_index=2, **kwargs):
-        super().__init__(*args, target_index=target_index, target_resample=target_resample, **kwargs)
+    def __init__(self, *args, target_normalization=None, target_interpolation=None, target_index=2, **kwargs):
+        super().__init__(*args, target_index=target_index, target_interpolation=target_interpolation, **kwargs)
         self.normalize_target = target_normalization is not None
         self.target_normalization_func = normalization_name_to_function(target_normalization)
 
@@ -598,9 +606,9 @@ class WholeVolumeSupervisedRegressionSequence(WholeVolumeAutoEncoderSequence):
 
 
 class WholeVolumeCiftiSupervisedRegressionSequence(WholeVolumeSupervisedRegressionSequence):
-    def __init__(self, *args, target_normalization=None, target_resample=None, target_index=2,
+    def __init__(self, *args, target_normalization=None, target_interpolation=None, target_index=2,
                  subject_id_index=3, **kwargs):
-        super().__init__(*args, target_index=target_index, target_resample=target_resample,
+        super().__init__(*args, target_index=target_index, target_interpolation=target_interpolation,
                          target_normalization=target_normalization, **kwargs)
         self.subject_id_index = subject_id_index
 

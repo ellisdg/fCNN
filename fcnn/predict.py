@@ -4,7 +4,8 @@ import numpy as np
 import nibabel as nib
 import pandas as pd
 from keras.models import load_model
-from .utils.utils import load_json
+from nilearn.image import resample_to_img
+from .utils.utils import load_json, get_nibabel_data
 from .utils.sequences import SubjectPredictionSequence
 from .utils.pytorch.dataset import HCPSubjectDataset
 from .utils.hcp import new_cifti_scalar_like, get_metric_data
@@ -285,8 +286,8 @@ def pytorch_volumetric_predictions(model_filename, model_name, n_features, filen
                                    n_gpus=1, n_workers=1, batch_size=1, model_kwargs=None, n_outputs=None,
                                    sequence_kwargs=None, spacing=None, sequence=None,
                                    strict_model_loading=True, metric_names=None,
-                                   print_prediction_time=True, print_prediction_times=False,
-                                   evaluate_predictions=False):
+                                   print_prediction_time=True,
+                                   evaluate_predictions=False, resample_predictions=False, interpolation="linear"):
     from .train.pytorch import load_criterion
     from fcnn.models.pytorch.build import build_or_load_model
     from .utils.pytorch.dataset import AEDataset
@@ -312,52 +313,83 @@ def pytorch_volumetric_predictions(model_filename, model_name, n_features, filen
     results = list()
     print("Dataset: ", len(dataset))
     with torch.no_grad():
+        batch = list()
+        batch_references = list()
+        batch_subjects = list()
         for idx in range(len(dataset)):
-            image, target_image = dataset.get_image(idx)
-            x, y = dataset[idx]
-            subject_id = dataset.epoch_filenames[idx][-1]
-            x = x.unsqueeze(0)
-            y = y.unsqueeze(0)
-            if n_gpus > 0:
-                x = x.cuda()
-                y = y.cuda()
-            start = time.time()
-            try:
-                pred_x = model.test(x)
-            except AttributeError:
-                start = time.time()
-                pred_x = model(x)
-            end = time.time()
-            if print_prediction_time:
-                print("Prediction time: {:.2f}s".format(end - start))
-            if type(pred_x) == tuple:
-                pred_x, mu, logvar = pred_x
-                mu = mu.cpu().numpy()
-                logvar = logvar.cpu().numpy()
+            if resample_predictions:
+                x_image, ref_image = dataset.get_feature_image(idx, return_unmodified=True)
             else:
-                mu = None
-                logvar = None
-            pred_x = np.moveaxis(pred_x.cpu().numpy(), 1, -1).squeeze()
-            pred_image = new_img_like(ref_niimg=image,
-                                      data=pred_x,
-                                      affine=image.affine)
-            pred_image.to_filename(os.path.join(prediction_dir,
-                                                "_".join([subject_id,
-                                                          basename,
-                                                          os.path.basename(dataset.epoch_filenames[idx][0])])))
-            y = y.cpu().numpy()
-            y = np.moveaxis(y, 1, -1).squeeze()
-            t_image = new_img_like(ref_niimg=target_image,
-                                   data=y,
-                                   affine=target_image.affine)
-            t_image.to_filename(os.path.join(prediction_dir,
-                                             "_".join(["target",
-                                                       subject_id,
-                                                       basename,
-                                                       os.path.basename(dataset.epoch_filenames[idx][0])])))
-            if evaluate_predictions:
-                score = criterion(pred_x, y).cpu().numpy()
-                results.append([subject_id, score, mu, logvar])
+                x_image = dataset.get_feature_image(idx)
+                ref_image = None
+
+            batch.append(get_nibabel_data(x_image))
+            batch_references.append((x_image, ref_image))
+            batch_subjects.append(dataset.epoch_filenames[idx][-1])
+            if len(batch) >= batch_size:
+                batch_x = torch.tensor(batch)
+                if n_gpus > 0:
+                    batch_x = batch_x.cuda()
+                if hasattr(model, "test"):
+                    pred_x = model.test(batch_x)
+                else:
+                    pred_x = model(batch_x)
+                pred_x = np.moveaxis(pred_x.cpu().numpy(), 1, -1)
+                for batch_idx in range(len(batch)):
+                    pred_image = new_img_like(batch_references[batch_idx][0], data=pred_x[batch_idx].squeeze())
+                    if batch_references[batch_idx][1] is not None:
+                        pred_image = resample_to_img(pred_image, batch_references[batch_idx][1],
+                                                     interpolation=interpolation)
+                        pred_image.to_filename(os.path.join(prediction_dir,
+                                                            "_".join([batch_subjects[batch_idx],
+                                                                      basename,
+                                                                      os.path.basename(
+                                                                          dataset.epoch_filenames[idx][0])])))
+                batch = list()
+                batch_references = list()
+                batch_subjects = list()
+
+            # image, target_image = dataset.get_image(idx)
+            # subject_id = dataset.epoch_filenames[idx][-1]
+            # y = y.unsqueeze(0)
+            # if n_gpus > 0:
+            #     x = x.cuda()
+            #     y = y.cuda()
+            # start = time.time()
+            # try:
+            #     pred_x = model.test(x)
+            # except AttributeError:
+            #     start = time.time()
+            #     pred_x = model(x)
+            # end = time.time()
+            # if print_prediction_time:
+            #     print("Prediction time: {:.2f}s".format(end - start))
+            # if type(pred_x) == tuple:
+            #     pred_x, mu, logvar = pred_x
+            #     mu = mu.cpu().numpy()
+            #     logvar = logvar.cpu().numpy()
+            # else:
+            #     mu = None
+            #     logvar = None
+            # if evaluate_predictions:
+            #     score = criterion(pred_x, y).cpu().numpy()
+            # pred_x = np.moveaxis(pred_x.cpu().numpy(), 1, -1).squeeze()
+            # pred_image = new_img_like(ref_niimg=image,
+            #                           data=pred_x,
+            #                           affine=image.affine)
+            #
+            # y = y.cpu().numpy()
+            # y = np.moveaxis(y, 1, -1).squeeze()
+            # t_image = new_img_like(ref_niimg=target_image,
+            #                        data=y,
+            #                        affine=target_image.affine)
+            # t_image.to_filename(os.path.join(prediction_dir,
+            #                                  "_".join(["target",
+            #                                            subject_id,
+            #                                            basename,
+            #                                            os.path.basename(dataset.epoch_filenames[idx][0])])))
+            # if evaluate_predictions:
+            #     results.append([subject_id, score, mu, logvar])
 
     if evaluate_predictions:
         if prediction_dir and not output_csv:

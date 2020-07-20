@@ -23,7 +23,8 @@ def main():
     config = load_json(namespace.config_filename)
     key = namespace.group + "_filenames"
     if key not in config:
-        filenames = generate_filenames(config, namespace.group, namespace.machine_config_filename)
+        filenames = generate_filenames(config, namespace.group, namespace.machine_config_filename,
+                                       skip_targets=namespace.eval)
     else:
         filenames = config[key]
 

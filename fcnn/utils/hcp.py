@@ -1,5 +1,7 @@
 import numpy as np
 
+from fcnn.utils.utils import get_nibabel_data
+
 
 def extract_gifti_surface_vertices(surface, index=0, geometric_type="Anatomical", **kwargs):
     return extract_gifti_array(surface, index=index, geometric_type=geometric_type, **kwargs)
@@ -149,7 +151,3 @@ def extract_cifti_volumetric_data(cifti_image, map_names, subject_id=None, model
     for voxel, values in zip(model_axis.voxel, data):
         volume_data[tuple(voxel)] = values
     return volume_data
-
-
-def get_nibabel_data(nibabel_image):
-    return nibabel_image.get_fdata()

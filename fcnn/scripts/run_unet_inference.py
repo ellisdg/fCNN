@@ -11,9 +11,16 @@ def parse_args():
     parser.add_argument("--model_filename", required=True)
     parser.add_argument("--output_directory", required=True)
     parser.add_argument("--machine_config_filename",
-                        default="/home/aizenberg/dgellis/fCNN/data/hcc_v100_1gpu_config.json")
+                        default="/home/aizenberg/dgellis/fCNN/data/hcc_v100_2gpu_config.json")
     parser.add_argument("--group", default="test")
-    parser.add_argument("--eval", default=False, action="store_true")
+    parser.add_argument("--eval", default=False, action="store_true",
+                        help="Scores the predictions according to the validation criteria and saves the results to a"
+                             "csv file in the prediction directory.")
+    parser.add_argument("--no_resample", default=False, action="store_true",
+                        help="Skips resampling the predicted images into the non-cropped image space. This can help"
+                             "save on the storage space as the images can always be resampled back into the original"
+                             "space when needed.")
+    parser.add_argument("--interpolation", default="linear")
     return parser.parse_args()
 
 
@@ -80,7 +87,9 @@ def main():
                                   sequence=sequence,
                                   n_outputs=config["n_outputs"],
                                   metric_names=config["metric_names"],
-                                  evaluate_predictions=namespace.eval)
+                                  evaluate_predictions=namespace.eval,
+                                  resample_predictions=(not namespace.no_resample),
+                                  interpolation=namespace.interpolation)
 
 
 if __name__ == '__main__':

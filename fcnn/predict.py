@@ -191,7 +191,8 @@ def whole_brain_scalar_predictions(model_filename, subject_ids, hcp_dir, output_
 def volumetric_predictions(model_filename, filenames, output_dir, model_name, n_features, window,
                            criterion_name, package="keras", n_gpus=1, n_workers=1, batch_size=1,
                            model_kwargs=None, n_outputs=None, sequence_kwargs=None, sequence=None,
-                           metric_names=None, evaluate_predictions=False):
+                           metric_names=None, evaluate_predictions=False, interpolation="linear",
+                           resample_predictions=True):
     if package == "pytorch":
         pytorch_volumetric_predictions(model_filename=model_filename,
                                        model_name=model_name,
@@ -208,7 +209,9 @@ def volumetric_predictions(model_filename, filenames, output_dir, model_name, n_
                                        sequence_kwargs=sequence_kwargs,
                                        sequence=sequence,
                                        metric_names=metric_names,
-                                       evaluate_predictions=evaluate_predictions)
+                                       evaluate_predictions=evaluate_predictions,
+                                       interpolation=interpolation,
+                                       resample_predictions=resample_predictions)
     else:
         raise ValueError("Predictions not yet implemented for {}".format(package))
 

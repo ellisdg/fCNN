@@ -111,7 +111,9 @@ def main():
                                   resample_predictions=(not namespace.no_resample),
                                   interpolation=namespace.interpolation,
                                   output_template=namespace.output_template,
-                                  segmentation=namespace.segmentation)
+                                  segmentation=namespace.segmentation,
+                                  segmentation_labels=(config["sequence_kwargs"]["labels"]
+                                                       if namespace.segmentation else None))
 
 
 if __name__ == '__main__':

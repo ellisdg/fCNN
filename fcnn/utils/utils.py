@@ -203,9 +203,9 @@ def convert_one_hot_to_label_map(one_hot_encoding, labels, axis=-1, threshold=0.
     else:
         mask = np.any(one_hot_encoding > threshold, axis=axis)
     label_map = np.zeros(one_hot_encoding.shape[:axis], dtype=data_type)
-    label_map[mask] = np.argmax(one_hot_encoding[mask], axis=axis)
+    label_map[mask] = np.argmax(one_hot_encoding[mask], axis=axis) + 1
     for index, label in enumerate(labels):
-        label_map[label_map == index] = label
+        label_map[label_map == (index + 1)] = label
     return label_map
 
 

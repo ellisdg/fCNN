@@ -537,11 +537,13 @@ class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
 
 
 class WholeVolumeSegmentationSequence(WholeVolumeAutoEncoderSequence):
-    def __init__(self, *args, target_interpolation="nearest", target_index=2, labels=None, **kwargs):
+    def __init__(self, *args, target_interpolation="nearest", target_index=2, labels=None, add_contours=False,
+                 **kwargs):
         super().__init__(*args, **kwargs)
         self.target_interpolation = target_interpolation
         self.target_index = target_index
         self.labels = labels
+        self.add_contours = add_contours
 
     def resample_input(self, input_filenames):
         input_image, target_image = self.resample_image(input_filenames)

@@ -201,8 +201,8 @@ def convert_one_hot_to_label_map(one_hot_encoding, labels, axis=-1, threshold=0.
     if sum_then_threshold:
         mask = np.sum(one_hot_encoding, axis=axis) > threshold
     else:
-        mask = one_hot_encoding > threshold
-    label_map = np.zeros(one_hot_encoding.shape, dtype=data_type)
+        mask = np.any(one_hot_encoding > threshold, axis=axis)
+    label_map = np.zeros(one_hot_encoding.shape[:axis], dtype=data_type)
     label_map[mask] = np.argmax(one_hot_encoding[mask], axis=axis)
     for index, label in enumerate(labels):
         label_map[label_map == index] = label

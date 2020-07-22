@@ -9,7 +9,7 @@ from fcnn.utils.sequences import (WholeVolumeToSurfaceSequence, HCPRegressionSeq
 from fcnn.utils.pytorch import dataset as pytorch_datasets
 from fcnn.utils.pytorch.dataset import (WholeBrainCIFTI2DenseScalarDataset, HCPRegressionDataset, AEDataset,
                                         WholeVolumeSegmentationDataset, WindowedAEDataset)
-from fcnn.utils.utils import load_json, load_image
+from fcnn.utils.utils import load_json, load_image, in_config
 from fcnn.utils.custom import get_metric_data_from_config
 from fcnn.models.keras.resnet.resnet import compare_scores
 
@@ -266,6 +266,9 @@ def main():
         bias = load_bias(config["bias_filename"])
     else:
         bias = None
+
+    if in_config("add_contours", config["additional_training_args"], False):
+        config["n_outputs"] = config["n_outputs"] * 2
 
     if sequence_class == ParcelBasedSequence:
         target_parcels = config["sequence_kwargs"].pop("target_parcels")

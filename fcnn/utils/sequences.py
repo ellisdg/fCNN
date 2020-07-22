@@ -13,7 +13,7 @@ from .hcp import (extract_gifti_surface_vertices, get_vertices_from_scalar, get_
 from .utils import (zero_mean_normalize_image_data, copy_image, extract_sub_volumes, mask,
                     zero_floor_normalize_image_data, zero_one_window, compile_one_hot_encoding,
                     foreground_zero_mean_normalize_image_data, nib_load_files, load_image, load_single_image,
-                    get_nibabel_data)
+                    get_nibabel_data, add_one_hot_encoding_contours)
 from .resample import resample
 from .augment import scale_affine, add_noise, affine_swap_axis, translate_affine, random_blur, random_permutation_x_y
 from .affine import resize_affine
@@ -556,6 +556,8 @@ class WholeVolumeSegmentationSequence(WholeVolumeAutoEncoderSequence):
                                                            n_labels=len(self.labels),
                                                            labels=self.labels,
                                                            return_4d=True), 0, 3)
+        if self.add_contours:
+            target_data = add_one_hot_encoding_contours(target_data)
         return self.permute_inputs(get_nibabel_data(input_image), target_data)
 
 

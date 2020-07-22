@@ -4,6 +4,7 @@ import nibabel as nib
 import numpy as np
 import json
 from nilearn.image import resample_to_img, reorder_img, new_img_like
+from scipy.ndimage import binary_erosion
 
 
 def load_json(filename):
@@ -321,3 +322,17 @@ def get_nibabel_data(nibabel_image):
 
 def in_config(string, dictionary, if_not_in_config_return=None):
     return dictionary[string] if string in dictionary else if_not_in_config_return
+
+
+def estimate_binary_contour(binary):
+    return np.logical_xor(binary, binary_erosion(binary, iterations=1))
+
+
+def add_one_hot_encoding_contours(one_hot_encoding):
+    new_encoding = np.zeros(one_hot_encoding.shape[:-1] + (one_hot_encoding.shape[-1] * 2,),
+                            dtype=one_hot_encoding.dtype)
+    new_encoding[..., :one_hot_encoding.shape[-1]] = one_hot_encoding
+    for index in range(one_hot_encoding.shape[-1]):
+        new_encoding[..., one_hot_encoding.shape[-1] + index] = estimate_binary_contour(
+            one_hot_encoding[..., index] > 0)
+    return new_encoding

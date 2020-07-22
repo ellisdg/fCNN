@@ -192,7 +192,7 @@ def volumetric_predictions(model_filename, filenames, output_dir, model_name, n_
                            criterion_name, package="keras", n_gpus=1, n_workers=1, batch_size=1,
                            model_kwargs=None, n_outputs=None, sequence_kwargs=None, sequence=None,
                            metric_names=None, evaluate_predictions=False, interpolation="linear",
-                           resample_predictions=True):
+                           resample_predictions=True, output_template=None):
     if package == "pytorch":
         pytorch_volumetric_predictions(model_filename=model_filename,
                                        model_name=model_name,
@@ -211,7 +211,8 @@ def volumetric_predictions(model_filename, filenames, output_dir, model_name, n_
                                        metric_names=metric_names,
                                        evaluate_predictions=evaluate_predictions,
                                        interpolation=interpolation,
-                                       resample_predictions=resample_predictions)
+                                       resample_predictions=resample_predictions,
+                                       output_template=output_template)
     else:
         raise ValueError("Predictions not yet implemented for {}".format(package))
 
@@ -290,7 +291,8 @@ def pytorch_volumetric_predictions(model_filename, model_name, n_features, filen
                                    sequence_kwargs=None, spacing=None, sequence=None,
                                    strict_model_loading=True, metric_names=None,
                                    print_prediction_time=True, verbose=True,
-                                   evaluate_predictions=False, resample_predictions=False, interpolation="linear"):
+                                   evaluate_predictions=False, resample_predictions=False, interpolation="linear",
+                                   output_template=None):
     from .train.pytorch import load_criterion
     from fcnn.models.pytorch.build import build_or_load_model
     from .utils.pytorch.dataset import AEDataset
@@ -346,16 +348,21 @@ def pytorch_volumetric_predictions(model_filename, model_name, n_features, filen
                     if batch_references[batch_idx][1] is not None:
                         pred_image = resample_to_img(pred_image, batch_references[batch_idx][1],
                                                      interpolation=interpolation)
-                        x_filename = dataset.epoch_filenames[(idx - (batch_size - batch_idx - 1))][dataset.feature_index]
+                    if output_template is None:
+                        x_filename = dataset.epoch_filenames[(idx - (batch_size - batch_idx - 1))][
+                            dataset.feature_index]
                         if type(x_filename) == list:
                             x_filename = x_filename[0]
                         pred_filename = os.path.join(prediction_dir,
                                                      "_".join([batch_subjects[batch_idx],
                                                                basename,
                                                                os.path.basename(x_filename)]))
-                        if verbose:
-                            print("Writing:", pred_filename)
-                        pred_image.to_filename(pred_filename)
+                    else:
+                        pred_filename = os.path.join(prediction_dir,
+                                                     output_template.format(subject=batch_subjects[batch_idx]))
+                    if verbose:
+                        print("Writing:", pred_filename)
+                    pred_image.to_filename(pred_filename)
                 batch = list()
                 batch_references = list()
                 batch_subjects = list()

@@ -23,6 +23,7 @@ def parse_args():
                              "save on the storage space as the images can always be resampled back into the original"
                              "space when needed.")
     parser.add_argument("--interpolation", default="linear")
+    parser.add_argument("--output_template")
     parser.add_argument("--replace", nargs=2)
     return parser.parse_args()
 
@@ -107,7 +108,8 @@ def main():
                                   metric_names=in_config("metric_names", config, None),
                                   evaluate_predictions=namespace.eval,
                                   resample_predictions=(not namespace.no_resample),
-                                  interpolation=namespace.interpolation)
+                                  interpolation=namespace.interpolation,
+                                  output_template=namespace.output_template)
 
 
 if __name__ == '__main__':

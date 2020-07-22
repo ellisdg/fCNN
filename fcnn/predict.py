@@ -5,7 +5,7 @@ import nibabel as nib
 import pandas as pd
 from keras.models import load_model
 from nilearn.image import resample_to_img
-from .utils.utils import load_json, get_nibabel_data
+from .utils.utils import load_json, get_nibabel_data, one_hot_image_to_label_map
 from .utils.sequences import SubjectPredictionSequence
 from .utils.pytorch.dataset import HCPSubjectDataset
 from .utils.hcp import new_cifti_scalar_like, get_metric_data
@@ -192,7 +192,7 @@ def volumetric_predictions(model_filename, filenames, output_dir, model_name, n_
                            criterion_name, package="keras", n_gpus=1, n_workers=1, batch_size=1,
                            model_kwargs=None, n_outputs=None, sequence_kwargs=None, sequence=None,
                            metric_names=None, evaluate_predictions=False, interpolation="linear",
-                           resample_predictions=True, output_template=None):
+                           resample_predictions=True, output_template=None, segmentation=False):
     if package == "pytorch":
         pytorch_volumetric_predictions(model_filename=model_filename,
                                        model_name=model_name,
@@ -212,7 +212,8 @@ def volumetric_predictions(model_filename, filenames, output_dir, model_name, n_
                                        evaluate_predictions=evaluate_predictions,
                                        interpolation=interpolation,
                                        resample_predictions=resample_predictions,
-                                       output_template=output_template)
+                                       output_template=output_template,
+                                       segmentation=segmentation)
     else:
         raise ValueError("Predictions not yet implemented for {}".format(package))
 
@@ -292,7 +293,7 @@ def pytorch_volumetric_predictions(model_filename, model_name, n_features, filen
                                    strict_model_loading=True, metric_names=None,
                                    print_prediction_time=True, verbose=True,
                                    evaluate_predictions=False, resample_predictions=False, interpolation="linear",
-                                   output_template=None):
+                                   output_template=None, segmentation=False):
     from .train.pytorch import load_criterion
     from fcnn.models.pytorch.build import build_or_load_model
     from .utils.pytorch.dataset import AEDataset
@@ -348,6 +349,9 @@ def pytorch_volumetric_predictions(model_filename, model_name, n_features, filen
                     if batch_references[batch_idx][1] is not None:
                         pred_image = resample_to_img(pred_image, batch_references[batch_idx][1],
                                                      interpolation=interpolation)
+                    if segmentation:
+                        pred_image = one_hot_image_to_label_map(pred_image)
+
                     if output_template is None:
                         x_filename = dataset.epoch_filenames[(idx - (batch_size - batch_idx - 1))][
                             dataset.feature_index]

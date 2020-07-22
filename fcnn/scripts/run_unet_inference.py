@@ -24,6 +24,7 @@ def parse_args():
                              "space when needed.")
     parser.add_argument("--interpolation", default="linear")
     parser.add_argument("--output_template")
+    parser.add_argument("--segmentation", action="store_true", default=False)
     parser.add_argument("--replace", nargs=2)
     return parser.parse_args()
 
@@ -109,7 +110,8 @@ def main():
                                   evaluate_predictions=namespace.eval,
                                   resample_predictions=(not namespace.no_resample),
                                   interpolation=namespace.interpolation,
-                                  output_template=namespace.output_template)
+                                  output_template=namespace.output_template,
+                                  segmentation=namespace.segmentation)
 
 
 if __name__ == '__main__':

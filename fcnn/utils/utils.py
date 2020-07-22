@@ -196,11 +196,24 @@ def compile_one_hot_encoding(data, n_labels, labels=None, dtype=np.uint8, return
     return y
 
 
-def convert_one_hot_to_label_map(one_hot_encoding, labels, axis=1):
-    label_map = np.argmax(one_hot_encoding, axis=axis)
+def convert_one_hot_to_label_map(one_hot_encoding, labels, axis=-1, threshold=0.5, sum_then_threshold=True,
+                                 data_type=int):
+    if sum_then_threshold:
+        mask = np.sum(one_hot_encoding, axis=axis) > threshold
+    else:
+        mask = one_hot_encoding > threshold
+    label_map = np.zeros(one_hot_encoding.shape, dtype=data_type)
+    label_map[mask] = np.argmax(one_hot_encoding[mask], axis=axis)
     for index, label in enumerate(labels):
         label_map[label_map == index] = label
     return label_map
+
+
+def one_hot_image_to_label_map(one_hot_image, labels, axis=-1, threshold=0.5, sum_then_threshold=True, data_type=int):
+    label_map = convert_one_hot_to_label_map(get_nibabel_data(one_hot_image), labels=labels, axis=axis,
+                                             threshold=threshold, sum_then_threshold=sum_then_threshold,
+                                             data_type=data_type)
+    return new_img_like(one_hot_image, label_map)
 
 
 def copy_image(image):

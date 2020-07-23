@@ -101,7 +101,7 @@ def main():
     else:
         bias = None
 
-    if in_config("add_contours", config["additional_training_args"], False):
+    if in_config("add_contours", config["sequence_kwargs"], False):
         config["n_outputs"] = config["n_outputs"] * 2
 
     if sequence_class == ParcelBasedSequence:

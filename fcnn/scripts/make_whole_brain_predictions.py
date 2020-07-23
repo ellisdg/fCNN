@@ -3,7 +3,7 @@ import os
 from fcnn.utils.utils import load_json, nib_load_files
 from fcnn.utils.hcp import get_metric_data
 from fcnn.predict import whole_brain_scalar_predictions
-from fcnn.scripts.run_trial import load_subject_ids
+from fcnn.utils.filenames import load_subject_ids
 
 
 def main():

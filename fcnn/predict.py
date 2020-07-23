@@ -9,7 +9,7 @@ from .utils.utils import load_json, get_nibabel_data, one_hot_image_to_label_map
 from .utils.sequences import SubjectPredictionSequence
 from .utils.pytorch.dataset import HCPSubjectDataset
 from .utils.hcp import new_cifti_scalar_like, get_metric_data
-from .scripts.run_trial import generate_hcp_filenames, load_subject_ids
+from .utils.filenames import generate_hcp_filenames, load_subject_ids
 
 
 def predict_data_loader(model, data_loader):

@@ -193,7 +193,7 @@ def volumetric_predictions(model_filename, filenames, output_dir, model_name, n_
                            model_kwargs=None, n_outputs=None, sequence_kwargs=None, sequence=None,
                            metric_names=None, evaluate_predictions=False, interpolation="linear",
                            resample_predictions=True, output_template=None, segmentation=False,
-                           segmentation_labels=None):
+                           segmentation_labels=None, use_segmentation_contours=False):
     if package == "pytorch":
         pytorch_volumetric_predictions(model_filename=model_filename,
                                        model_name=model_name,
@@ -215,7 +215,8 @@ def volumetric_predictions(model_filename, filenames, output_dir, model_name, n_
                                        resample_predictions=resample_predictions,
                                        output_template=output_template,
                                        segmentation=segmentation,
-                                       segmentation_labels=segmentation_labels)
+                                       segmentation_labels=segmentation_labels,
+                                       use_segmentation_contours=use_segmentation_contours)
     else:
         raise ValueError("Predictions not yet implemented for {}".format(package))
 
@@ -295,7 +296,8 @@ def pytorch_volumetric_predictions(model_filename, model_name, n_features, filen
                                    strict_model_loading=True, metric_names=None,
                                    print_prediction_time=True, verbose=True,
                                    evaluate_predictions=False, resample_predictions=False, interpolation="linear",
-                                   output_template=None, segmentation=False, segmentation_labels=None):
+                                   output_template=None, segmentation=False, segmentation_labels=None,
+                                   use_segmentation_contours=False):
     from .train.pytorch import load_criterion
     from fcnn.models.pytorch.build import build_or_load_model
     from .utils.pytorch.dataset import AEDataset
@@ -352,7 +354,15 @@ def pytorch_volumetric_predictions(model_filename, model_name, n_features, filen
                         pred_image = resample_to_img(pred_image, batch_references[batch_idx][1],
                                                      interpolation=interpolation)
                     if segmentation:
-                        pred_image = one_hot_image_to_label_map(pred_image, labels=segmentation_labels)
+                        if use_segmentation_contours:
+                            #  assign the same label numbers to the contours
+                            labels = list(segmentation_labels) * 2
+                            sum_predictions = False
+                        else:
+                            labels = segmentation_labels
+                            sum_predictions = True
+                        pred_image = one_hot_image_to_label_map(pred_image, labels=labels,
+                                                                sum_then_threshold=sum_predictions)
 
                     if output_template is None:
                         x_filename = dataset.epoch_filenames[(idx - (batch_size - batch_idx - 1))][

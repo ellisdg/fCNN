@@ -121,7 +121,8 @@ def run_inference(namespace):
                                   output_template=namespace.output_template,
                                   segmentation=namespace.segmentation,
                                   segmentation_labels=(config["sequence_kwargs"]["labels"]
-                                                       if namespace.segmentation else None))
+                                                       if namespace.segmentation else None),
+                                  use_segmentation_contours=in_config("add_contours", config["sequence_kwargs"], False))
 
 
 if __name__ == '__main__':

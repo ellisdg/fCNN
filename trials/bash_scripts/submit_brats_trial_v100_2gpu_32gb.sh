@@ -1,5 +1,5 @@
 #!/bin/sh
-#SBATCH --time=168:00:00          # Run time in hh:mm:ss
+#SBATCH --time=7-00:00:00          # Run time in hh:mm:ss
 #SBATCH --job-name=V100_2GPU
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:2

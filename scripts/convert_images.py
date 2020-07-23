@@ -14,7 +14,7 @@ def main():
     namespace = parse_args()
     for fn in glob.glob(namespace.wildcard):
         base = fn.split(".")[0]
-        out_fn = base + ".nii.gz"
+        out_fn = base + namespace.extension
         print(fn, "--->", out_fn)
         image = sitk.ReadImage(fn)
         sitk.WriteImage(image, out_fn)

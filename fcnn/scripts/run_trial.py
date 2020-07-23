@@ -50,11 +50,11 @@ def main():
     print("MP Config: ", namespace.machine_config_filename)
     system_config = load_json(namespace.machine_config_filename)
 
-    try:
+    if namespace.group_average_filenames is not None:
         group_average = get_metric_data_from_config(namespace.group_average_filenames, namespace.config_filename)
         model_metrics = [wrapped_partial(compare_scores, comparison=group_average)]
         metric_to_monitor = "compare_scores"
-    except IndexError:
+    else:
         model_metrics = []
         if config['skip_validation']:
             metric_to_monitor = "loss"

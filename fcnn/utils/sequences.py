@@ -591,7 +591,7 @@ class WholeVolumeSegmentationSequence(WholeVolumeAutoEncoderSequence):
             _target_data = list()
             for channel, labels in zip(range(target_data.shape[self.channel_axis]), self.labels):
                 _target_data.append(np.moveaxis(
-                    compile_one_hot_encoding(np.moveaxis(target_data[..., channel], self.channel_axis, 0),
+                    compile_one_hot_encoding(np.moveaxis(target_data[..., channel, None], self.channel_axis, 0),
                                              n_labels=len(labels),
                                              labels=labels,
                                              return_4d=True), 0, self.channel_axis))

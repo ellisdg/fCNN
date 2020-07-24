@@ -104,6 +104,7 @@ def static_windows(data, windows, floor=0, ceiling=1):
     :param ceiling: defaults to 1.
     :return: Array with data windows listed in the final dimension
     """
+    data = np.squeeze(data)
     normalized_data = np.ones(data.shape + (len(windows),)) * floor
     for i, (l, w) in enumerate(windows):
         normalized_data[..., i] = radiology_style_windowing(data, l, w, floor=floor, ceiling=ceiling)

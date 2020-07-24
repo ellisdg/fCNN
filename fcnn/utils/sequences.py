@@ -54,7 +54,7 @@ def normalize_image_with_function(image, function, volume_indices=None, **kwargs
     return new_img_like(image, data=data, affine=image.affine)
 
 
-def normalize_data_with_multiple_functions(data, normalization_names, channels_axis=3, volume_indices=None, **kwargs):
+def normalize_data_with_multiple_functions(data, normalization_names, channels_axis=3, **kwargs):
     """
 
     :param data:
@@ -67,12 +67,11 @@ def normalize_data_with_multiple_functions(data, normalization_names, channels_a
     normalized_data = list()
     for name in normalization_names:
         func = normalization_name_to_function(name)
-        if volume_indices is None:
+        if kwargs[name]["volume_indices"] is None:
             _data = data
         else:
-            _data = data[..., volume_indices]
+            _data = data[..., kwargs[name]["volume_indices"]]
         normalized_data.append(func(_data, **kwargs[name]))
-
     return np.concatenate(normalized_data, axis=channels_axis)
 
 

@@ -588,14 +588,14 @@ class WholeVolumeSegmentationSequence(WholeVolumeAutoEncoderSequence):
                                          labels=self.labels,
                                          return_4d=True), 0, 3)
         else:
-            target_data = list()
+            _target_data = list()
             for channel, labels in zip(range(target_data.shape[self.channel_axis]), self.labels):
-                target_data.append(np.moveaxis(
+                _target_data.append(np.moveaxis(
                     compile_one_hot_encoding(np.moveaxis(target_data[..., channel], self.channel_axis, 0),
                                              n_labels=len(labels),
                                              labels=labels,
                                              return_4d=True), 0, self.channel_axis))
-            target_data = np.concatenate(target_data, axis=self.channel_axis)
+            target_data = np.concatenate(_target_data, axis=self.channel_axis)
         if self.add_contours:
             target_data = add_one_hot_encoding_contours(target_data)
         return self.permute_inputs(get_nibabel_data(input_image), target_data)

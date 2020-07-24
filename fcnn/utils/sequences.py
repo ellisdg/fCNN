@@ -38,7 +38,7 @@ def normalization_name_to_function(normalization_name):
         return mask
     elif normalization_name is not None:
         try:
-            getattr(normalize, normalization_name)
+            return getattr(normalize, normalization_name)
         except AttributeError:
             raise NotImplementedError(normalization_name + " normalization is not available.")
     else:

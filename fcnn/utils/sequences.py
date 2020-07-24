@@ -138,7 +138,7 @@ def decision(probability):
 class BaseSequence(Sequence):
     def __init__(self, filenames, batch_size, target_labels, window, spacing, classification='binary', shuffle=True,
                  points_per_subject=1, flip=False, reorder=False, iterations_per_epoch=1, deformation_augmentation=None,
-                 base_directory=None, subject_ids=None, inputs_per_epoch=None, channel_axis=-1):
+                 base_directory=None, subject_ids=None, inputs_per_epoch=None, channel_axis=3):
         self.deformation_augmentation = deformation_augmentation
         self.base_directory = base_directory
         self.subject_ids = subject_ids
@@ -588,12 +588,14 @@ class WholeVolumeSegmentationSequence(WholeVolumeAutoEncoderSequence):
                                          labels=self.labels,
                                          return_4d=True), 0, 3)
         else:
-            for channel, labels in zip(range(target_data.shape[3]), self.labels):
-                target_data[..., channel] = np.moveaxis(
-                    compile_one_hot_encoding(np.moveaxis(target_data, 3, 0),
-                                             n_labels=len(self.labels),
-                                             labels=self.labels,
-                                             return_4d=True), 0, 3)
+            target_data = list()
+            for channel, labels in zip(range(target_data.shape[self.channel_axis]), self.labels):
+                target_data.append(np.moveaxis(
+                    compile_one_hot_encoding(np.moveaxis(target_data[..., channel], self.channel_axis, 0),
+                                             n_labels=len(labels),
+                                             labels=labels,
+                                             return_4d=True), 0, self.channel_axis))
+            target_data = np.concatenate(target_data, axis=self.channel_axis)
         if self.add_contours:
             target_data = add_one_hot_encoding_contours(target_data)
         return self.permute_inputs(get_nibabel_data(input_image), target_data)

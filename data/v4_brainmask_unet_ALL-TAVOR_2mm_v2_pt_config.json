@@ -114,7 +114,7 @@
     "interpolation": "nearest",
     "target_normalization": null,
     "crop": true,
-    "cropping_pad_width": 7
+    "cropping_kwargs": {"pad": 7},
   },
   "additional_training_args": {"augment_scale_std": 0.1}
 }

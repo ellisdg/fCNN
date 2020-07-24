@@ -89,16 +89,17 @@ def augment_image(image, augment_blur_mean=None, augment_blur_std=None, augment_
     return image
 
 
-def format_feature_image(feature_image, window, crop=False, cropping_pad_width=1, cropping_percentile=None,
-                         augment_scale_std=None, augment_scale_probability=1, additive_noise_std=None,
-                         additive_noise_probability=0, flip_left_right_probability=0, augment_translation_std=None,
+def format_feature_image(feature_image, window, crop=False, cropping_kwargs=None, augment_scale_std=None,
+                         augment_scale_probability=1, additive_noise_std=None, additive_noise_probability=0,
+                         flip_left_right_probability=0, augment_translation_std=None,
                          augment_translation_probability=0, augment_blur_mean=None, augment_blur_std=None,
                          augment_blur_probability=0):
     affine = feature_image.affine.copy()
     shape = feature_image.shape
     if crop:
-        affine, shape = crop_img(feature_image, return_affine=True, pad=cropping_pad_width,
-                                 percentile=cropping_percentile)
+        if cropping_kwargs is None:
+            cropping_kwargs = dict()
+        affine, shape = crop_img(feature_image, return_affine=True, **cropping_kwargs)
     affine = augment_affine(affine, shape,
                             augment_scale_std=augment_scale_std,
                             augment_scale_probability=augment_scale_probability,
@@ -364,7 +365,7 @@ class SubjectPredictionSequence(HCPParent, Sequence):
 
 
 class WholeVolumeToSurfaceSequence(HCPRegressionSequence):
-    def __init__(self, interpolation='linear', crop=True, cropping_pad_width=1, cropping_percentile=None,
+    def __init__(self, interpolation='linear', crop=True, cropping_kwargs=None,
                  augment_scale_std=0, augment_scale_probability=1, additive_noise_std=0, additive_noise_probability=1,
                  augment_blur_mean=None, augment_blur_std=None, augment_blur_probability=1,
                  augment_translation_std=None, augment_translation_probability=1, flip_left_right_probability=0,
@@ -397,8 +398,7 @@ class WholeVolumeToSurfaceSequence(HCPRegressionSequence):
         self.augment_scale_probability = augment_scale_probability
         self.additive_noise_std = additive_noise_std
         self.additive_noise_probability = additive_noise_probability
-        self.cropping_pad_width = cropping_pad_width
-        self.cropping_percentile = cropping_percentile
+        self.cropping_kwargs = cropping_kwargs
         self.augment_blur_mean = augment_blur_mean
         self.augment_blur_std = augment_blur_std
         self.augment_blur_probability = augment_blur_probability
@@ -424,8 +424,7 @@ class WholeVolumeToSurfaceSequence(HCPRegressionSequence):
     def resample_input(self, feature_filename):
         feature_image = load_image(feature_filename, reorder=self.reorder)
         feature_image, affine = format_feature_image(feature_image=feature_image, window=self.window, crop=self.crop,
-                                                     cropping_pad_width=self.cropping_pad_width,
-                                                     cropping_percentile=self.cropping_percentile,
+                                                     cropping_kwargs=self.cropping_kwargs,
                                                      augment_scale_std=self.augment_scale_std,
                                                      augment_scale_probability=self.augment_scale_probability,
                                                      additive_noise_std=self.additive_noise_std,
@@ -516,8 +515,7 @@ class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
         unmodified_image = self.load_feature_image(input_filenames)
         image, affine = format_feature_image(feature_image=self.normalize_image(unmodified_image),
                                              crop=self.crop,
-                                             cropping_pad_width=self.cropping_pad_width,
-                                             cropping_percentile=self.cropping_percentile,
+                                             cropping_kwargs=self.cropping_kwargs,
                                              augment_scale_std=self.augment_scale_std,
                                              augment_scale_probability=self.augment_scale_probability,
                                              window=self.window,

@@ -64,7 +64,7 @@
     "extract_sub_volumes": true
   },
   "additional_training_args": {
-    "cropping_pad_width": 5,
+    "cropping_kwargs": {"pad": 5},
     "augment_scale_std": 0.1,
     "additive_noise_std": 0.1,
     "augment_blur_mean": 2.0,

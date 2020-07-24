@@ -66,7 +66,7 @@
     "normalization": null,
     "crop": true,
     "interpolation": "linear",
-    "cropping_pad_width": 2,
+    "cropping_kwargs": {"pad": 2},
     "extract_sub_volumes": true
   },
   "additional_training_args": {

@@ -74,6 +74,7 @@ def normalize_data_with_multiple_functions(data, normalization_names, channels_a
         else:
             _data = data
         normalized_data.append(func(_data, **kwargs[name]))
+    print([d.shape for d in normalized_data])
     return np.concatenate(normalized_data, axis=channels_axis)
 
 

@@ -1,4 +1,5 @@
 import os
+from functools import partial
 import numpy as np
 import nibabel as nib
 from keras.utils import Sequence
@@ -22,7 +23,9 @@ from .affine import resize_affine
 
 
 def normalization_name_to_function(normalization_name):
-    if normalization_name == "zero_mean":
+    if type(normalization_name) == list:
+        return partial(normalize_data_with_multiple_functions, normalization_names=normalization_name)
+    elif normalization_name == "zero_mean":
         return zero_mean_normalize_image_data
     elif normalization_name == "foreground_zero_mean":
         return foreground_zero_mean_normalize_image_data
@@ -45,6 +48,23 @@ def normalize_image_with_function(image, function, volume_indices=None, **kwargs
     else:
         data[:] = function(data[:], **kwargs)
     return new_img_like(image, data=data, affine=image.affine)
+
+
+def normalize_data_with_multiple_functions(data, normalization_names, channels_axis=3, **kwargs):
+    """
+
+    :param data:
+    :param normalization_names:
+    :param channels_axis:
+    :param kwargs: sets the normalization parameters, but should have multiple sets of parameters for the individual
+    normalization functions.
+    :return:
+    """
+    normalized_data = list()
+    for name in normalization_names:
+        func = normalization_name_to_function(name)
+        normalized_data.append(func(data, **kwargs[name]))
+    return np.concatenate(normalized_data, axis=channels_axis)
 
 
 def augment_affine(affine, shape, augment_scale_std=None, augment_scale_probability=1,
@@ -553,11 +573,19 @@ class WholeVolumeSegmentationSequence(WholeVolumeAutoEncoderSequence):
         if self.labels is None:
             self.labels = np.unique(target_data)
         assert len(target_data.shape) == 4
-        assert target_data.shape[3] == 1
-        target_data = np.moveaxis(compile_one_hot_encoding(np.moveaxis(target_data, 3, 0),
-                                                           n_labels=len(self.labels),
-                                                           labels=self.labels,
-                                                           return_4d=True), 0, 3)
+        if target_data.shape[3] == 1:
+            target_data = np.moveaxis(
+                compile_one_hot_encoding(np.moveaxis(target_data, 3, 0),
+                                         n_labels=len(self.labels),
+                                         labels=self.labels,
+                                         return_4d=True), 0, 3)
+        else:
+            for channel, labels in zip(range(target_data.shape[3]), self.labels):
+                target_data[..., channel] = np.moveaxis(
+                    compile_one_hot_encoding(np.moveaxis(target_data, 3, 0),
+                                             n_labels=len(self.labels),
+                                             labels=self.labels,
+                                             return_4d=True), 0, 3)
         if self.add_contours:
             target_data = add_one_hot_encoding_contours(target_data)
         return self.permute_inputs(get_nibabel_data(input_image), target_data)

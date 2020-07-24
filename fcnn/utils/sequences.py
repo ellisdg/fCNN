@@ -17,6 +17,7 @@ from .utils import (copy_image, extract_sub_volumes, mask,
                     get_nibabel_data, add_one_hot_encoding_contours)
 from .normalize import zero_mean_normalize_image_data, foreground_zero_mean_normalize_image_data, \
     zero_floor_normalize_image_data, zero_one_window
+from . import normalize
 from .resample import resample
 from .augment import scale_affine, add_noise, affine_swap_axis, translate_affine, random_blur, random_permutation_x_y
 from .affine import resize_affine
@@ -36,7 +37,10 @@ def normalization_name_to_function(normalization_name):
     elif normalization_name == "mask":
         return mask
     elif normalization_name is not None:
-        raise NotImplementedError(normalization_name + " normalization is not available.")
+        try:
+            getattr(normalize, normalization_name)
+        except AttributeError:
+            raise NotImplementedError(normalization_name + " normalization is not available.")
     else:
         return lambda x, **kwargs: x
 

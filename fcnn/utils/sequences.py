@@ -10,10 +10,12 @@ from .nilearn_custom_utils.nilearn_utils import crop_img
 from .radiomic_utils import binary_classification, multilabel_classification, fetch_data, fetch_data_for_point
 from .hcp import (extract_gifti_surface_vertices, get_vertices_from_scalar, get_metric_data,
                   extract_cifti_volumetric_data)
-from .utils import (zero_mean_normalize_image_data, copy_image, extract_sub_volumes, mask,
-                    zero_floor_normalize_image_data, zero_one_window, compile_one_hot_encoding,
-                    foreground_zero_mean_normalize_image_data, nib_load_files, load_image, load_single_image,
+from .utils import (copy_image, extract_sub_volumes, mask,
+                    compile_one_hot_encoding,
+                    nib_load_files, load_image, load_single_image,
                     get_nibabel_data, add_one_hot_encoding_contours)
+from .normalize import zero_mean_normalize_image_data, foreground_zero_mean_normalize_image_data, \
+    zero_floor_normalize_image_data, zero_one_window
 from .resample import resample
 from .augment import scale_affine, add_noise, affine_swap_axis, translate_affine, random_blur, random_permutation_x_y
 from .affine import resize_affine

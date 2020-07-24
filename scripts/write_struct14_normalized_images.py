@@ -5,7 +5,7 @@ from functools import partial
 import numpy as np
 import nibabel as nib
 from nilearn.image import resample_to_img
-from fcnn.utils.utils import zero_one_window, zero_floor_normalize_image_data
+from fcnn.utils.normalize import zero_floor_normalize_image_data, zero_one_window
 from unet3d.utils.nilearn_custom_utils.nilearn_utils import crop_img, reorder_affine
 from unet3d.utils.utils import resample
 

@@ -52,7 +52,7 @@ def main():
     else:
         subjects = subjects_dict[args["group"]]
     func = partial(mask_t1_image, hcp_dir=args["hcp_dir"], input_filename=args["input_filename"],
-                   output_filename=args["output_filename"], overwrite=args["overwrite"])
+                   output_filename=args["output_filename"], overwrite=args["overwrite"], cortex=args["cortex"])
     if args["nthreads"] > 1:
         pool = Pool(args["nthreads"])
         pool.map(func, subjects)

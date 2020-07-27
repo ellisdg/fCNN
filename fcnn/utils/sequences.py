@@ -324,6 +324,7 @@ class HCPRegressionSequence(BaseSequence, HCPParent):
 
     def normalize_image(self, image):
         if self.normalize:
+            print("self.normalize_image:", image.shape)
             return normalize_image_with_function(image, self.normalization_func, **self.normalization_kwargs)
         return image
 

@@ -74,7 +74,6 @@ def normalize_data_with_multiple_functions(data, normalization_names, channels_a
         else:
             _data = data
         normalized_data.append(func(_data, **_kwargs))
-    print([d.shape for d in normalized_data])
     return np.concatenate(normalized_data, axis=channels_axis)
 
 
@@ -324,7 +323,6 @@ class HCPRegressionSequence(BaseSequence, HCPParent):
 
     def normalize_image(self, image):
         if self.normalize:
-            print("self.normalize_image:", image.shape, self.normalization_kwargs)
             return normalize_image_with_function(image, self.normalization_func, **self.normalization_kwargs)
         return image
 

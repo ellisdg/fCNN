@@ -67,7 +67,7 @@ def normalize_data_with_multiple_functions(data, normalization_names, channels_a
     normalized_data = list()
     for name in normalization_names:
         func = normalization_name_to_function(name)
-        _kwargs = kwargs[name] if name in kwargs else None
+        _kwargs = dict(kwargs[name]) if name in kwargs else None
         if _kwargs and "volume_indices" in _kwargs and _kwargs["volume_indices"] is not None:
             volume_indices = _kwargs.pop("volume_indices")
             _data = data[..., volume_indices]

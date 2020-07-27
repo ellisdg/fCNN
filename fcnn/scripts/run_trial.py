@@ -130,7 +130,8 @@ def main():
                          **system_config)
 
     else:
-        run_training(package, config, namespace.model_filename, namespace.training_log_filename, sequence_class=sequence_class,
+        run_training(package, config, namespace.model_filename, namespace.training_log_filename,
+                     sequence_class=sequence_class,
                      model_metrics=model_metrics, metric_to_monitor=metric_to_monitor, bias=bias, **system_config)
 
     if namespace.command == "predict":

@@ -99,6 +99,9 @@ def run_inference(namespace):
     else:
         sequence = None
 
+    if in_config("add_contours", config["sequence_kwargs"], False):
+        config["n_outputs"] = config["n_outputs"] * 2
+
     return volumetric_predictions(model_filename=namespace.model_filename,
                                   filenames=filenames,
                                   output_dir=namespace.output_directory,

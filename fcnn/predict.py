@@ -339,7 +339,7 @@ def pytorch_volumetric_predictions(model_filename, model_name, n_features, filen
             batch.append(get_nibabel_data(x_image))
             batch_references.append((x_image, ref_image))
             batch_subjects.append(dataset.epoch_filenames[idx][-1])
-            if len(batch) >= batch_size:
+            if len(batch) >= batch_size or idx == (len(dataset) - 1):
                 batch_x = torch.tensor(np.moveaxis(batch, -1, 1)).float()
                 if n_gpus > 0:
                     batch_x = batch_x.cuda()
@@ -365,7 +365,7 @@ def pytorch_volumetric_predictions(model_filename, model_name, n_features, filen
                                                                 sum_then_threshold=sum_predictions)
 
                     if output_template is None:
-                        x_filename = dataset.epoch_filenames[(idx - (batch_size - batch_idx - 1))][
+                        x_filename = dataset.epoch_filenames[(idx - (len(batch) - batch_idx - 1))][
                             dataset.feature_index]
                         if type(x_filename) == list:
                             x_filename = x_filename[0]

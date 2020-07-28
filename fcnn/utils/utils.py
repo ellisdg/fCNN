@@ -88,7 +88,7 @@ def convert_one_hot_to_label_map(one_hot_encoding, labels, axis=3, threshold=0.5
             label_maps.append(convert_one_hot_to_label_map(_data, labels=_labels, axis=axis, threshold=threshold,
                                                            sum_then_threshold=sum_then_threshold, dtype=dtype))
             i = i + len(_labels)
-        max_arg_map = np.concatenate(label_maps, axis=axis)
+        label_map = np.concatenate(label_maps, axis=axis)
     else:
         if sum_then_threshold:
             mask = np.sum(one_hot_encoding, axis=axis) > threshold

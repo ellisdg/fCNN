@@ -356,7 +356,7 @@ def pytorch_volumetric_predictions(model_filename, model_name, n_features, filen
                     if segmentation:
                         if use_segmentation_contours:
                             #  assign the same label numbers to the contours
-                            labels = list(segmentation_labels) * 2
+                            labels = list(segmentation_labels) + list(segmentation_labels)
                             sum_predictions = False
                         else:
                             labels = segmentation_labels

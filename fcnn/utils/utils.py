@@ -80,7 +80,7 @@ def compile_one_hot_encoding(data, n_labels, labels=None, dtype=np.uint8, return
 
 def convert_one_hot_to_label_map(one_hot_encoding, labels, axis=3, threshold=0.5, sum_then_threshold=True,
                                  dtype=np.int16):
-    if all([type(labels) == list for labels in labels]):
+    if all([type(_labels) == list for _labels in labels]):
         i = 0
         label_maps = list()
         for _labels in labels:
@@ -88,20 +88,21 @@ def convert_one_hot_to_label_map(one_hot_encoding, labels, axis=3, threshold=0.5
             label_maps.append(convert_one_hot_to_label_map(_data, labels=_labels, axis=axis, threshold=threshold,
                                                            sum_then_threshold=sum_then_threshold, dtype=dtype))
             i = i + len(_labels)
-        label_map = np.concatenate(label_maps, axis=axis)
+        max_arg_map = np.concatenate(label_maps, axis=axis)
     else:
         if sum_then_threshold:
             mask = np.sum(one_hot_encoding, axis=axis) > threshold
         else:
             mask = np.any(one_hot_encoding > threshold, axis=axis)
-        label_map = np.zeros(one_hot_encoding.shape[:axis], dtype=dtype)
-        label_map[mask] = np.argmax(one_hot_encoding[mask], axis=axis) + 1
+        max_arg_map = np.zeros(one_hot_encoding.shape[:axis], dtype=dtype)
+        label_map = np.copy(max_arg_map)
+        max_arg_map[mask] = (np.argmax(one_hot_encoding, axis=axis) + 1)[mask]
         for index, label in enumerate(labels):
-            label_map[label_map == (index + 1)] = label
+            label_map[max_arg_map == (index + 1)] = label
     return label_map
 
 
-def one_hot_image_to_label_map(one_hot_image, labels, axis=-1, threshold=0.5, sum_then_threshold=True, dtype=np.int16):
+def one_hot_image_to_label_map(one_hot_image, labels, axis=3, threshold=0.5, sum_then_threshold=True, dtype=np.int16):
     label_map = convert_one_hot_to_label_map(get_nibabel_data(one_hot_image), labels=labels, axis=axis,
                                              threshold=threshold, sum_then_threshold=sum_then_threshold,
                                              dtype=dtype)

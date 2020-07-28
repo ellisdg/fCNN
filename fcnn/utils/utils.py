@@ -91,12 +91,12 @@ def convert_one_hot_to_label_map(one_hot_encoding, labels, axis=3, threshold=0.5
         label_map = np.concatenate(label_maps, axis=axis)
     else:
         if sum_then_threshold:
-            mask = np.sum(one_hot_encoding, axis=axis) > threshold
+            mask = np.sum(one_hot_encoding[..., :len(labels)], axis=axis) > threshold
         else:
-            mask = np.any(one_hot_encoding > threshold, axis=axis)
+            mask = np.any(one_hot_encoding[..., :len(labels)] > threshold, axis=axis)
         max_arg_map = np.zeros(one_hot_encoding.shape[:axis], dtype=dtype)
         label_map = np.copy(max_arg_map)
-        max_arg_map[mask] = (np.argmax(one_hot_encoding, axis=axis) + 1)[mask]
+        max_arg_map[mask] = (np.argmax(one_hot_encoding[..., :len(labels)], axis=axis) + 1)[mask]
         for index, label in enumerate(labels):
             label_map[max_arg_map == (index + 1)] = label
     return label_map

@@ -26,6 +26,13 @@ def format_parser(parser=argparse.ArgumentParser(), sub_command=False):
     parser.add_argument("--output_template")
     parser.add_argument("--segmentation", action="store_true", default=False)
     parser.add_argument("--replace", nargs=2)
+    parser.add_argument("--threshold", default=0.7, type=float, help="If segmentation is set, this is the threshold for"
+                                                                     "segmentation cutoff.")
+    parser.add_argument("--no_sum", default=False, action="store_true", help="Does not sum the predictions before "
+                                                                             "using threshold.")
+    parser.add_argument("--use_contours", action="store_true", default=False,
+                        help="If the model was trained to predict contours you can use the contours to assist in the"
+                             "segmentation. (This has not been shown to improve results.)")
     return parser
 
 
@@ -99,8 +106,12 @@ def run_inference(namespace):
     else:
         sequence = None
 
+    labels = config["sequence_kwargs"]["labels"] if namespace.segmentation else None
     if in_config("add_contours", config["sequence_kwargs"], False):
         config["n_outputs"] = config["n_outputs"] * 2
+        if namespace.use_contours:
+            # this sets the labels for the contours
+            labels = list(labels) + list(labels)
 
     return volumetric_predictions(model_filename=namespace.model_filename,
                                   filenames=filenames,
@@ -123,9 +134,9 @@ def run_inference(namespace):
                                   interpolation=namespace.interpolation,
                                   output_template=namespace.output_template,
                                   segmentation=namespace.segmentation,
-                                  segmentation_labels=(config["sequence_kwargs"]["labels"]
-                                                       if namespace.segmentation else None),
-                                  use_segmentation_contours=in_config("add_contours", config["sequence_kwargs"], False))
+                                  segmentation_labels=labels,
+                                  threshold=namespace.threshold,
+                                  sum_then_threshold=(namespace.no_sum is False))
 
 
 if __name__ == '__main__':

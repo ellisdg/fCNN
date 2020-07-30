@@ -73,6 +73,12 @@ def run_inference(namespace):
             config[namespace.group] = load_json(namespace.subjects_config_filename)[namespace.group]
         filenames = generate_filenames(config, namespace.group, namespace.machine_config_filename,
                                        skip_targets=(not namespace.eval))
+        if config["sequence"] == "templates":
+            if "inputs_per_epoch" not in config:
+                config["sequence_kwargs"]["inputs_per_epoch"] = dict()
+            for dataset in filenames:
+                config["sequence_kwargs"]["inputs_per_epoch"][dataset] = "all"
+
     else:
         filenames = config[key]
 

@@ -104,11 +104,8 @@ def generate_filenames_from_templates(subject_ids, feature_templates, target_tem
                                       skip_targets=False):
     filenames = list()
     for subject_id in subject_ids:
-        print(subject_id)
         feature_filename = format_templates(feature_templates, directory=directory, subject=subject_id)
         target_filename = format_templates(target_templates, directory=directory, subject=subject_id)
-        print(feature_filename)
-        print(target_filename)
         if feature_sub_volumes is not None:
             _feature_sub_volumes = feature_sub_volumes
         else:
@@ -131,7 +128,6 @@ def generate_filenames_from_multisource_templates(subject_ids, feature_templates
                                                   raise_if_not_exists=False, directory=""):
     filenames = dict()
     for dataset in subject_ids:
-        print("dataset:", dataset)
         filenames[dataset] = generate_filenames_from_templates(subject_ids[dataset],
                                                                feature_templates[dataset],
                                                                target_templates[dataset],
@@ -141,7 +137,6 @@ def generate_filenames_from_multisource_templates(subject_ids, feature_templates
                                                                 if target_sub_volumes is not None else None),
                                                                raise_if_not_exists=raise_if_not_exists,
                                                                directory=directory)
-    print(filenames)
     return filenames
 
 

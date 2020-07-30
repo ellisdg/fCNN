@@ -139,11 +139,12 @@ def generate_filenames_from_multisource_templates(subject_ids, feature_templates
 
 
 def generate_filenames(config, name, system_config, skip_targets=False):
-    load_subject_ids(config)
+    if name not in config:
+        load_subject_ids(config)
     if "generate_filenames" not in config or config["generate_filenames"] == "classic":
         return generate_hcp_filenames(system_config['directory'],
-                                      config[
-                                          'surface_basename_template'] if "surface_basename_template" in config else None,
+                                      config['surface_basename_template']
+                                      if "surface_basename_template" in config else None,
                                       config['target_basenames'],
                                       config['feature_basenames'],
                                       config[name],

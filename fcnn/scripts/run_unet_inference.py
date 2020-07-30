@@ -26,13 +26,17 @@ def format_parser(parser=argparse.ArgumentParser(), sub_command=False):
     parser.add_argument("--output_template")
     parser.add_argument("--segmentation", action="store_true", default=False)
     parser.add_argument("--replace", nargs=2)
-    parser.add_argument("--threshold", default=0.7, type=float, help="If segmentation is set, this is the threshold for"
-                                                                     "segmentation cutoff.")
-    parser.add_argument("--no_sum", default=False, action="store_true", help="Does not sum the predictions before "
-                                                                             "using threshold.")
+    parser.add_argument("--threshold", default=0.7, type=float,
+                        help="If segmentation is set, this is the threshold for segmentation cutoff.")
+    parser.add_argument("--no_sum", default=False, action="store_true",
+                        help="Does not sum the predictions before using threshold.")
     parser.add_argument("--use_contours", action="store_true", default=False,
                         help="If the model was trained to predict contours you can use the contours to assist in the"
                              "segmentation. (This has not been shown to improve results.)")
+    parser.add_argument("--subjects_config_filename",
+                        help="Allows for specification of the config that contains the subject ids. If not set and the"
+                             "subject ids are not listed in the main config, then the filename for the subjects config"
+                             "will be read from the main config.")
     return parser
 
 
@@ -51,20 +55,22 @@ def run_inference(namespace):
     key = namespace.group + "_filenames"
     
     if namespace.replace is not None:
-        for key in ("directory", "feature_templates", "target_templates"):
-            if key in config["generate_filenames_kwargs"]:
-                if type(config["generate_filenames_kwargs"][key]) == str:
-                    config["generate_filenames_kwargs"][key] = config["generate_filenames_kwargs"][key].replace(
+        for _key in ("directory", "feature_templates", "target_templates"):
+            if _key in config["generate_filenames_kwargs"]:
+                if type(config["generate_filenames_kwargs"][_key]) == str:
+                    config["generate_filenames_kwargs"][_key] = config["generate_filenames_kwargs"][_key].replace(
                         namespace.replace[0], namespace.replace[1])
                 else:
-                    config["generate_filenames_kwargs"][key] = [template.replace(namespace.replace[0],
-                                                                                 namespace.replace[1]) for template in
-                                                                config["generate_filenames_kwargs"][key]]
+                    config["generate_filenames_kwargs"][_key] = [template.replace(namespace.replace[0],
+                                                                                  namespace.replace[1]) for template in
+                                                                 config["generate_filenames_kwargs"][_key]]
 
     if namespace.directory_template is not None:
         config["generate_filenames_kwargs"]["directory"] = namespace.directory_template
 
     if key not in config:
+        if namespace.subjects_config_filename:
+            config[namespace.group] = load_json(namespace.subjects_config_filename)[namespace.group]
         filenames = generate_filenames(config, namespace.group, namespace.machine_config_filename,
                                        skip_targets=(not namespace.eval))
     else:

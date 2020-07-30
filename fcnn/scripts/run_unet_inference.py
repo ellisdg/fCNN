@@ -73,8 +73,8 @@ def run_inference(namespace):
             config[namespace.group] = load_json(namespace.subjects_config_filename)[namespace.group]
         filenames = generate_filenames(config, namespace.group, namespace.machine_config_filename,
                                        skip_targets=(not namespace.eval))
-        if config["sequence"] == "multisource_templates":
-            if "inputs_per_epoch" not in config:
+        if "generate_filenames" in config and config["generate_filenames"] == "multisource_templates":
+            if "inputs_per_epoch" not in config["sequence_kwargs"]:
                 config["sequence_kwargs"]["inputs_per_epoch"] = dict()
             for dataset in filenames:
                 config["sequence_kwargs"]["inputs_per_epoch"][dataset] = "all"
@@ -124,8 +124,6 @@ def run_inference(namespace):
         if namespace.use_contours:
             # this sets the labels for the contours
             labels = list(labels) + list(labels)
-
-    print(sequence_kwargs)
 
     return volumetric_predictions(model_filename=namespace.model_filename,
                                   filenames=filenames,

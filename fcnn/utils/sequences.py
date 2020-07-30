@@ -146,7 +146,6 @@ class BaseSequence(Sequence):
         self.shuffle = shuffle
         self.filenames = filenames
         self.inputs_per_epoch = inputs_per_epoch
-        print(inputs_per_epoch)
         if self.inputs_per_epoch is not None:
             if not type(self.filenames) == dict:
                 raise ValueError("'inputs_per_epoch' is not None, but 'filenames' is not a dictionary.")

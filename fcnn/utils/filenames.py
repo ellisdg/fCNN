@@ -131,8 +131,10 @@ def generate_filenames_from_multisource_templates(subject_ids, feature_templates
         filenames[dataset] = generate_filenames_from_templates(subject_ids[dataset],
                                                                feature_templates[dataset],
                                                                target_templates[dataset],
-                                                               feature_sub_volumes[dataset],
-                                                               target_sub_volumes[dataset],
+                                                               (feature_sub_volumes[dataset]
+                                                                if feature_sub_volumes is not None else None),
+                                                               (target_sub_volumes[dataset]
+                                                                if target_sub_volumes is not None else None),
                                                                raise_if_not_exists=raise_if_not_exists,
                                                                directory=directory)
     return filenames

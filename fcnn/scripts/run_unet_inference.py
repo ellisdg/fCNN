@@ -39,6 +39,8 @@ def format_parser(parser=argparse.ArgumentParser(), sub_command=False):
                              "will be read from the main config.")
     parser.add_argument("--source",
                         help="If using multisource templates set this to predict only filenames from a single source.")
+    parser.add_argument("--filenames", nargs="*")
+    parser.add_argument("--sub_volumes", nargs="*", type=int)
     return parser
 
 
@@ -55,36 +57,29 @@ def run_inference(namespace):
     print("Config: ", namespace.config_filename)
     config = load_json(namespace.config_filename)
     key = namespace.group + "_filenames"
-    
-    if namespace.replace is not None:
-        for _key in ("directory", "feature_templates", "target_templates"):
-            if _key in config["generate_filenames_kwargs"]:
-                if type(config["generate_filenames_kwargs"][_key]) == str:
-                    config["generate_filenames_kwargs"][_key] = config["generate_filenames_kwargs"][_key].replace(
-                        namespace.replace[0], namespace.replace[1])
-                else:
-                    config["generate_filenames_kwargs"][_key] = [template.replace(namespace.replace[0],
-                                                                                  namespace.replace[1]) for template in
-                                                                 config["generate_filenames_kwargs"][_key]]
 
-    if namespace.directory_template is not None:
-        config["generate_filenames_kwargs"]["directory"] = namespace.directory_template
-
-    if key not in config:
+    if namespace.filenames:
+        filenames = list()
+        for filename in namespace.filenames:
+            filenames.append([filename, namespace.sub_volumes, None, None, ""])
+    elif key not in config:
+        if namespace.replace is not None:
+            for _key in ("directory", "feature_templates", "target_templates"):
+                if _key in config["generate_filenames_kwargs"]:
+                    if type(config["generate_filenames_kwargs"][_key]) == str:
+                        config["generate_filenames_kwargs"][_key] = config["generate_filenames_kwargs"][_key].replace(
+                            namespace.replace[0], namespace.replace[1])
+                    else:
+                        config["generate_filenames_kwargs"][_key] = [template.replace(namespace.replace[0],
+                                                                                      namespace.replace[1]) for template
+                                                                     in
+                                                                     config["generate_filenames_kwargs"][_key]]
+        if namespace.directory_template is not None:
+            config["generate_filenames_kwargs"]["directory"] = namespace.directory_template
         if namespace.subjects_config_filename:
             config[namespace.group] = load_json(namespace.subjects_config_filename)[namespace.group]
         filenames = generate_filenames(config, namespace.group, namespace.machine_config_filename,
                                        skip_targets=(not namespace.eval))
-        if "generate_filenames" in config and config["generate_filenames"] == "multisource_templates":
-            if "inputs_per_epoch" not in config["sequence_kwargs"]:
-                config["sequence_kwargs"]["inputs_per_epoch"] = dict()
-            if namespace.source is not None:
-                for dataset in filenames:
-                    config["sequence_kwargs"]["inputs_per_epoch"][dataset] = 0
-                config["sequence_kwargs"]["inputs_per_epoch"][namespace.source] = "all"
-            else:
-                for dataset in filenames:
-                    config["sequence_kwargs"]["inputs_per_epoch"][dataset] = "all"
 
     else:
         filenames = config[key]
@@ -120,13 +115,32 @@ def run_inference(namespace):
     else:
         sequence_kwargs = dict()
 
+    if "generate_filenames" in config and config["generate_filenames"] == "multisource_templates":
+        if namespace.filenames is not None:
+            sequence_kwargs["inputs_per_epoch"] = None
+        else:
+            # set which source(s) to use for prediction filenames
+            if "inputs_per_epoch" not in sequence_kwargs:
+                sequence_kwargs["inputs_per_epoch"] = dict()
+            if namespace.source is not None:
+                # just use the named source
+                for dataset in filenames:
+                    sequence_kwargs["inputs_per_epoch"][dataset] = 0
+                sequence_kwargs["inputs_per_epoch"][namespace.source] = "all"
+            else:
+                # use all sources
+                for dataset in filenames:
+                    sequence_kwargs["inputs_per_epoch"][dataset] = "all"
+    if namespace.sub_volumes is not None:
+        sequence_kwargs["extract_sub_volumes"] = True
+
     if "sequence" in config:
         sequence = load_sequence(config["sequence"])
     else:
         sequence = None
 
-    labels = config["sequence_kwargs"]["labels"] if namespace.segmentation else None
-    if in_config("add_contours", config["sequence_kwargs"], False):
+    labels = sequence_kwargs["labels"] if namespace.segmentation else None
+    if in_config("add_contours", sequence_kwargs, False):
         config["n_outputs"] = config["n_outputs"] * 2
         if namespace.use_contours:
             # this sets the labels for the contours

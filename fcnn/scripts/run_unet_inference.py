@@ -37,6 +37,8 @@ def format_parser(parser=argparse.ArgumentParser(), sub_command=False):
                         help="Allows for specification of the config that contains the subject ids. If not set and the"
                              "subject ids are not listed in the main config, then the filename for the subjects config"
                              "will be read from the main config.")
+    parser.add_argument("--source",
+                        help="If using multisource templates set this to predict only filenames from a single source.")
     return parser
 
 
@@ -76,8 +78,13 @@ def run_inference(namespace):
         if "generate_filenames" in config and config["generate_filenames"] == "multisource_templates":
             if "inputs_per_epoch" not in config["sequence_kwargs"]:
                 config["sequence_kwargs"]["inputs_per_epoch"] = dict()
-            for dataset in filenames:
-                config["sequence_kwargs"]["inputs_per_epoch"][dataset] = "all"
+            if namespace.source is not None:
+                for dataset in filenames:
+                    config["sequence_kwargs"]["inputs_per_epoch"][dataset] = 0
+                config["sequence_kwargs"]["inputs_per_epoch"][namespace.source] = "all"
+            else:
+                for dataset in filenames:
+                    config["sequence_kwargs"]["inputs_per_epoch"][dataset] = "all"
 
     else:
         filenames = config[key]

@@ -141,6 +141,7 @@ def generate_filenames_from_multisource_templates(subject_ids, feature_templates
                                                                 if target_sub_volumes is not None else None),
                                                                raise_if_not_exists=raise_if_not_exists,
                                                                directory=directory)
+    print(filenames)
     return filenames
 
 

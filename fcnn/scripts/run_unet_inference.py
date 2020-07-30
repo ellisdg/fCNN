@@ -125,6 +125,8 @@ def run_inference(namespace):
             # this sets the labels for the contours
             labels = list(labels) + list(labels)
 
+    print(sequence_kwargs)
+
     return volumetric_predictions(model_filename=namespace.model_filename,
                                   filenames=filenames,
                                   output_dir=namespace.output_directory,

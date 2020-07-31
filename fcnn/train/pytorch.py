@@ -61,27 +61,15 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
     else:
         model_kwargs = dict()
 
-    if "freeze_bias" in config:
-        freeze_bias = config["freeze_bias"]
-    else:
-        freeze_bias = False
-
-    if "vae" in config:
-        vae = config["vae"]
-    else:
-        vae = False
-
     model = build_or_load_model(model_name, model_filename, n_features=config["n_features"], n_outputs=n_outputs,
-                                freeze_bias=freeze_bias, bias=bias, n_gpus=n_gpus, **model_kwargs)
+                                freeze_bias=in_config("freeze_bias", config, False),
+                                bias=bias, n_gpus=n_gpus, **model_kwargs)
     model.train()
 
     criterion = load_criterion(config['loss'], n_gpus=n_gpus)
 
     if "weights" in config and config["weights"] is not None:
         criterion = functions.WeightedLoss(torch.tensor(config["weights"]), criterion)
-
-    if "regularized" in config:
-        regularized = config["regularized"]
 
     optimizer_kwargs = dict()
     if "initial_learning_rate" in config:
@@ -91,24 +79,7 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
                                 model_parameters=model.parameters(),
                                 **optimizer_kwargs)
 
-    if "iterations_per_epoch" in config:
-        iterations_per_epoch = config["iterations_per_epoch"]
-    else:
-        iterations_per_epoch = 1
-    if "additional_training_args" in config:
-        train_kwargs = config["additional_training_args"]
-    else:
-        train_kwargs = dict()
-
-    if "additional_validation_args" in config:
-        validation_kwargs = config["additional_validation_args"]
-    else:
-        validation_kwargs = dict()
-
-    if "sequence_kwargs" in config:
-        sequence_kwargs = config["sequence_kwargs"]
-    else:
-        sequence_kwargs = dict()
+    sequence_kwargs = in_config("sequence_kwargs", config, dict())
 
     if "flatten_y" in config and config["flatten_y"]:
         collate_fn = collate_flatten
@@ -130,7 +101,7 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
                                       base_directory=directory,
                                       subject_ids=config["training"],
                                       iterations_per_epoch=in_config("iterations_per_epoch", config, 1),
-                                      **train_kwargs,
+                                      **in_config("train_kwargs", config, dict()),
                                       **sequence_kwargs)
 
     training_loader = DataLoader(training_dataset,
@@ -168,7 +139,7 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
                                             surface_names=in_config('surface_names', config, None),
                                             metric_names=in_config('metric_names', config, None),
                                             **sequence_kwargs,
-                                            **validation_kwargs)
+                                            **in_config("validation_kwargs", config, dict()))
         validation_loader = DataLoader(validation_dataset,
                                        batch_size=config["validation_batch_size"] // in_config("points_per_subject",
                                                                                                config, 1),
@@ -178,17 +149,24 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
 
     train(model=model, optimizer=optimizer, criterion=criterion, n_epochs=config["n_epochs"], verbose=bool(verbose),
           training_loader=training_loader, validation_loader=validation_loader, model_filename=model_filename,
-          training_log_filename=training_log_filename, iterations_per_epoch=iterations_per_epoch,
-          metric_to_monitor=metric_to_monitor, early_stopping_patience=config["early_stopping_patience"],
-          save_best=config["save_best"], learning_rate_decay_patience=config["decay_patience"],
-          regularized=regularized, n_gpus=n_gpus, vae=vae, decay_factor=config["decay_factor"],
-          min_lr=config["min_learning_rate"])
+          training_log_filename=training_log_filename,
+          metric_to_monitor=metric_to_monitor,
+          early_stopping_patience=in_config("early_stopping_patience", config),
+          save_best=in_config("save_best", config, False),
+          learning_rate_decay_patience=in_config("decay_patience", config),
+          regularized=in_config("regularized", config, regularized),
+          n_gpus=n_gpus,
+          vae=in_config("vae", config, False),
+          decay_factor=in_config("decay_factor", config),
+          min_lr=in_config("min_learning_rate", config),
+          learning_rate_decay_step_size=in_config("decay_step_size", config),
+          save_every_n_epochs=in_config("save_every_n_epochs", config))
 
 
 def train(model, optimizer, criterion, n_epochs, training_loader, validation_loader, training_log_filename,
-          model_filename, iterations_per_epoch=1, metric_to_monitor="val_loss", early_stopping_patience=None,
+          model_filename, metric_to_monitor="val_loss", early_stopping_patience=None,
           learning_rate_decay_patience=None, save_best=False, n_gpus=1, verbose=True, regularized=False,
-          vae=False, decay_factor=0.1, min_lr=0.):
+          vae=False, decay_factor=0.1, min_lr=0., learning_rate_decay_step_size=None, save_every_n_epochs=None):
     training_log = list()
     if os.path.exists(training_log_filename):
         training_log.extend(pd.read_csv(training_log_filename).values)
@@ -200,6 +178,11 @@ def train(model, optimizer, criterion, n_epochs, training_loader, validation_loa
     if learning_rate_decay_patience:
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=learning_rate_decay_patience,
                                                                verbose=verbose, factor=decay_factor, min_lr=min_lr)
+    elif learning_rate_decay_step_size:
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=learning_rate_decay_patience,
+                                                    gamma=decay_factor, last_epoch=start_epoch - 1)
+    else:
+        scheduler = None
 
     for epoch in range(start_epoch, n_epochs):
 
@@ -231,7 +214,7 @@ def train(model, optimizer, criterion, n_epochs, training_loader, validation_loa
         min_epoch = np.asarray(training_log)[:, training_log_header.index(metric_to_monitor)].argmin()
 
         # check loss and decay
-        if learning_rate_decay_patience:
+        if scheduler:
             if validation_loader:
                 scheduler.step(val_loss)
             else:
@@ -244,6 +227,12 @@ def train(model, optimizer, criterion, n_epochs, training_loader, validation_loa
             if os.path.exists(best_filename):
                 os.remove(best_filename)
             shutil.copy(model_filename, best_filename)
+
+        if save_every_n_epochs and (epoch % save_every_n_epochs) == 0:
+            epoch_filename = model_filename.replace(".h5", "_{}.h5".format(epoch))
+            if os.path.exists(epoch_filename):
+                os.remove(epoch_filename)
+            shutil.copy(model_filename, epoch_filename)
 
 
 def get_lr(optimizer):

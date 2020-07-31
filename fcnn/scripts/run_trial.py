@@ -61,7 +61,12 @@ def main():
         else:
             metric_to_monitor = "val_loss"
 
-    for name in ("training", "validation"):
+    if config["skip_validation"]:
+        groups = ("training",)
+    else:
+        groups = ("training", "validation")
+
+    for name in groups:
         key = name + "_filenames"
         if key not in config:
             config[key] = generate_filenames(config, name, system_config)

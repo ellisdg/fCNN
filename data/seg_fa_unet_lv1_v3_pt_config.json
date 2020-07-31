@@ -51,7 +51,7 @@
     "decoder_mirrors_encoder": true,
     "input_shape": [144, 160, 144],
     "activation": "sigmoid",
-    "kernal_size": 5
+    "kernel_size": 5
   },
   "skip_validation": false,
   "iterations_per_epoch": 1,

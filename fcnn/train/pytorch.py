@@ -80,7 +80,7 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
                                 **optimizer_kwargs)
 
     sequence_kwargs = in_config("sequence_kwargs", config, dict())
-    print(sequence_kwargs)
+
     if "flatten_y" in config and config["flatten_y"]:
         collate_fn = collate_flatten
     elif "collate_fn" in config and config["collate_fn"] == "collate_5d_flatten":
@@ -101,7 +101,7 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
                                       base_directory=directory,
                                       subject_ids=config["training"],
                                       iterations_per_epoch=in_config("iterations_per_epoch", config, 1),
-                                      **in_config("train_kwargs", config, dict()),
+                                      **in_config("additional_training_args", config, dict()),
                                       **sequence_kwargs)
 
     training_loader = DataLoader(training_dataset,

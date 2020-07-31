@@ -15,7 +15,6 @@ class MyronenkoConvolutionBlock(nn.Module):
         self.conv = conv3x3x3(in_planes, planes, stride, kernel_size=kernel_size)
 
     def forward(self, x):
-        print(x.size())
         x = self.norm1(x)
         x = self.relu(x)
         x = self.conv(x)

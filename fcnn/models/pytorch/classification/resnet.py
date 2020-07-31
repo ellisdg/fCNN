@@ -9,9 +9,9 @@ __all__ = ['ResNet', 'resnet_18', 'resnet_34', 'resnet_50', 'resnet_101',
            'conv1x1x1']
 
 
-def conv3x3x3(in_planes, out_planes, stride=1, groups=1, dilation=1, kernal_size=3):
+def conv3x3x3(in_planes, out_planes, stride=1, groups=1, dilation=1, kernel_size=3):
     """3x3x3 convolution with padding"""
-    return nn.Conv3d(in_planes, out_planes, kernel_size=kernal_size, stride=stride,
+    return nn.Conv3d(in_planes, out_planes, kernel_size=kernel_size, stride=stride,
                      padding=dilation, groups=groups, bias=False, dilation=dilation)
 
 

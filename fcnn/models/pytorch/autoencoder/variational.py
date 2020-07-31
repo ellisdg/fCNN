@@ -45,13 +45,14 @@ class ConvolutionalAutoEncoder(nn.Module):
             encoder_blocks = [1, 2, 2, 4]
         self.encoder = encoder_class(n_features=n_features, base_width=base_width, layer_blocks=encoder_blocks,
                                      feature_dilation=feature_dilation, downsampling_stride=downsampling_stride,
-                                     layer_widths=layer_widths, kernal_size=kernel_size)
+                                     layer_widths=layer_widths, kernel_size=kernel_size)
         decoder_class, decoder_blocks = self.set_decoder_blocks(decoder_class, encoder_blocks, decoder_mirrors_encoder,
                                                                 decoder_blocks)
         self.decoder = decoder_class(base_width=base_width, layer_blocks=decoder_blocks,
                                      upsampling_scale=downsampling_stride, feature_reduction_scale=feature_dilation,
                                      upsampling_mode=interpolation_mode, layer_widths=layer_widths,
-                                     use_transposed_convolutions=use_transposed_convolutions)
+                                     use_transposed_convolutions=use_transposed_convolutions,
+                                     kernel_size=kernel_size)
         self.set_final_convolution(n_features)
         self.set_activation(activation=activation)
 

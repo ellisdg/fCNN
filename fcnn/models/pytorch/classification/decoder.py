@@ -73,7 +73,7 @@ class MyronenkoDecoder(nn.Module):
 class MirroredDecoder(nn.Module):
     def __init__(self, base_width=32, layer_blocks=None, layer=MyronenkoLayer, block=MyronenkoResidualBlock,
                  upsampling_scale=2, feature_reduction_scale=2, upsampling_mode="trilinear", align_corners=False,
-                 layer_widths=None, use_transposed_convolutions=False, kernal_size=3):
+                 layer_widths=None, use_transposed_convolutions=False, kernel_size=3):
         super(MirroredDecoder, self).__init__()
         self.use_transposed_convolutions = use_transposed_convolutions
         if layer_blocks is None:
@@ -95,10 +95,10 @@ class MirroredDecoder(nn.Module):
 
             if depth != 0:
                 self.layers.append(layer(n_blocks=n_blocks, block=block, in_planes=in_width, planes=in_width,
-                                         kernal_size=kernal_size))
+                                         kernel_size=kernel_size))
                 if self.use_transposed_convolutions:
                     self.pre_upsampling_blocks.append(nn.Sequential())
-                    self.upsampling_blocks.append(nn.ConvTranspose3d(in_width, out_width, kernel_size=kernal_size,
+                    self.upsampling_blocks.append(nn.ConvTranspose3d(in_width, out_width, kernel_size=kernel_size,
                                                                      stride=upsampling_scale, padding=1))
                 else:
                     self.pre_upsampling_blocks.append(resnet.conv1x1x1(in_width, out_width, stride=1))
@@ -106,7 +106,7 @@ class MirroredDecoder(nn.Module):
                                                           mode=upsampling_mode, align_corners=align_corners))
             else:
                 self.layers.append(layer(n_blocks=n_blocks, block=block, in_planes=in_width, planes=out_width,
-                                         kernal_size=kernal_size))
+                                         kernel_size=kernel_size))
 
     def calculate_layer_widths(self, depth):
         if self.layer_widths is not None:

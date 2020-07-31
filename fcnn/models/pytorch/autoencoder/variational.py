@@ -38,14 +38,14 @@ class ConvolutionalAutoEncoder(nn.Module):
     def __init__(self, input_shape=None, n_features=1, base_width=32, encoder_blocks=None, decoder_blocks=None,
                  feature_dilation=2, downsampling_stride=2, interpolation_mode="trilinear",
                  encoder_class=MyronenkoEncoder, decoder_class=None, n_outputs=None, layer_widths=None,
-                 decoder_mirrors_encoder=False, activation=None, use_transposed_convolutions=False):
+                 decoder_mirrors_encoder=False, activation=None, use_transposed_convolutions=False, kernel_size=3):
         super(ConvolutionalAutoEncoder, self).__init__()
         self.base_width = base_width
         if encoder_blocks is None:
             encoder_blocks = [1, 2, 2, 4]
         self.encoder = encoder_class(n_features=n_features, base_width=base_width, layer_blocks=encoder_blocks,
                                      feature_dilation=feature_dilation, downsampling_stride=downsampling_stride,
-                                     layer_widths=layer_widths)
+                                     layer_widths=layer_widths, kernal_size=kernel_size)
         decoder_class, decoder_blocks = self.set_decoder_blocks(decoder_class, encoder_blocks, decoder_mirrors_encoder,
                                                                 decoder_blocks)
         self.decoder = decoder_class(base_width=base_width, layer_blocks=decoder_blocks,

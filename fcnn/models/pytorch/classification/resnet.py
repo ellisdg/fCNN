@@ -9,10 +9,12 @@ __all__ = ['ResNet', 'resnet_18', 'resnet_34', 'resnet_50', 'resnet_101',
            'conv1x1x1']
 
 
-def conv3x3x3(in_planes, out_planes, stride=1, groups=1, dilation=1, kernel_size=3):
+def conv3x3x3(in_planes, out_planes, stride=1, groups=1, padding=None, kernel_size=3):
     """3x3x3 convolution with padding"""
+    if padding is None:
+        padding = kernel_size // 2  # padding to keep the image size constant
     return nn.Conv3d(in_planes, out_planes, kernel_size=kernel_size, stride=stride,
-                     padding=dilation, groups=groups, bias=False, dilation=dilation)
+                     padding=padding, groups=groups, bias=False, dilation=padding)
 
 
 def conv1x1x1(in_planes, out_planes, stride=1):

@@ -3,7 +3,7 @@ from functools import partial, update_wrapper
 
 from fcnn.utils import sequences as keras_sequences
 from fcnn.utils.pytorch import dataset as pytorch_datasets
-from fcnn.utils.utils import load_image, load_json
+from fcnn.utils.utils import load_image, load_json, in_config
 
 fcnn_path = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
@@ -144,7 +144,7 @@ def generate_filenames(config, name, system_config, skip_targets=False):
     if name not in config:
         load_subject_ids(config)
     if "generate_filenames" not in config or config["generate_filenames"] == "classic":
-        return generate_hcp_filenames(system_config['directory'],
+        return generate_hcp_filenames(in_config('directory', system_config, ""),
                                       config['surface_basename_template']
                                       if "surface_basename_template" in config else None,
                                       config['target_basenames'],
@@ -152,7 +152,7 @@ def generate_filenames(config, name, system_config, skip_targets=False):
                                       config[name],
                                       config['hemispheres'] if 'hemispheres' in config else None)
     elif config["generate_filenames"] == "paired":
-        return generate_paired_filenames(system_config['directory'],
+        return generate_paired_filenames(in_config('directory', system_config, ""),
                                          config[name],
                                          name,
                                          **config["generate_filenames_kwargs"])

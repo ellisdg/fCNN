@@ -58,6 +58,9 @@ def run_inference(namespace):
     config = load_json(namespace.config_filename)
     key = namespace.group + "_filenames"
 
+    print("Machine config: ", namespace.machine_config_filename)
+    machine_config = load_json(namespace.machine_config_filename)
+
     if namespace.filenames:
         filenames = list()
         for filename in namespace.filenames:
@@ -78,16 +81,13 @@ def run_inference(namespace):
             config["generate_filenames_kwargs"]["directory"] = namespace.directory_template
         if namespace.subjects_config_filename:
             config[namespace.group] = load_json(namespace.subjects_config_filename)[namespace.group]
-        filenames = generate_filenames(config, namespace.group, namespace.machine_config_filename,
+        filenames = generate_filenames(config, namespace.group, machine_config,
                                        skip_targets=(not namespace.eval))
 
     else:
         filenames = config[key]
 
     print("Model: ", namespace.model_filename)
-
-    print("Machine config: ", namespace.machine_config_filename)
-    machine_config = load_json(namespace.machine_config_filename)
 
     print("Output Directory:", namespace.output_directory)
 

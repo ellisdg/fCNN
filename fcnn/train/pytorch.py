@@ -22,7 +22,7 @@ def build_optimizer(optimizer_name, model_parameters, learning_rate=1e-4):
 def run_pytorch_training(config, model_filename, training_log_filename, verbose=1, use_multiprocessing=False,
                          n_workers=1, max_queue_size=5, model_name='resnet_34', n_gpus=1, regularized=False,
                          sequence_class=WholeBrainCIFTI2DenseScalarDataset, directory=None, test_input=1,
-                         metric_to_monitor="loss", model_metrics=(), bias=None, **unused_args):
+                         metric_to_monitor="loss", model_metrics=(), bias=None, pin_memory=False, **unused_args):
     """
     :param test_input: integer with the number of inputs from the generator to write to file. 0, False, or None will
     write no inputs to file.
@@ -109,7 +109,7 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
                                  shuffle=True,
                                  num_workers=n_workers,
                                  collate_fn=collate_fn,
-                                 pin_memory=True)
+                                 pin_memory=pin_memory)
 
     if test_input:
         for index in range(test_input):
@@ -147,7 +147,7 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
                                        shuffle=False,
                                        num_workers=n_workers,
                                        collate_fn=collate_fn,
-                                       pin_memory=True)
+                                       pin_memory=pin_memory)
 
     train(model=model, optimizer=optimizer, criterion=criterion, n_epochs=config["n_epochs"], verbose=bool(verbose),
           training_loader=training_loader, validation_loader=validation_loader, model_filename=model_filename,

@@ -108,7 +108,8 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
                                  batch_size=config["batch_size"] // in_config('points_per_subject', config, 1),
                                  shuffle=True,
                                  num_workers=n_workers,
-                                 collate_fn=collate_fn)
+                                 collate_fn=collate_fn,
+                                 pin_memory=True)
 
     if test_input:
         for index in range(test_input):
@@ -145,7 +146,8 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
                                                                                                config, 1),
                                        shuffle=False,
                                        num_workers=n_workers,
-                                       collate_fn=collate_fn)
+                                       collate_fn=collate_fn,
+                                       pin_memory=True)
 
     train(model=model, optimizer=optimizer, criterion=criterion, n_epochs=config["n_epochs"], verbose=bool(verbose),
           training_loader=training_loader, validation_loader=validation_loader, model_filename=model_filename,

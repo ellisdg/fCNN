@@ -139,7 +139,7 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
                                             surface_names=in_config('surface_names', config, None),
                                             metric_names=in_config('metric_names', config, None),
                                             **sequence_kwargs,
-                                            **in_config("validation_kwargs", config, dict()))
+                                            **in_config("additional_validation_args", config, dict()))
         validation_loader = DataLoader(validation_dataset,
                                        batch_size=config["validation_batch_size"] // in_config("points_per_subject",
                                                                                                config, 1),

@@ -152,6 +152,9 @@ def generate_filenames(config, name, system_config, skip_targets=False):
                                       config[name],
                                       config['hemispheres'] if 'hemispheres' in config else None)
     elif config["generate_filenames"] == "paired":
+        print("system_config", system_config)
+        print("config", config)
+        print("name", name)
         return generate_paired_filenames(system_config['directory'],
                                          config[name],
                                          name,

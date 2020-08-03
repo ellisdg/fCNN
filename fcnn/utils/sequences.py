@@ -127,10 +127,10 @@ def format_feature_image(feature_image, window, crop=False, cropping_kwargs=None
 
 
 def decision(probability):
-    if probability >= 1:
-        return True
-    elif probability <= 0:
+    if not probability or probability <= 0:
         return False
+    elif probability >= 1:
+        return True
     else:
         return random.random() < probability
 

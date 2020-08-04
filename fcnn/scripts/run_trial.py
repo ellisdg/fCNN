@@ -106,7 +106,7 @@ def main():
     else:
         bias = None
 
-    if in_config("labels", config["sequence_kwargs"]) and in_config("use__label_hierarchy", config["sequence_kwargs"]):
+    if in_config("labels", config["sequence_kwargs"]) and in_config("use_label_hierarchy", config["sequence_kwargs"]):
         config["sequence_kwargs"].pop("use_label_hierarchy")
         labels = config["sequence_kwargs"].pop("labels")
         new_labels = list()

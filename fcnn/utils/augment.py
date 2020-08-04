@@ -160,8 +160,8 @@ def permute_data(data, key):
 def random_permutation_x_y(x_data, y_data, channel_axis=0):
     """
     Performs random permutation on the data.
-    :param x_data: numpy array containing the data. Data must be of shape (n_channels, x, y, z).
-    :param y_data: numpy array containing the data. Data must be of shape (n_channels, x, y, z).
+    :param x_data: numpy array containing the data. Data must be of shape (n_labels, x, y, z).
+    :param y_data: numpy array containing the data. Data must be of shape (n_labels, x, y, z).
     :param channel_axis: if the channels are not in the first axis of the array (channel_axis != 0) then the channel
     axis will be moved to the first position for permutation and then moved back to the original position.
     :return: the permuted data

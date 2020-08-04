@@ -193,7 +193,7 @@ def volumetric_predictions(model_filename, filenames, output_dir, model_name, n_
                            model_kwargs=None, n_outputs=None, sequence_kwargs=None, sequence=None,
                            metric_names=None, evaluate_predictions=False, interpolation="linear",
                            resample_predictions=True, output_template=None, segmentation=False,
-                           segmentation_labels=None, threshold=0.7, sum_then_threshold=True, label_hierarchy=None):
+                           segmentation_labels=None, threshold=0.7, sum_then_threshold=True):
     if package == "pytorch":
         pytorch_volumetric_predictions(model_filename=model_filename,
                                        model_name=model_name,
@@ -217,8 +217,7 @@ def volumetric_predictions(model_filename, filenames, output_dir, model_name, n_
                                        segmentation=segmentation,
                                        segmentation_labels=segmentation_labels,
                                        threshold=threshold,
-                                       sum_then_threshold=sum_then_threshold,
-                                       label_hierarchy=label_hierarchy)
+                                       sum_then_threshold=sum_then_threshold)
     else:
         raise ValueError("Predictions not yet implemented for {}".format(package))
 
@@ -299,7 +298,7 @@ def pytorch_volumetric_predictions(model_filename, model_name, n_features, filen
                                    print_prediction_time=True, verbose=True,
                                    evaluate_predictions=False, resample_predictions=False, interpolation="linear",
                                    output_template=None, segmentation=False, segmentation_labels=None,
-                                   sum_then_threshold=True, threshold=0.7, label_hierarchy=None):
+                                   sum_then_threshold=True, threshold=0.7):
     from .train.pytorch import load_criterion
     from fcnn.models.pytorch.build import build_or_load_model
     from .utils.pytorch.dataset import AEDataset
@@ -359,8 +358,7 @@ def pytorch_volumetric_predictions(model_filename, model_name, n_features, filen
                         pred_image = one_hot_image_to_label_map(pred_image,
                                                                 labels=segmentation_labels,
                                                                 threshold=threshold,
-                                                                sum_then_threshold=sum_then_threshold,
-                                                                label_hierarchy=label_hierarchy)
+                                                                sum_then_threshold=sum_then_threshold)
 
                     if output_template is None:
                         x_filename = dataset.epoch_filenames[(idx - (len(batch) - batch_idx - 1))][

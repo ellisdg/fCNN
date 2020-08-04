@@ -106,6 +106,14 @@ def main():
     else:
         bias = None
 
+    if in_config("labels", config["sequence_kwargs"]) and in_config("use__label_hierarchy", config["sequence_kwargs"]):
+        config["sequence_kwargs"].pop("use_label_hierarchy")
+        labels = config["sequence_kwargs"].pop("labels")
+        new_labels = list()
+        while len(labels):
+            new_labels.append(labels)
+            labels = labels[1:]
+        config["sequence_kwargs"]["labels"] = labels
     if in_config("add_contours", config["sequence_kwargs"], False):
         config["n_outputs"] = config["n_outputs"] * 2
 

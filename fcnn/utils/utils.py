@@ -66,6 +66,7 @@ def compile_one_hot_encoding(data, n_labels, labels=None, dtype=np.uint8, return
     for label_index in range(n_labels):
         if labels is not None:
             if type(labels[label_index]) == list:
+                # lists of labels will group together multiple labels from the label map into a single one-hot channel.
                 for label in labels[label_index]:
                     y[:, label_index][data[:, 0] == label] = 1
             else:
@@ -79,33 +80,89 @@ def compile_one_hot_encoding(data, n_labels, labels=None, dtype=np.uint8, return
 
 
 def convert_one_hot_to_label_map(one_hot_encoding, labels, axis=3, threshold=0.5, sum_then_threshold=True,
-                                 dtype=np.int16):
-    if all([type(_labels) == list for _labels in labels]):
-        i = 0
-        label_maps = list()
-        for _labels in labels:
-            _data = one_hot_encoding[..., i:i+len(_labels)]
-            label_maps.append(convert_one_hot_to_label_map(_data, labels=_labels, axis=axis, threshold=threshold,
-                                                           sum_then_threshold=sum_then_threshold, dtype=dtype))
-            i = i + len(_labels)
-        label_map = np.concatenate(label_maps, axis=axis)
+                                 dtype=np.int16, label_hierarchy=False):
+    if label_hierarchy:
+        return convert_one_hot_to_label_map_using_hierarchy(one_hot_encoding, labels, axis=axis, threshold=threshold,
+                                                            dtype=dtype)
     else:
-        if sum_then_threshold:
-            mask = np.sum(one_hot_encoding[..., :len(labels)], axis=axis) > threshold
+        if all([type(_labels) == list for _labels in labels]):
+            # output the segmentation label maps into multiple volumes
+            i = 0
+            label_maps = list()
+            for _labels in labels:
+                _data = one_hot_encoding[..., i:i+len(_labels)]
+                label_maps.append(convert_one_hot_to_label_map(_data, labels=_labels, axis=axis, threshold=threshold,
+                                                               sum_then_threshold=sum_then_threshold, dtype=dtype))
+                i = i + len(_labels)
+            label_map = np.concatenate(label_maps, axis=axis)
         else:
-            mask = np.any(one_hot_encoding[..., :len(labels)] > threshold, axis=axis)
-        max_arg_map = np.zeros(one_hot_encoding.shape[:axis], dtype=dtype)
-        label_map = np.copy(max_arg_map)
-        max_arg_map[mask] = (np.argmax(one_hot_encoding[..., :len(labels)], axis=axis) + 1)[mask]
-        for index, label in enumerate(labels):
-            label_map[max_arg_map == (index + 1)] = label
+            # output a single labelmap volume
+            segmentation_mask = mask_encoding(one_hot_encoding, len(labels), threshold=threshold, axis=axis,
+                                              sum_then_threshold=sum_then_threshold)
+            label_map = assign_labels(one_hot_encoding, segmentation_mask, labels=labels, axis=axis,
+                                      dtype=dtype, label_indices=np.arange(len(labels)))
+        return label_map
+
+
+def mask_encoding(one_hot_encoding, n_labels, threshold=0.5, axis=3, sum_then_threshold=False):
+    if sum_then_threshold:
+        return np.sum(one_hot_encoding[..., :n_labels], axis=axis) > threshold
+    else:
+        return np.any(one_hot_encoding[..., :n_labels] > threshold, axis=axis)
+
+
+def assign_labels(one_hot_encoding, segmentation_mask, labels, label_indices, axis=3, dtype=np.int16):
+    max_arg_map = np.zeros(one_hot_encoding.shape[:axis], dtype=dtype)
+    label_map = np.copy(max_arg_map)
+    max_arg_map[segmentation_mask] = (np.argmax(one_hot_encoding[..., label_indices],
+                                                axis=axis) + 1)[segmentation_mask]
+    for index, label in enumerate(labels):
+        label_map[max_arg_map == (index + 1)] = label
     return label_map
 
 
-def one_hot_image_to_label_map(one_hot_image, labels, axis=3, threshold=0.5, sum_then_threshold=True, dtype=np.int16):
+def convert_one_hot_to_label_map_using_hierarchy(one_hot_encoding, labels, threshold=0.5, axis=3, dtype=np.int16):
+    roi = np.ones(one_hot_encoding.shape[:axis], dtype=np.bool)
+    label_map = np.zeros(one_hot_encoding.shape[:axis], dtype=dtype)
+    for index, label in enumerate(labels):
+        roi = one_hot_encoding[index][roi] > threshold
+        label_map[roi] = label
+    return label_map
+
+
+def _wip_convert_one_hot_to_label_map_with_label_groups(one_hot_encoding, labels, label_hierarchy, threshold=0.5,
+                                                        axis=3):
+    """
+    This might be useful when doing something like brain segmentation where you want to segment the whole brain
+    and then divide up that segmentation between white and gray matter, and then divide up the white and gray matter
+    between individual labels.
+    :param one_hot_encoding:
+    :param labels:
+    :param label_hierarchy: Hierarchy of the labels. Will assign labels according to their hierarchical categorization.
+    :param kwargs:
+    :return:
+    """
+    n_labels = len(labels)
+    label_group_maps = list()
+    for label_hierarchy_index, label_group in enumerate(label_hierarchy):
+        label_group_channel = n_labels + label_hierarchy_index
+        label_group_roi = one_hot_encoding[label_group_channel] > threshold
+        # The labels within the label group can now be set
+        label_group_label_indices = [labels.index(label) for label in label_group]
+        label_group_maps.append(assign_labels(one_hot_encoding, label_group_roi, labels=label_group,
+                                              label_indices=label_group_label_indices, axis=axis))
+    if len(label_group_maps) == 1:
+        return label_group_maps[0]
+    else:
+        return
+        # return reconcile_label_group_maps(label_group_maps, label_hierarchy)
+
+
+def one_hot_image_to_label_map(one_hot_image, labels, axis=3, threshold=0.5, sum_then_threshold=True, dtype=np.int16,
+                               label_hierarchy=None):
     label_map = convert_one_hot_to_label_map(get_nibabel_data(one_hot_image), labels=labels, axis=axis,
                                              threshold=threshold, sum_then_threshold=sum_then_threshold,
-                                             dtype=dtype)
+                                             dtype=dtype, label_hierarchy=label_hierarchy)
     return new_img_like(one_hot_image, label_map)
 
 

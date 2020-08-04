@@ -140,10 +140,18 @@ def run_inference(namespace):
         sequence = None
 
     labels = sequence_kwargs["labels"] if namespace.segmentation else None
+    label_hierarchy = labels is not None and in_config("use_label_hierarchy", sequence_kwargs, False)
+    if label_hierarchy:
+        # TODO: put a warning here instead of a print statement
+        print("Using label hierarchy. Resetting threshold to 0.5 and turning the summation off.")
+        namespace.threshold = 0.5
+        namespace.no_sum = True
     if in_config("add_contours", sequence_kwargs, False):
         config["n_outputs"] = config["n_outputs"] * 2
         if namespace.use_contours:
             # this sets the labels for the contours
+            if label_hierarchy:
+                raise RuntimeError("Cannot use contours for segmentation while a label hierarchy is specified.")
             labels = list(labels) + list(labels)
 
     return volumetric_predictions(model_filename=namespace.model_filename,
@@ -169,7 +177,8 @@ def run_inference(namespace):
                                   segmentation=namespace.segmentation,
                                   segmentation_labels=labels,
                                   threshold=namespace.threshold,
-                                  sum_then_threshold=(namespace.no_sum is False))
+                                  sum_then_threshold=(namespace.no_sum is False),
+                                  label_hierarchy=label_hierarchy)
 
 
 if __name__ == '__main__':

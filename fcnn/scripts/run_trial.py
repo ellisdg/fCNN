@@ -113,6 +113,7 @@ def main():
         while len(labels):
             new_labels.append(labels)
             labels = labels[1:]
+        print("New labels:", labels)
         config["sequence_kwargs"]["labels"] = labels
     if in_config("add_contours", config["sequence_kwargs"], False):
         config["n_outputs"] = config["n_outputs"] * 2

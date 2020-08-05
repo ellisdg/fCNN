@@ -492,7 +492,7 @@ def pytorch_volumetric_predictions(model_filename, model_name, n_features, filen
             # t_image = new_img_like(ref_niimg=target_image,
             #                        data=y,
             #                        affine=target_image.affine)
-            # t_image.to_filename(os.path.join(prediction_dir,
+            # t_image.to_filename(os.path.join(output_dir,
             #                                  "_".join(["target",
             #                                            subject_id,
             #                                            basename,
@@ -501,8 +501,8 @@ def pytorch_volumetric_predictions(model_filename, model_name, n_features, filen
             #     results.append([subject_id, score, mu, logvar])
 
     # if evaluate_predictions:
-    #     if prediction_dir and not output_csv:
-    #         output_csv = os.path.join(prediction_dir, str(basename) + "_prediction_scores.csv")
+    #     if output_dir and not output_csv:
+    #         output_csv = os.path.join(output_dir, str(basename) + "_prediction_scores.csv")
     #         columns = ["subject_id", criterion_name, "mu", "logvar"]
     #         if reference is not None:
     #             columns.append("reference_" + criterion_name)
@@ -561,7 +561,7 @@ def pytorch_subject_predictions(idx, model, dataset, criterion, basename, predic
     return row
 
 
-def single_volume_zstat_denoising(model_filename, model_name, n_features, filenames, window, prediction_dir,
+def single_volume_zstat_denoising(model_filename, model_name, n_features, filenames, window, output_dir,
                                   n_gpus=1, batch_size=1, model_kwargs=None, n_outputs=None,
                                   sequence_kwargs=None, spacing=None, sequence=None,
                                   strict_model_loading=True, metric_names=None,
@@ -591,7 +591,7 @@ def single_volume_zstat_denoising(model_filename, model_name, n_features, filena
                     prediction = pytorch_predict_batch_images(model, batch, n_gpus)
                     prediction_data[..., (image_idx-prediction.shape[-1]+1):(image_idx+1)] = prediction
             pred_image = new_img_like(ref_niimg=x_image, data=prediction_data)
-            output_filename = os.path.join(prediction_dir, "_".join((subject_id,
-                                                                     basename,
-                                                                     os.path.basename(x_filename))))
+            output_filename = os.path.join(output_dir, "_".join((subject_id,
+                                                                 basename,
+                                                                 os.path.basename(x_filename))))
             pred_image.to_filename(output_filename)

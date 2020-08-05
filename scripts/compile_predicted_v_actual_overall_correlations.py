@@ -74,7 +74,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output_filename', required=True)
     parser.add_argument('--config_filename', required=True)
-    parser.add_argument('--prediction_dir', required=True)
+    parser.add_argument('--output_dir', required=True)
     parser.add_argument('--hcp_dir', default="/work/aizenberg/dgellis/HCP/HCP_1200")
     parser.add_argument('--task_names', default="/home/aizenberg/dgellis/fCNN/data/labels/ALL-TAVOR_name-file.txt")
     parser.add_argument('--surface_name', default="midthickness")
@@ -107,7 +107,7 @@ def main():
     hcp_dir = args["hcp_dir"]
     config = load_json(config_filename)
     target_basename = config["target_basenames"]
-    prediction_dir = args["prediction_dir"]
+    prediction_dir = args["output_dir"]
     metric_filename = args["task_names"]
     surf_name = args["surface_name"]
     if args["volume"]:

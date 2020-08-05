@@ -578,7 +578,7 @@ def single_volume_zstat_denoising(model_filename, model_name, n_features, filena
         for idx in range(len(dataset)):
             x_filename, subject_id = get_feature_filename_and_subject_id(dataset, idx, verbose=verbose)
             x_image, ref_image = load_images_from_dataset(dataset, idx, resample_predictions)
-            if len(x_image.shape) == 3:
+            if len(x_image.shape) == 4:
                 volumes_per_image = x_image.shape[3]
                 prediction_data = np.zeros(x_image.shape)
             else:
@@ -586,10 +586,11 @@ def single_volume_zstat_denoising(model_filename, model_name, n_features, filena
                 prediction_data = np.zeros(x_image.shape + (volumes_per_image,))
             data = get_nibabel_data(x_image)
             for image_idx in range(volumes_per_image):
-                batch.append(data[..., image_idx])
+                batch.append(data[..., image_idx][None])
                 if len(batch) >= batch_size or image_idx == volumes_per_image - 1:
                     prediction = pytorch_predict_batch_images(model, batch, n_gpus)
                     prediction_data[..., (image_idx-prediction.shape[-1]+1):(image_idx+1)] = prediction
+                    batch = list()
             pred_image = new_img_like(ref_niimg=x_image, data=prediction_data)
             output_filename = os.path.join(output_dir, "_".join((subject_id,
                                                                  basename,

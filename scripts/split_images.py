@@ -13,7 +13,7 @@ def parse_args():
 def main():
     namespace = parse_args()
     for fn in glob.glob(namespace.wildcard):
-        base, ext = fn.split(".")
+        base, ext = fn.split(".", 1)
         image = nib.load(fn)
         for index, name in enumerate(namespace.names):
             out_fn = base + name + ext

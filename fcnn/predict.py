@@ -574,9 +574,14 @@ def single_volume_zstat_denoising(model_filename, model_name, n_features, filena
     dataset.extract_sub_volumes = False
     print("Dataset: ", len(dataset))
     with torch.no_grad():
+        completed = set()
         batch = list()
         for idx in range(len(dataset)):
-            x_filename, subject_id = get_feature_filename_and_subject_id(dataset, idx, verbose=verbose)
+            x_filename, subject_id = get_feature_filename_and_subject_id(dataset, idx, verbose=False)
+            if x_filename in completed:
+                continue
+            if verbose:
+                print("Reading:", x_filename)
             x_image, ref_image = load_images_from_dataset(dataset, idx, resample_predictions)
             if len(x_image.shape) == 4:
                 volumes_per_image = x_image.shape[3]
@@ -598,3 +603,4 @@ def single_volume_zstat_denoising(model_filename, model_name, n_features, filena
                                                                  basename,
                                                                  os.path.basename(x_filename))))
             pred_image.to_filename(output_filename)
+            completed.add(x_filename)

@@ -593,6 +593,7 @@ def single_volume_zstat_denoising(model_filename, model_name, n_features, filena
                     prediction_data[..., (image_idx-prediction.shape[-1]+1):(image_idx+1)] = prediction
                     batch = list()
             pred_image = new_img_like(ref_niimg=x_image, data=prediction_data)
+            print(subject_id)
             output_filename = os.path.join(output_dir, "_".join((subject_id,
                                                                  basename,
                                                                  os.path.basename(x_filename))))

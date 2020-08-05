@@ -16,11 +16,11 @@ def format_parser(parser=argparse.ArgumentParser(), sub_command=False):
                                                      "different from the directory used for training.")
     parser.add_argument("--group", default="test")
     parser.add_argument("--eval", default=False, action="store_true",
-                        help="Scores the predictions according to the validation criteria and saves the results to a"
+                        help="Scores the predictions according to the validation criteria and saves the results to a "
                              "csv file in the prediction directory.")
     parser.add_argument("--no_resample", default=False, action="store_true",
-                        help="Skips resampling the predicted images into the non-cropped image space. This can help"
-                             "save on the storage space as the images can always be resampled back into the original"
+                        help="Skips resampling the predicted images into the non-cropped image space. This can help "
+                             "save on the storage space as the images can always be resampled back into the original "
                              "space when needed.")
     parser.add_argument("--interpolation", default="linear")
     parser.add_argument("--output_template")
@@ -31,16 +31,18 @@ def format_parser(parser=argparse.ArgumentParser(), sub_command=False):
     parser.add_argument("--no_sum", default=False, action="store_true",
                         help="Does not sum the predictions before using threshold.")
     parser.add_argument("--use_contours", action="store_true", default=False,
-                        help="If the model was trained to predict contours you can use the contours to assist in the"
+                        help="If the model was trained to predict contours you can use the contours to assist in the "
                              "segmentation. (This has not been shown to improve results.)")
     parser.add_argument("--subjects_config_filename",
-                        help="Allows for specification of the config that contains the subject ids. If not set and the"
-                             "subject ids are not listed in the main config, then the filename for the subjects config"
+                        help="Allows for specification of the config that contains the subject ids. If not set and the "
+                             "subject ids are not listed in the main config, then the filename for the subjects config "
                              "will be read from the main config.")
     parser.add_argument("--source",
                         help="If using multisource templates set this to predict only filenames from a single source.")
     parser.add_argument("--filenames", nargs="*")
     parser.add_argument("--sub_volumes", nargs="*", type=int)
+    parser.add_argument("--alternate_prediction_func", help="Manually set which function will be called to make the "
+                                                            "volumetric predictions.")
     return parser
 
 
@@ -154,31 +156,37 @@ def run_inference(namespace):
                 raise RuntimeError("Cannot use contours for segmentation while a label hierarchy is specified.")
             labels = list(labels) + list(labels)
 
-    return volumetric_predictions(model_filename=namespace.model_filename,
-                                  filenames=filenames,
-                                  output_dir=namespace.output_directory,
-                                  model_name=config["model_name"],
-                                  n_features=config["n_features"],
-                                  window=config["window"],
-                                  criterion_name=criterion_name,
-                                  package=config['package'],
-                                  n_gpus=machine_config['n_gpus'],
-                                  batch_size=config['validation_batch_size'],
-                                  n_workers=machine_config["n_workers"],
-                                  model_kwargs=model_kwargs,
-                                  sequence_kwargs=sequence_kwargs,
-                                  sequence=sequence,
-                                  n_outputs=config["n_outputs"],
-                                  metric_names=in_config("metric_names", config, None),
-                                  evaluate_predictions=namespace.eval,
-                                  resample_predictions=(not namespace.no_resample),
-                                  interpolation=namespace.interpolation,
-                                  output_template=namespace.output_template,
-                                  segmentation=namespace.segmentation,
-                                  segmentation_labels=labels,
-                                  threshold=namespace.threshold,
-                                  sum_then_threshold=(namespace.no_sum is False),
-                                  label_hierarchy=label_hierarchy)
+    if namespace.alternate_prediction_func:
+        from fcnn import predict
+        func = getattr(predict, namespace.alternate_prediction_func)
+    else:
+        func = volumetric_predictions
+
+    return func(model_filename=namespace.model_filename,
+                filenames=filenames,
+                output_dir=namespace.output_directory,
+                model_name=config["model_name"],
+                n_features=config["n_features"],
+                window=config["window"],
+                criterion_name=criterion_name,
+                package=config['package'],
+                n_gpus=machine_config['n_gpus'],
+                batch_size=config['validation_batch_size'],
+                n_workers=machine_config["n_workers"],
+                model_kwargs=model_kwargs,
+                sequence_kwargs=sequence_kwargs,
+                sequence=sequence,
+                n_outputs=config["n_outputs"],
+                metric_names=in_config("metric_names", config, None),
+                evaluate_predictions=namespace.eval,
+                resample_predictions=(not namespace.no_resample),
+                interpolation=namespace.interpolation,
+                output_template=namespace.output_template,
+                segmentation=namespace.segmentation,
+                segmentation_labels=labels,
+                threshold=namespace.threshold,
+                sum_then_threshold=(namespace.no_sum is False),
+                label_hierarchy=label_hierarchy)
 
 
 if __name__ == '__main__':

@@ -75,11 +75,11 @@ def generate_paired_filenames(directory, subject_ids, group, keys, basename, add
                     for volume_number in volume_numbers[value]:
                         if additional_feature_filename is not None:
                             rows.append([[additional_feature_filename, filename1], [0, volume_number + 1],
-                                         filename2, [volume_number]])
+                                         filename2, [volume_number], subject_id])
                             rows.append([[additional_feature_filename, filename2], [0, volume_number + 1],
-                                         filename1, [volume_number]])
+                                         filename1, [volume_number], subject_id])
                         else:
-                            rows.append([filename1, [volume_number], filename2, [volume_number]])
+                            rows.append([filename1, [volume_number], filename2, [volume_number], subject_id])
                 elif raise_if_not_exist:
                     for filename in (filename1, filename2):
                         raise FileNotFoundError(filename)

@@ -94,7 +94,7 @@ def convert_one_hot_to_label_map(one_hot_encoding, labels, axis=3, threshold=0.5
                 label_maps.append(convert_one_hot_to_label_map(_data, labels=_labels, axis=axis, threshold=threshold,
                                                                sum_then_threshold=sum_then_threshold, dtype=dtype))
                 i = i + len(_labels)
-            label_map = np.concatenate(label_maps, axis=axis)
+            label_map = np.stack(label_maps, axis=axis)
         else:
             # output a single labelmap volume
             segmentation_mask = mask_encoding(one_hot_encoding, len(labels), threshold=threshold, axis=axis,

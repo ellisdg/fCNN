@@ -80,6 +80,7 @@ def generate_paired_filenames(directory, subject_ids, group, keys, basename, add
                                          filename1, [volume_number], subject_id])
                         else:
                             rows.append([filename1, [volume_number], filename2, [volume_number], subject_id])
+                            rows.append([filename2, [volume_number], filename1, [volume_number], subject_id])
                 elif raise_if_not_exist:
                     for filename in (filename1, filename2):
                         raise FileNotFoundError(filename)

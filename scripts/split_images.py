@@ -16,7 +16,7 @@ def main():
         base, ext = fn.split(".", 1)
         image = nib.load(fn)
         for index, name in enumerate(namespace.names):
-            out_fn = base + name + ext
+            out_fn = base + name + "." + ext
             new_image = image.__class__(dataobj=image.dataobj[..., index], affine=image.affine, header=image.header)
             print(fn, "--->", out_fn)
             new_image.to_filename(out_fn)

@@ -350,7 +350,7 @@ def pytorch_predict_batch(batch_x, model, n_gpus):
         pred_x = model.test(batch_x)
     else:
         pred_x = model(batch_x)
-    return pred_x.cpu
+    return pred_x.cpu()
 
 
 def prediction_to_image(data, input_image, reference_image=None, interpolation="linear", segmentation=False,

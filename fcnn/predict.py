@@ -4,7 +4,7 @@ import numpy as np
 import nibabel as nib
 import pandas as pd
 from keras.models import load_model
-from nilearn.image import resample_to_img
+from nilearn.image import resample_to_img, new_img_like
 from .utils.utils import load_json, get_nibabel_data, one_hot_image_to_label_map
 from .utils.sequences import SubjectPredictionSequence
 from .utils.pytorch.dataset import HCPSubjectDataset
@@ -291,6 +291,116 @@ def pytorch_whole_brain_scalar_predictions(model_filename, model_name, n_outputs
         pd.DataFrame(results, columns=columns).to_csv(output_csv)
 
 
+def load_volumetric_model(model_name, model_filename, n_outputs, n_features, n_gpus, strict, **kwargs):
+    from fcnn.models.pytorch.build import build_or_load_model
+    model = build_or_load_model(model_name=model_name, model_filename=model_filename, n_outputs=n_outputs,
+                                n_features=n_features, n_gpus=n_gpus, strict=strict, **kwargs)
+    model.eval()
+    return model
+
+
+def load_volumetric_sequence(sequence, sequence_kwargs, filenames, window, spacing, metric_names, batch_size=1):
+    from .utils.pytorch.dataset import AEDataset
+    if sequence is None:
+        sequence = AEDataset
+    if sequence_kwargs is None:
+        sequence_kwargs = dict()
+    dataset = sequence(filenames=filenames, window=window, spacing=spacing, batch_size=batch_size,
+                       metric_names=metric_names,
+                       **sequence_kwargs)
+    return dataset
+
+
+def load_volumetric_model_and_dataset(model_name, model_filename, model_kwargs, n_outputs, n_features,
+                                      strict_model_loading, n_gpus, sequence, sequence_kwargs, filenames, window,
+                                      spacing, metric_names):
+    if model_kwargs is None:
+        model_kwargs = dict()
+
+    model = load_volumetric_model(model_name=model_name, model_filename=model_filename, n_outputs=n_outputs,
+                                  n_features=n_features, strict=strict_model_loading, n_gpus=n_gpus, **model_kwargs)
+    dataset = load_volumetric_sequence(sequence, sequence_kwargs, filenames, window, spacing, metric_names,
+                                       batch_size=1)
+    basename = os.path.basename(model_filename).split(".")[0]
+    return model, dataset, basename
+
+
+def load_images_from_dataset(dataset, idx, verbose, resample_predictions):
+    x_filename = dataset.epoch_filenames[idx][dataset.feature_index]
+    if verbose:
+        print("Reading:", x_filename)
+    if resample_predictions:
+        x_image, ref_image = dataset.get_feature_image(idx, return_unmodified=True)
+    else:
+        x_image = dataset.get_feature_image(idx)
+        ref_image = None
+    return x_image, ref_image, x_filename
+
+
+def pytorch_predict_batch(batch_x, model, n_gpus):
+    if n_gpus > 0:
+        batch_x = batch_x.cuda()
+    if hasattr(model, "test"):
+        pred_x = model.test(batch_x)
+    else:
+        pred_x = model(batch_x)
+    return pred_x.cpu
+
+
+def prediction_to_image(data, input_image, reference_image=None, interpolation="linear", segmentation=False,
+                        segmentation_labels=None, threshold=0.5, sum_then_threshold=False, label_hierarchy=False):
+    pred_image = new_img_like(input_image, data=data)
+    if reference_image is not None:
+        pred_image = resample_to_img(pred_image, reference_image,
+                                     interpolation=interpolation)
+    if segmentation:
+        pred_image = one_hot_image_to_label_map(pred_image,
+                                                labels=segmentation_labels,
+                                                threshold=threshold,
+                                                sum_then_threshold=sum_then_threshold,
+                                                label_hierarchy=label_hierarchy)
+    return pred_image
+
+
+def write_prediction_image_to_file(pred_image, output_template, subject_id, x_filename, prediction_dir, basename,
+                                   verbose=False):
+    if output_template is None:
+        while type(x_filename) == list:
+            x_filename = x_filename[0]
+        pred_filename = os.path.join(prediction_dir,
+                                     "_".join([subject_id,
+                                               basename,
+                                               os.path.basename(x_filename)]))
+    else:
+        pred_filename = os.path.join(prediction_dir,
+                                     output_template.format(subject=subject_id))
+    if verbose:
+        print("Writing:", pred_filename)
+    pred_image.to_filename(pred_filename)
+
+
+def predict_volumetric_batch(idx, model, dataset, batch, batch_references, batch_subjects, basename, prediction_dir,
+                             segmentation, output_template, n_gpus, verbose, threshold, interpolation,
+                             segmentation_labels, sum_then_threshold, label_hierarchy):
+    import torch
+
+    batch_x = torch.tensor(np.moveaxis(batch, -1, 1)).float()
+    pred_x = pytorch_predict_batch(batch_x, model, n_gpus)
+    pred_x = np.moveaxis(pred_x.numpy(), 1, -1)
+    for batch_idx in range(len(batch)):
+        pred_image = prediction_to_image(pred_x[batch_idx].squeeze(), input_image=batch_references[batch_idx][0],
+                                         reference_image=batch_references[batch_idx][1], interpolation=interpolation,
+                                         segmentation=segmentation, segmentation_labels=segmentation_labels,
+                                         threshold=threshold, sum_then_threshold=sum_then_threshold,
+                                         label_hierarchy=label_hierarchy)
+        write_prediction_image_to_file(pred_image, output_template, subject_id=batch_subjects[batch_idx],
+                                       x_filename=dataset.epoch_filenames[(idx - (len(batch) - batch_idx - 1))][
+            dataset.feature_index],
+                                       prediction_dir=prediction_dir,
+                                       basename=basename,
+                                       verbose=verbose)
+
+
 def pytorch_volumetric_predictions(model_filename, model_name, n_features, filenames, window,
                                    criterion_name, prediction_dir=None, output_csv=None, reference=None,
                                    n_gpus=1, n_workers=1, batch_size=1, model_kwargs=None, n_outputs=None,
@@ -300,28 +410,15 @@ def pytorch_volumetric_predictions(model_filename, model_name, n_features, filen
                                    evaluate_predictions=False, resample_predictions=False, interpolation="linear",
                                    output_template=None, segmentation=False, segmentation_labels=None,
                                    sum_then_threshold=True, threshold=0.7, label_hierarchy=None):
-    from .train.pytorch import load_criterion
-    from fcnn.models.pytorch.build import build_or_load_model
-    from .utils.pytorch.dataset import AEDataset
     import torch
-    from nilearn.image import new_img_like
+    # from .train.pytorch import load_criterion
 
-    if sequence is None:
-        sequence = AEDataset
+    model, dataset, basename = load_volumetric_model_and_dataset(model_name, model_filename, model_kwargs, n_outputs,
+                                                                 n_features, strict_model_loading, n_gpus, sequence,
+                                                                 sequence_kwargs, filenames, window, spacing,
+                                                                 metric_names)
 
-    if model_kwargs is None:
-        model_kwargs = dict()
-
-    if sequence_kwargs is None:
-        sequence_kwargs = dict()
-
-    model = build_or_load_model(model_name=model_name, model_filename=model_filename, n_outputs=n_outputs,
-                                n_features=n_features, n_gpus=n_gpus, strict=strict_model_loading, **model_kwargs)
-    model.eval()
-    basename = os.path.basename(model_filename).split(".")[0]
-    dataset = sequence(filenames=filenames, window=window, spacing=spacing, batch_size=1, metric_names=metric_names,
-                       **sequence_kwargs)
-    criterion = load_criterion(criterion_name, n_gpus=n_gpus)
+    # criterion = load_criterion(criterion_name, n_gpus=n_gpus)
     results = list()
     print("Dataset: ", len(dataset))
     with torch.no_grad():
@@ -329,54 +426,15 @@ def pytorch_volumetric_predictions(model_filename, model_name, n_features, filen
         batch_references = list()
         batch_subjects = list()
         for idx in range(len(dataset)):
-            x_filename = dataset.epoch_filenames[idx][dataset.feature_index]
-            if verbose:
-                print("Reading:", x_filename)
-            if resample_predictions:
-                x_image, ref_image = dataset.get_feature_image(idx, return_unmodified=True)
-            else:
-                x_image = dataset.get_feature_image(idx)
-                ref_image = None
+            x_image, ref_image, x_filename = load_images_from_dataset(dataset, idx, verbose, resample_predictions)
 
             batch.append(get_nibabel_data(x_image))
             batch_references.append((x_image, ref_image))
             batch_subjects.append(dataset.epoch_filenames[idx][-1])
             if len(batch) >= batch_size or idx == (len(dataset) - 1):
-                batch_x = torch.tensor(np.moveaxis(batch, -1, 1)).float()
-                if n_gpus > 0:
-                    batch_x = batch_x.cuda()
-                if hasattr(model, "test"):
-                    pred_x = model.test(batch_x)
-                else:
-                    pred_x = model(batch_x)
-                pred_x = np.moveaxis(pred_x.cpu().numpy(), 1, -1)
-                for batch_idx in range(len(batch)):
-                    pred_image = new_img_like(batch_references[batch_idx][0], data=pred_x[batch_idx].squeeze())
-                    if batch_references[batch_idx][1] is not None:
-                        pred_image = resample_to_img(pred_image, batch_references[batch_idx][1],
-                                                     interpolation=interpolation)
-                    if segmentation:
-                        pred_image = one_hot_image_to_label_map(pred_image,
-                                                                labels=segmentation_labels,
-                                                                threshold=threshold,
-                                                                sum_then_threshold=sum_then_threshold,
-                                                                label_hierarchy=label_hierarchy)
-
-                    if output_template is None:
-                        x_filename = dataset.epoch_filenames[(idx - (len(batch) - batch_idx - 1))][
-                            dataset.feature_index]
-                        while type(x_filename) == list:
-                            x_filename = x_filename[0]
-                        pred_filename = os.path.join(prediction_dir,
-                                                     "_".join([batch_subjects[batch_idx],
-                                                               basename,
-                                                               os.path.basename(x_filename)]))
-                    else:
-                        pred_filename = os.path.join(prediction_dir,
-                                                     output_template.format(subject=batch_subjects[batch_idx]))
-                    if verbose:
-                        print("Writing:", pred_filename)
-                    pred_image.to_filename(pred_filename)
+                predict_volumetric_batch(idx, model, dataset, batch, batch_references, batch_subjects, basename,
+                                         prediction_dir, segmentation, output_template, n_gpus, verbose, threshold,
+                                         interpolation, segmentation_labels, sum_then_threshold, label_hierarchy)
                 batch = list()
                 batch_references = list()
                 batch_subjects = list()
@@ -423,13 +481,13 @@ def pytorch_volumetric_predictions(model_filename, model_name, n_features, filen
             # if evaluate_predictions:
             #     results.append([subject_id, score, mu, logvar])
 
-    if evaluate_predictions:
-        if prediction_dir and not output_csv:
-            output_csv = os.path.join(prediction_dir, str(basename) + "_prediction_scores.csv")
-            columns = ["subject_id", criterion_name, "mu", "logvar"]
-            if reference is not None:
-                columns.append("reference_" + criterion_name)
-            pd.DataFrame(results, columns=columns).to_csv(output_csv, sep=";")
+    # if evaluate_predictions:
+    #     if prediction_dir and not output_csv:
+    #         output_csv = os.path.join(prediction_dir, str(basename) + "_prediction_scores.csv")
+    #         columns = ["subject_id", criterion_name, "mu", "logvar"]
+    #         if reference is not None:
+    #             columns.append("reference_" + criterion_name)
+    #         pd.DataFrame(results, columns=columns).to_csv(output_csv, sep=";")
 
 
 def save_predictions(prediction, args, basename, metric_names, surface_names, prediction_dir):

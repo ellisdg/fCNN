@@ -325,16 +325,22 @@ def load_volumetric_model_and_dataset(model_name, model_filename, model_kwargs, 
     return model, dataset, basename
 
 
-def load_images_from_dataset(dataset, idx, verbose, resample_predictions):
-    x_filename = dataset.epoch_filenames[idx][dataset.feature_index]
-    if verbose:
-        print("Reading:", x_filename)
+def load_images_from_dataset(dataset, idx, resample_predictions):
     if resample_predictions:
         x_image, ref_image = dataset.get_feature_image(idx, return_unmodified=True)
     else:
         x_image = dataset.get_feature_image(idx)
         ref_image = None
-    return x_image, ref_image, x_filename
+    return x_image, ref_image
+
+
+def get_feature_filename_and_subject_id(dataset, idx, verbose=False):
+    epoch_filenames = dataset.epoch_filenames[idx]
+    x_filename = epoch_filenames[dataset.feature_index]
+    if verbose:
+        print("Reading:", x_filename)
+    subject_id = epoch_filenames[-1]
+    return x_filename, subject_id
 
 
 def pytorch_predict_batch(batch_x, model, n_gpus):
@@ -379,23 +385,28 @@ def write_prediction_image_to_file(pred_image, output_template, subject_id, x_fi
     pred_image.to_filename(pred_filename)
 
 
-def predict_volumetric_batch(idx, model, dataset, batch, batch_references, batch_subjects, basename, prediction_dir,
-                             segmentation, output_template, n_gpus, verbose, threshold, interpolation,
-                             segmentation_labels, sum_then_threshold, label_hierarchy):
+def pytorch_predict_batch_images(model, batch, n_gpus=1):
     import torch
 
     batch_x = torch.tensor(np.moveaxis(batch, -1, 1)).float()
     pred_x = pytorch_predict_batch(batch_x, model, n_gpus)
-    pred_x = np.moveaxis(pred_x.numpy(), 1, -1)
+    return np.moveaxis(pred_x.numpy(), 1, -1)
+
+
+def predict_volumetric_batch(model, batch, batch_references, batch_subjects, batch_filenames,
+                             basename, prediction_dir,
+                             segmentation, output_template, n_gpus, verbose, threshold, interpolation,
+                             segmentation_labels, sum_then_threshold, label_hierarchy):
+    pred_x = pytorch_predict_batch_images(model, batch, n_gpus=n_gpus)
     for batch_idx in range(len(batch)):
         pred_image = prediction_to_image(pred_x[batch_idx].squeeze(), input_image=batch_references[batch_idx][0],
                                          reference_image=batch_references[batch_idx][1], interpolation=interpolation,
                                          segmentation=segmentation, segmentation_labels=segmentation_labels,
                                          threshold=threshold, sum_then_threshold=sum_then_threshold,
                                          label_hierarchy=label_hierarchy)
-        write_prediction_image_to_file(pred_image, output_template, subject_id=batch_subjects[batch_idx],
-                                       x_filename=dataset.epoch_filenames[(idx - (len(batch) - batch_idx - 1))][
-            dataset.feature_index],
+        write_prediction_image_to_file(pred_image, output_template,
+                                       subject_id=batch_subjects[batch_idx],
+                                       x_filename=batch_filenames[batch_idx],
                                        prediction_dir=prediction_dir,
                                        basename=basename,
                                        verbose=verbose)
@@ -425,19 +436,27 @@ def pytorch_volumetric_predictions(model_filename, model_name, n_features, filen
         batch = list()
         batch_references = list()
         batch_subjects = list()
+        batch_filenames = list()
         for idx in range(len(dataset)):
-            x_image, ref_image, x_filename = load_images_from_dataset(dataset, idx, verbose, resample_predictions)
+            x_filename, subject_id = get_feature_filename_and_subject_id(dataset, idx, verbose=verbose)
+            x_image, ref_image = load_images_from_dataset(dataset, idx, resample_predictions)
 
             batch.append(get_nibabel_data(x_image))
             batch_references.append((x_image, ref_image))
-            batch_subjects.append(dataset.epoch_filenames[idx][-1])
+            batch_subjects.append(subject_id)
+            batch_filenames.append(x_filename)
             if len(batch) >= batch_size or idx == (len(dataset) - 1):
-                predict_volumetric_batch(idx, model, dataset, batch, batch_references, batch_subjects, basename,
-                                         prediction_dir, segmentation, output_template, n_gpus, verbose, threshold,
-                                         interpolation, segmentation_labels, sum_then_threshold, label_hierarchy)
+                predict_volumetric_batch(model=model, batch=batch, batch_references=batch_references,
+                                         batch_subjects=batch_subjects, batch_filenames=batch_filenames,
+                                         basename=basename, prediction_dir=prediction_dir,
+                                         segmentation=segmentation, output_template=output_template, n_gpus=n_gpus,
+                                         verbose=verbose, threshold=threshold, interpolation=interpolation,
+                                         segmentation_labels=segmentation_labels,
+                                         sum_then_threshold=sum_then_threshold, label_hierarchy=label_hierarchy)
                 batch = list()
                 batch_references = list()
                 batch_subjects = list()
+                batch_filenames = list()
 
             # image, target_image = dataset.get_image(idx)
             # subject_id = dataset.epoch_filenames[idx][-1]
@@ -540,3 +559,39 @@ def pytorch_subject_predictions(idx, model, dataset, criterion, basename, predic
             cifti_file = new_cifti_scalar_like(prediction_array, _metric_names, surface_names, ref_cifti)
             cifti_file.to_filename(output_filename)
     return row
+
+
+def single_volume_zstat_denoising(model_filename, model_name, n_features, filenames, window, prediction_dir,
+                                  n_gpus=1, batch_size=1, model_kwargs=None, n_outputs=None,
+                                  sequence_kwargs=None, spacing=None, sequence=None,
+                                  strict_model_loading=True, metric_names=None,
+                                  verbose=True, resample_predictions=False, **unused_kwargs):
+    import torch
+    model, dataset, basename = load_volumetric_model_and_dataset(model_name, model_filename, model_kwargs, n_outputs,
+                                                                 n_features, strict_model_loading, n_gpus, sequence,
+                                                                 sequence_kwargs, filenames, window, spacing,
+                                                                 metric_names)
+    dataset.extract_sub_volumes = False
+    print("Dataset: ", len(dataset))
+    with torch.no_grad():
+        batch = list()
+        for idx in range(len(dataset)):
+            x_filename, subject_id = get_feature_filename_and_subject_id(dataset, idx, verbose=verbose)
+            x_image, ref_image = load_images_from_dataset(dataset, idx, resample_predictions)
+            if len(x_image.shape) == 3:
+                volumes_per_image = x_image.shape[3]
+                prediction_data = np.zeros(x_image.shape)
+            else:
+                volumes_per_image = 1
+                prediction_data = np.zeros(x_image.shape + (volumes_per_image,))
+            data = get_nibabel_data(x_image)
+            for image_idx in range(volumes_per_image):
+                batch.append(data[..., image_idx])
+                if len(batch) >= batch_size or image_idx == volumes_per_image - 1:
+                    prediction = pytorch_predict_batch_images(model, batch, n_gpus)
+                    prediction_data[..., (image_idx-prediction.shape[-1]+1):(image_idx+1)] = prediction
+            pred_image = new_img_like(ref_niimg=x_image, data=prediction_data)
+            output_filename = os.path.join(prediction_dir, "_".join((subject_id,
+                                                                     basename,
+                                                                     os.path.basename(x_filename))))
+            pred_image.to_filename(output_filename)

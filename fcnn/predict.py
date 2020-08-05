@@ -589,6 +589,7 @@ def single_volume_zstat_denoising(model_filename, model_name, n_features, filena
                 batch.append(data[..., image_idx][..., None])
                 if len(batch) >= batch_size or image_idx == volumes_per_image - 1:
                     prediction = pytorch_predict_batch_images(model, batch, n_gpus)
+                    prediction = np.moveaxis(prediction, 0, -1).squeeze()
                     prediction_data[..., (image_idx-prediction.shape[-1]+1):(image_idx+1)] = prediction
                     batch = list()
             pred_image = new_img_like(ref_niimg=x_image, data=prediction_data)

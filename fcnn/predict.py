@@ -583,6 +583,8 @@ def single_volume_zstat_denoising(model_filename, model_name, n_features, filena
             if verbose:
                 print("Reading:", x_filename)
             x_image, ref_image = load_images_from_dataset(dataset, idx, resample_predictions)
+            x_image.to_filename(os.path.join(output_dir, "{}_x_image.nii.gz".format(subject_id)))
+            ref_image.to_filename(os.path.join(output_dir, "{}_ref_image.nii.gz".format(subject_id)))
             if len(x_image.shape) == 4:
                 volumes_per_image = x_image.shape[3]
                 prediction_data = np.zeros(x_image.shape)

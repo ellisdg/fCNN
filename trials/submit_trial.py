@@ -98,7 +98,6 @@ export PYTHONPATH={fcnn_dir}:$PYTHONPATH
 def submit_cross_validation_trials(config_filename, n_folds, group="training", **slurm_kwargs):
     config = load_json(config_filename)
     if group not in config:
-        from fcnn.utils.filenames import load_subject_ids
         load_subject_ids(config)
     subject_ids = list(config[group])
     shuffle(subject_ids)

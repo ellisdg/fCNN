@@ -2,6 +2,13 @@ import glob
 import os
 import shutil
 import subprocess
+import argparse
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--directory", default="/work/aizenberg/dgellis/HCP/HCP_1200")
+    return parser.parse_args()
 
 
 def run_command(cmd):
@@ -10,8 +17,10 @@ def run_command(cmd):
 
 
 def main():
+    namespace = parse_args()
     overwrite = False
-    for folder in glob.glob("/work/aizenberg/dgellis/HCP/HCP_1200/*/T1w/Results/tfMRI*/tfMRI*s2_level1.feat/StandardVolumeStats"):
+    for folder in glob.glob(os.path.join(namespace.directory,
+                                         "*/T1w/Results/tfMRI*/tfMRI*s2_level1.feat/StandardVolumeStats")):
         feat_dir = os.path.dirname(folder)
         basename = os.path.basename(feat_dir).replace("_level1.feat", ".nii.gz").replace("_hp", "_{}_hp")
         success = True

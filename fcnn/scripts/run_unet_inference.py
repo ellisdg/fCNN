@@ -80,7 +80,7 @@ def run_inference(namespace):
                                                                      in
                                                                      config["generate_filenames_kwargs"][_key]]
         if namespace.directory_template is not None:
-            config["generate_filenames_kwargs"]["directory"] = namespace.directory_template
+            machine_config["directory"] = namespace.directory_template
         if namespace.subjects_config_filename:
             config[namespace.group] = load_json(namespace.subjects_config_filename)[namespace.group]
         filenames = generate_filenames(config, namespace.group, machine_config,

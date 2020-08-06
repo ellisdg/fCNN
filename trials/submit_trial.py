@@ -47,10 +47,10 @@ def submit_slurm_trial(config_filename, job_name=None, partition="gpu", n_gpus=2
         training_log_filename = os.path.join(output_dir, "log_" + config_basename + ".csv")
 
     if output_log is None:
-        output_log = os.path.join(output_dir, "job.{}_%J.out".format(job_name))
+        output_log = os.path.join(output_dir, "job." + job_name + "_%J.out".format(job_name))
 
     if error_log is None:
-        error_log = os.path.join(output_dir, "job.{}_%J.err".format(job_name))
+        error_log = os.path.join(output_dir, "job." + job_name + "_%J.err".format(job_name))
 
     slurm_script = """#!/bin/sh
 #SBATCH --time={days}-00:00:00          # Run time in hh:mm:ss

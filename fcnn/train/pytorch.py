@@ -162,13 +162,15 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
           decay_factor=in_config("decay_factor", config),
           min_lr=in_config("min_learning_rate", config),
           learning_rate_decay_step_size=in_config("decay_step_size", config),
-          save_every_n_epochs=in_config("save_every_n_epochs", config))
+          save_every_n_epochs=in_config("save_every_n_epochs", config),
+          save_last_n_models=in_config("save_last_n_models", config, 1))
 
 
 def train(model, optimizer, criterion, n_epochs, training_loader, validation_loader, training_log_filename,
           model_filename, metric_to_monitor="val_loss", early_stopping_patience=None,
           learning_rate_decay_patience=None, save_best=False, n_gpus=1, verbose=True, regularized=False,
-          vae=False, decay_factor=0.1, min_lr=0., learning_rate_decay_step_size=None, save_every_n_epochs=None):
+          vae=False, decay_factor=0.1, min_lr=0., learning_rate_decay_step_size=None, save_every_n_epochs=None,
+          save_last_n_models=1):
     training_log = list()
     if os.path.exists(training_log_filename):
         training_log.extend(pd.read_csv(training_log_filename).values)
@@ -230,15 +232,28 @@ def train(model, optimizer, criterion, n_epochs, training_loader, validation_loa
         torch.save(model.state_dict(), model_filename)
         if save_best and min_epoch == len(training_log) - 1:
             best_filename = model_filename.replace(".h5", "_best.h5")
-            if os.path.exists(best_filename):
-                os.remove(best_filename)
-            shutil.copy(model_filename, best_filename)
+            forced_copy(model_filename, best_filename)
 
         if save_every_n_epochs and (epoch % save_every_n_epochs) == 0:
             epoch_filename = model_filename.replace(".h5", "_{}.h5".format(epoch))
-            if os.path.exists(epoch_filename):
-                os.remove(epoch_filename)
-            shutil.copy(model_filename, epoch_filename)
+            forced_copy(model_filename, epoch_filename)
+
+        if save_last_n_models > 1:
+            if not save_every_n_epochs or not ((epoch - save_last_n_models) % save_every_n_epochs) == 0:
+                to_delete = model_filename.replace(".h5", "_{}.h5".format(epoch - save_last_n_models))
+                remove_file(to_delete)
+            epoch_filename = model_filename.replace(".h5", "_{}.h5".format(epoch))
+            forced_copy(model_filename, epoch_filename)
+
+
+def forced_copy(source, target):
+    remove_file(target)
+    shutil.copy(source, target)
+
+
+def remove_file(filename):
+    if os.path.exists(filename):
+        os.remove(filename)
 
 
 def get_lr(optimizer):

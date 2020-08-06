@@ -157,7 +157,7 @@ def ms_ssim(X, Y, win_size=11, win_sigma=1.5, win=None, data_range=255, size_ave
         torch.Tensor: ms-ssim results
     """
     if len(X.shape) != 4:
-        raise ValueError('Input images must be 4-d tensors.')
+        raise ValueError('Input images must be 4-obj tensors.')
 
     if not X.type() == Y.type():
         raise ValueError('Input images must have the same dtype.')

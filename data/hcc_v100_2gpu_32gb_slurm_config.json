@@ -1,0 +1,10 @@
+{
+  "partition": "gpu",
+  "n_gpus": 2,
+  "constraint": "gpu_v100",
+  "days": 7,
+  "n_tasks": 40,
+  "mem_per_cpu": 4000,
+  "error_log": "/work/aizenberg/dgellis/fCNN/logs/job.%J.err",
+  "output_log": "/work/aizenberg/dgellis/fCNN/logs/job.%J.out"
+}

@@ -25,6 +25,14 @@ def dump_json(obj, filename):
         return json.dump(obj, opened_file)
 
 
+def load_subject_ids(config):
+    fcnn_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+    if "subjects_filename" in config:
+        subjects = load_json(os.path.join(fcnn_path, config["subjects_filename"]))
+        for key, value in subjects.items():
+            config[key] = value
+
+
 def submit_slurm_trial(config_filename, job_name=None, partition="gpu", n_gpus=2, constraint="gpu_v100", days=7,
                        n_tasks=40, mem_per_cpu=4000, error_log=None, output_log=None, anaconda_env="fcnn-1.12",
                        fcnn_dir="/home/aizenberg/dgellis/fCNN",

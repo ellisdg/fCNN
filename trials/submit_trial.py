@@ -74,8 +74,8 @@ export PYTHONPATH={fcnn_dir}:$PYTHONPATH
            machine_config_filename=machine_config_filename)
 
     slurm_script_filename = os.path.join(output_dir, job_name + ".slurm")
-    with open(slurm_script, "w") as opened_file:
-        opened_file.write(slurm_script_filename)
+    with open(slurm_script_filename, "w") as opened_file:
+        opened_file.write(slurm_script)
 
     subprocess.call(["sbatch", slurm_script_filename])
 

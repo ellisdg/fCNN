@@ -135,7 +135,8 @@ def main():
     assert os.path.exists(namespace.trial_config)
     slurm_config = load_json(namespace.slurm_config)
     if namespace.n_folds > 1:
-        submit_cross_validation_trials(namespace.trial_config, namespace.n_folds, **slurm_config)
+        submit_cross_validation_trials(namespace.trial_config, namespace.n_folds, output_dir=namespace.output_dir,
+                                       **slurm_config)
     else:
         submit_slurm_trial(namespace.trial_config, output_dir=namespace.output_dir, **slurm_config)
 

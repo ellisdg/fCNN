@@ -57,7 +57,7 @@ def load_state_dict(model, state_dict, n_gpus, strict=False):
 
 def match_state_dict_shapes(fixed_state_dict, moving_state_dict):
     for key in fixed_state_dict:
-        if fixed_state_dict[key].size() != moving_state_dict[key].size():
+        if key in moving_state_dict and fixed_state_dict[key].size() != moving_state_dict[key].size():
             moving_state_dict[key] = match_tensor_sizes(fixed_state_dict[key], moving_state_dict[key])
     return moving_state_dict
 

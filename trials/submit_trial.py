@@ -26,13 +26,12 @@ def dump_json(obj, filename):
 
 
 def submit_slurm_trial(config_filename, job_name=None, partition="gpu", n_gpus=2, constraint="gpu_v100", days=7,
-                       n_tasks=40, mem_per_cpu=4000, error_log="/work/aizenberg/dgellis/fCNN/logs/job.%J.err",
-                       output_log="/work/aizenberg/dgellis/fCNN/logs/job.%J.out", anaconda_env="fcnn-1.12",
+                       n_tasks=40, mem_per_cpu=4000, error_log=None, output_log=None, anaconda_env="fcnn-1.12",
                        fcnn_dir="/home/aizenberg/dgellis/fCNN",
                        python="/home/aizenberg/dgellis/.conda/envs/fcnn-1.12/bin/python",
                        model_filename=None, training_log_filename=None, output_dir=None,
                        machine_config_filename="/home/aizenberg/dgellis/fCNN/data/hcc_v100_2gpu_32gb_config.json"):
-    config_basename = os.path.basename(config_filename).split(".")[0].replace("config", "")
+    config_basename = os.path.basename(config_filename).split(".")[0].replace("_config", "")
     if job_name is None:
         job_name = config_basename
 
@@ -46,6 +45,12 @@ def submit_slurm_trial(config_filename, job_name=None, partition="gpu", n_gpus=2
 
     if training_log_filename is None:
         training_log_filename = os.path.join(output_dir, "log_" + config_basename + ".csv")
+
+    if output_log is None:
+        output_log = os.path.join(output_dir, "job.{}_%J.out".format(job_name))
+
+    if error_log is None:
+        error_log = os.path.join(output_dir, "job.{}_%J.err".format(job_name))
 
     slurm_script = """#!/bin/sh
 #SBATCH --time={days}-00:00:00          # Run time in hh:mm:ss
@@ -66,9 +71,9 @@ export PYTHONPATH={fcnn_dir}:$PYTHONPATH
 
 {python} {fcnn_dir}/fcnn/scripts/run_trial.py\
  --config_filename {config_filename}\
- --model_filename ${model_filename}\
- --training_log_filename ${log_filename}\
- --machine_config_filename ${machine_config_filename}
+ --model_filename {model_filename}\
+ --training_log_filename {log_filename}\
+ --machine_config_filename {machine_config_filename}
 """.format(days=days, job_name=job_name, partition=partition, n_gpus=n_gpus, constraint=constraint, n_tasks=n_tasks,
            mem_per_cpu=mem_per_cpu, error_log=error_log, output_log=output_log, anaconda_env=anaconda_env,
            fcnn_dir=fcnn_dir, config_filename=config_filename, model_filename=model_filename, python=python,

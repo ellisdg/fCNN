@@ -21,7 +21,7 @@ def load_json(filename):
 
 
 def dump_json(obj, filename):
-    with open(filename) as opened_file:
+    with open(filename, "w") as opened_file:
         return json.dump(obj, opened_file)
 
 
@@ -105,7 +105,7 @@ def submit_cross_validation_trials(config_filename, n_folds, group="training", *
     for i, (train, validation) in enumerate(folds):
         config["training"] = train
         config["validation"] = validation
-        fold_config_filename = config_filename.replace(".json", "fold{}.json".format(i))
+        fold_config_filename = config_filename.replace(".json", "_fold{}.json".format(i))
         dump_json(config, fold_config_filename)
         submit_slurm_trial(fold_config_filename, **slurm_kwargs)
 

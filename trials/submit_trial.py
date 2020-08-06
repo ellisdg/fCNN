@@ -58,7 +58,7 @@ def submit_slurm_trial(config_filename, job_name=None, partition="gpu", n_gpus=2
 
 module load cuda
 module load anaconda
-conda activate {ananconda_env}
+conda activate {anaconda_env}
 
 export PYTHONPATH={fcnn_dir}:$PYTHONPATH
 

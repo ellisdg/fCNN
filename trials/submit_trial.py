@@ -38,6 +38,8 @@ def submit_slurm_trial(config_filename, job_name=None, partition="gpu", n_gpus=2
 
     if output_dir is None:
         output_dir = os.path.abspath(".")
+    elif not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
     if model_filename is None:
         model_filename = os.path.join(output_dir, "model_" + config_basename + ".h5")

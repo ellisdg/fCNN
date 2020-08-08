@@ -18,7 +18,7 @@ def wait_for_long_queue(sleeping_time=60):
 
 def main():
     skulls = glob.glob("/work/aizenberg/dgellis/MICCAI_Implant_2020/training_set/complete_skull/*.nii.gz")
-    cases1 = sorted([os.path.basename(s) for s in skulls])
+    cases1 = sorted([os.path.basename(s).split(".")[0] for s in skulls])
     cases2 = copy.copy(cases1)
     for i, case1 in enumerate(cases1):
         for case2 in cases2[(i+1):]:

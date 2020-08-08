@@ -121,7 +121,7 @@ def augment_image(case1, case2, directory, output_directory, transforms, name, i
     if not os.path.exists(output_filename):
         if not os.path.exists(os.path.dirname(output_filename)):
             os.makedirs(os.path.dirname(output_filename))
-        apply_transforms(get_filename(case1, output_directory, name), get_skull(case2, directory=directory),
+        apply_transforms(get_filename(case1, directory, name), get_skull(case2, directory=directory),
                          output_filename=output_filename,
                          transforms=transforms, inverse_transforms=inverse_transforms, num_threads=num_threads)
         

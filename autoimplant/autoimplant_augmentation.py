@@ -41,13 +41,13 @@ def register_skull_to_skull(skull_filename1, skull_filename2, prefix, num_thread
 
 def apply_transforms(input_filename, reference_filename, transforms, output_filename,
                      interpolation="NearestNeighbor", args="-u uchar", num_threads=1,
-                     inverse_transforms=None):
-    if inverse_transforms is None:
-        inverse_transforms = [False for t in transforms]
+                     invert_transform_flags=None):
+    if invert_transform_flags is None:
+        invert_transform_flags = [False for t in transforms]
     cmd = ApplyTransforms(transforms=transforms, input_image=input_filename, output_image=output_filename,
                           reference_image=reference_filename, interpolation=interpolation,
                           args=args, num_threads=num_threads,
-                          inverse_transforms=inverse_transforms)
+                          invert_transform_flags=invert_transform_flags)
     print(cmd.cmdline)
     cmd.run()
     return cmd.output_spec().output_image
@@ -114,7 +114,7 @@ def get_defective(case, directory):
     return get_filename(case, directory, "defective_skull")
 
 
-def augment_image(case1, case2, directory, output_directory, transforms, name, inverse_transforms=None,
+def augment_image(case1, case2, directory, output_directory, transforms, name, invert_transform_flags=None,
                   num_threads=1):
     output_filename = os.path.join(output_directory, "augmented_" + name, 
                                    "sub-{}_space-{}.nii.gz".format(case1, case2))
@@ -123,7 +123,7 @@ def augment_image(case1, case2, directory, output_directory, transforms, name, i
             os.makedirs(os.path.dirname(output_filename))
         apply_transforms(get_filename(case1, directory, name), get_skull(case2, directory=directory),
                          output_filename=output_filename,
-                         transforms=transforms, inverse_transforms=inverse_transforms, num_threads=num_threads)
+                         transforms=transforms, invert_transform_flags=invert_transform_flags, num_threads=num_threads)
         
 
 def augment_defective_skull(*args, **kwargs):
@@ -172,12 +172,12 @@ def augment_auto_implant_cases(case1, case2, directory, output_directory, n_thre
     augment_defective_skull(case1, case2, directory, output_directory, [transforms[1], transforms[0]],
                             num_threads=n_threads)
     augment_defective_skull(case2, case1, directory, output_directory, [transforms[2], transforms[0]],
-                            inverse_transforms=[False, True], num_threads=n_threads)
+                            invert_transform_flags=[False, True], num_threads=n_threads)
     # augment implant
     augment_implant(case1, case2, directory, output_directory, [transforms[1], transforms[0]],
                     num_threads=n_threads)
     augment_implant(case2, case1, directory, output_directory, [transforms[2], transforms[0]],
-                    inverse_transforms=[False, True], num_threads=n_threads)
+                    invert_transform_flags=[False, True], num_threads=n_threads)
     # copy over non-augmented filenames
     for case in (case1, case2):
         for name in ("implant", "defective_skull"):

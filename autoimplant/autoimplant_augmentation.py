@@ -5,6 +5,7 @@ import numpy as np
 import os
 import shutil
 import argparse
+import glob
 
 
 def parse_args():
@@ -35,9 +36,9 @@ def register_skull_to_skull(skull_filename1, skull_filename2, prefix, num_thread
     print(cmd.cmdline)
     cmd.run()
     if not debug:
-        os.remove(cmd.output_spec().warped_image)
-        os.remove(cmd.output_spec().inverse_warped_image)
-    return cmd.output_spec().out_matrix, cmd.output_spec().forward_warp_field, cmd.output_spec().inverse_warp_field
+        for fn in glob.glob(os.path.abspath(os.path.join(".", prefix + "*Warped.nii.gz"))):
+            print("Removing:", fn)
+            os.remove(fn)
 
 
 def apply_transforms(input_filename, reference_filename, transforms, output_filename,
@@ -157,17 +158,18 @@ def augment_auto_implant_cases(case1, case2, directory, output_directory, n_thre
     if not p1_exists and not p2_exists:
         # run registration with prefix1
         prefix = prefix1
-        transforms = register_skull_to_skull(get_skull(case1, directory), get_skull(case2, directory), prefix,
-                                             num_threads=n_threads)
+        register_skull_to_skull(get_skull(case1, directory), get_skull(case2, directory), prefix,
+                                num_threads=n_threads)
     elif p2_exists:
         # get transforms for prefix 2
-        transforms = get_prefix_transforms(prefix2, output_directory)
         placeholder = case1
         case1 = case2
         case2 = placeholder
+        prefix = prefix2
     else:
         # get transforms for prefix 1
-        transforms = get_prefix_transforms(prefix1, output_directory)
+        prefix = prefix1
+    transforms = get_prefix_transforms(prefix, output_directory)
     # apply transforms
     # augment defective skull
     augment_defective_skull(case1, case2, directory, output_directory, [transforms[1], transforms[0]],

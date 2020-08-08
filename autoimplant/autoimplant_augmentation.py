@@ -29,13 +29,14 @@ def connected_v_not_connected(binary, minimum=1000):
     return connected_mask, not_connected_mask
 
 
-def register_skull_to_skull(skull_filename1, skull_filename2, prefix, num_threads=1):
-    cmd = RegistrationSynQuick(fixed_image=skull_filename1, moving_image=skull_filename2,
+def register_skull_to_skull(skull_filename1, skull_filename2, prefix, num_threads=1, debug=True):
+    cmd = RegistrationSynQuick(fixed_image=skull_filename2, moving_image=skull_filename1,
                                output_prefix=prefix, num_threads=num_threads)
     print(cmd.cmdline)
     cmd.run()
-    os.remove(cmd.output_spec().warped_image)
-    os.remove(cmd.output_spec().inverse_warped_image)
+    if not debug:
+        os.remove(cmd.output_spec().warped_image)
+        os.remove(cmd.output_spec().inverse_warped_image)
     return cmd.output_spec().out_matrix, cmd.outputspec().forward_warp_field, cmd.outputspec().inverse_warp_field
 
 
@@ -117,7 +118,7 @@ def get_defective(case, directory):
 def augment_image(case1, case2, directory, output_directory, transforms, name, invert_transform_flags=None,
                   num_threads=1):
     output_filename = os.path.join(output_directory, "augmented_" + name, 
-                                   "sub-{}_space-{}.nii.gz".format(case1, case2))
+                                   "sub-{}_space-{}_{}.nii.gz".format(case1, case2, name))
     if not os.path.exists(output_filename):
         if not os.path.exists(os.path.dirname(output_filename)):
             os.makedirs(os.path.dirname(output_filename))
@@ -136,7 +137,7 @@ def augment_implant(*args, **kwargs):
 
 def copy_image(case, directory, output_directory, name):
     output_filename = os.path.join(output_directory, "augmented_" + name, 
-                                   "sub-{}_space-{}.nii.gz".format(case, case))
+                                   "sub-{}_space-{}_{}.nii.gz".format(case, case, name))
     if not os.path.exists(output_filename):
         input_filename = get_filename(case, directory, name)
         print("Copying:", input_filename, "-->", output_filename)

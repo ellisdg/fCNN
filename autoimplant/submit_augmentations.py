@@ -10,7 +10,7 @@ def main():
     for case in cases:
         cases2.pop(cases.index(case))
         for case2 in cases:
-            subprocess.call(["sbatch /home/aizenberg/dgellis/fCNN/autoimplant/augmentation_script", case, case2])
+            subprocess.call(["sbatch /home/aizenberg/dgellis/fCNN/autoimplant/augmentation_script.sh", case, case2])
 
 
 if __name__ == "__main__":

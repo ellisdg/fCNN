@@ -114,14 +114,14 @@ def get_defective(case, directory):
     return get_filename(case, directory, "defective_skull")
 
 
-def augment_image(case1, case2, output_directory, transforms, name, inverse_transforms=None,
+def augment_image(case1, case2, directory, output_directory, transforms, name, inverse_transforms=None,
                   num_threads=1):
     output_filename = os.path.join(output_directory, "augmented_" + name, 
                                    "sub-{}_space-{}.nii.gz".format(case1, case2))
     if not os.path.exists(output_filename):
         if not os.path.exists(os.path.dirname(output_filename)):
             os.makedirs(os.path.dirname(output_filename))
-        apply_transforms(get_filename(case1, output_directory, name), get_skull(case2),
+        apply_transforms(get_filename(case1, output_directory, name), get_skull(case2, directory=directory),
                          output_filename=output_filename,
                          transforms=transforms, inverse_transforms=inverse_transforms, num_threads=num_threads)
         
@@ -169,14 +169,14 @@ def augment_auto_implant_cases(case1, case2, directory, output_directory, n_thre
         transforms = get_prefix_transforms(prefix1, output_directory)
     # apply transforms
     # augment defective skull
-    augment_defective_skull(case1, case2, output_directory, [transforms[1], transforms[0]],
+    augment_defective_skull(case1, case2, directory, output_directory, [transforms[1], transforms[0]],
                             num_threads=n_threads)
-    augment_defective_skull(case2, case1, output_directory, [transforms[2], transforms[0]],
+    augment_defective_skull(case2, case1, directory, output_directory, [transforms[2], transforms[0]],
                             inverse_transforms=[False, True], num_threads=n_threads)
     # augment implant
-    augment_implant(case1, case2, output_directory, [transforms[1], transforms[0]],
+    augment_implant(case1, case2, directory, output_directory, [transforms[1], transforms[0]],
                     num_threads=n_threads)
-    augment_implant(case2, case1, output_directory, [transforms[2], transforms[0]],
+    augment_implant(case2, case1, directory, output_directory, [transforms[2], transforms[0]],
                     inverse_transforms=[False, True], num_threads=n_threads)
     # copy over non-augmented filenames
     for case in (case1, case2):

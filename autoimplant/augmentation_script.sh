@@ -6,6 +6,7 @@
 #SBATCH --error=/work/aizenberg/dgellis/fCNN/logs/job.%J.err
 #SBATCH --output=/work/aizenberg/dgellis/fCNN/logs/job.%J.out
 
+cd "/work/aizenberg/dgellis/MICCAI_Implant_2020/training_set/registrations"
 module load anaconda
 conda activate dti
 module load compiler/gcc/9.1

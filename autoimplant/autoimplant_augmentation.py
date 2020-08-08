@@ -37,7 +37,7 @@ def register_skull_to_skull(skull_filename1, skull_filename2, prefix, num_thread
     if not debug:
         os.remove(cmd.output_spec().warped_image)
         os.remove(cmd.output_spec().inverse_warped_image)
-    return cmd.output_spec().out_matrix, cmd.outputspec().forward_warp_field, cmd.outputspec().inverse_warp_field
+    return cmd.output_spec().out_matrix, cmd.output_spec().forward_warp_field, cmd.output_spec().inverse_warp_field
 
 
 def apply_transforms(input_filename, reference_filename, transforms, output_filename,

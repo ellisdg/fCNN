@@ -143,7 +143,7 @@ def copy_image(case, directory, output_directory, name):
         shutil.copy(input_filename, output_filename)
 
 
-def augment_auto_implant_cases(case1, case2, directory, output_directory, num_threads=1):
+def augment_auto_implant_cases(case1, case2, directory, output_directory, n_threads=1):
     
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
@@ -157,7 +157,7 @@ def augment_auto_implant_cases(case1, case2, directory, output_directory, num_th
         # run registration with prefix1
         prefix = prefix1
         transforms = register_skull_to_skull(get_skull(case1, directory), get_skull(case2, directory), prefix,
-                                             num_threads=num_threads)
+                                             num_threads=n_threads)
     elif p2_exists:
         # get transforms for prefix 2
         transforms = get_prefix_transforms(prefix2, output_directory)
@@ -170,14 +170,14 @@ def augment_auto_implant_cases(case1, case2, directory, output_directory, num_th
     # apply transforms
     # augment defective skull
     augment_defective_skull(case1, case2, output_directory, [transforms[1], transforms[0]],
-                            num_threads=num_threads)
+                            num_threads=n_threads)
     augment_defective_skull(case2, case1, output_directory, [transforms[2], transforms[0]],
-                            inverse_transforms=[False, True], num_threads=num_threads)
+                            inverse_transforms=[False, True], num_threads=n_threads)
     # augment implant
     augment_implant(case1, case2, output_directory, [transforms[1], transforms[0]],
-                    num_threads=num_threads)
+                    num_threads=n_threads)
     augment_implant(case2, case1, output_directory, [transforms[2], transforms[0]],
-                    inverse_transforms=[False, True], num_threads=num_threads)
+                    inverse_transforms=[False, True], num_threads=n_threads)
     # copy over non-augmented filenames
     for case in (case1, case2):
         for name in ("implant", "defective_skull"):

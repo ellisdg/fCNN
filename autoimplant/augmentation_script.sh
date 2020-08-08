@@ -8,6 +8,7 @@
 
 module load anaconda
 conda activate dti
+module load compiler/gcc/9.1
 export ANTSPATH=/work/aizenberg/dgellis/tools/ANTs/bin
 export PATH=${ANTSPATH}:$PATH
 

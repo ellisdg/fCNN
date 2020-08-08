@@ -29,7 +29,7 @@ def connected_v_not_connected(binary, minimum=1000):
     return connected_mask, not_connected_mask
 
 
-def register_skull_to_skull(skull_filename1, skull_filename2, prefix, num_threads=1, debug=True):
+def register_skull_to_skull(skull_filename1, skull_filename2, prefix, num_threads=1, debug=False):
     cmd = RegistrationSynQuick(fixed_image=skull_filename2, moving_image=skull_filename1,
                                output_prefix=prefix, num_threads=num_threads)
     print(cmd.cmdline)
@@ -172,13 +172,13 @@ def augment_auto_implant_cases(case1, case2, directory, output_directory, n_thre
     # augment defective skull
     augment_defective_skull(case1, case2, directory, output_directory, [transforms[1], transforms[0]],
                             num_threads=n_threads)
-    augment_defective_skull(case2, case1, directory, output_directory, [transforms[2], transforms[0]],
-                            invert_transform_flags=[False, True], num_threads=n_threads)
+    augment_defective_skull(case2, case1, directory, output_directory, [transforms[0], transforms[2]],
+                            invert_transform_flags=[True, False], num_threads=n_threads)
     # augment implant
     augment_implant(case1, case2, directory, output_directory, [transforms[1], transforms[0]],
                     num_threads=n_threads)
-    augment_implant(case2, case1, directory, output_directory, [transforms[2], transforms[0]],
-                    invert_transform_flags=[False, True], num_threads=n_threads)
+    augment_implant(case2, case1, directory, output_directory, [transforms[0], transforms[2]],
+                    invert_transform_flags=[True, False], num_threads=n_threads)
     # copy over non-augmented filenames
     for case in (case1, case2):
         for name in ("implant", "defective_skull"):

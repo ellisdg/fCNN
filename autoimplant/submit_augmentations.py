@@ -23,6 +23,7 @@ def main():
     for i, case1 in enumerate(cases1):
         for case2 in cases2[(i+1):]:
             wait_for_long_queue()
+            print(case1, "to", case2)
             subprocess.call(["sbatch", "/home/aizenberg/dgellis/fCNN/autoimplant/augmentation_script.sh", case1, case2])
 
 

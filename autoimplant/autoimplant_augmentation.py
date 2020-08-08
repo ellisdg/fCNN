@@ -1,4 +1,3 @@
-from nipype import Node, Workflow
 from nipype.interfaces.ants import RegistrationSynQuick, ApplyTransforms
 import nibabel as nib
 from scipy import ndimage

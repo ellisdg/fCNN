@@ -12,9 +12,9 @@ def parse_args():
     parser.add_argument("--case1", required=True)
     parser.add_argument("--case2", required=True)
     parser.add_argument("--n_threads", type=int, default=1)
-    parser.add_argument("--directory", default="/work/aizenberg/dgellis/MICCAI_Implant/testing_set")
+    parser.add_argument("--directory", default="/work/aizenberg/dgellis/MICCAI_Implant_2020/training_set")
     parser.add_argument("--output_directory",
-                        default="/work/aizenberg/dgellis/MICCAI_Implant/testing_set/registrations")
+                        default="/work/aizenberg/dgellis/MICCAI_Implant_2020/training_set/registrations")
     return parser.parse_args()
 
 

@@ -34,9 +34,9 @@ def register_skull_to_skull(skull_filename1, skull_filename2, prefix, num_thread
                                output_prefix=prefix, num_threads=num_threads)
     print(cmd.cmdline)
     cmd.run()
-    os.remove(cmd.outputspec().warped_image)
-    os.remove(cmd.outputspec().inverse_warped_image)
-    return cmd.outputspec().out_matrix, cmd.outputspec().forward_warp_field, cmd.outputspec().inverse_warp_field
+    os.remove(cmd.output_spec().warped_image)
+    os.remove(cmd.output_spec().inverse_warped_image)
+    return cmd.output_spec().out_matrix, cmd.outputspec().forward_warp_field, cmd.outputspec().inverse_warp_field
 
 
 def apply_transforms(input_filename, reference_filename, transforms, output_filename,
@@ -186,6 +186,7 @@ def augment_auto_implant_cases(case1, case2, directory, output_directory, n_thre
 
 def main():
     augment_auto_implant_cases(**vars(parse_args()))
+
 
 if __name__ == "__main__":
     main()

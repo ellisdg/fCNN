@@ -581,7 +581,7 @@ def predictions_with_permutations(model_filename, model_name, n_features, filena
     print("Dataset: ", len(dataset))
     with torch.no_grad():
         for idx in range(len(dataset)):
-            x_filename, subject_id = get_feature_filename_and_subject_id(dataset, idx, verbose=False)
+            x_filename, subject_id = get_feature_filename_and_subject_id(dataset, idx, verbose=verbose)
             x_image, ref_image = load_images_from_dataset(dataset, idx, resample_predictions)
             data = get_nibabel_data(x_image)
             prediction_data = predict_with_permutations(model, data, n_outputs, batch_size, n_gpus, permutation_keys,
@@ -609,7 +609,7 @@ def predict_with_permutations(model, data, n_outputs, batch_size, n_gpus, permut
     prediction_data = np.zeros((len(permutation_keys),) + data.shape[:3] + (n_outputs,))
     batch = list()
     permutation_indices = list()
-    for permutation_idx, permutation_key in permutation_keys:
+    for permutation_idx, permutation_key in enumerate(permutation_keys):
         batch.append(permute_data(np.moveaxis(data, 3, 1), permutation_key))
         permutation_indices.append(permutation_idx)
         if len(batch) >= batch_size or permutation_key == permutation_keys[-1]:

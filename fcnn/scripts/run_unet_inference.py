@@ -26,7 +26,7 @@ def format_parser(parser=argparse.ArgumentParser(), sub_command=False):
     parser.add_argument("--output_template")
     parser.add_argument("--segmentation", action="store_true", default=False)
     parser.add_argument("--replace", nargs=2)
-    parser.add_argument("--threshold", default=0.7, type=float,
+    parser.add_argument("--threshold", default=0.5, type=float,
                         help="If segmentation is set, this is the threshold for segmentation cutoff.")
     parser.add_argument("--no_sum", default=False, action="store_true",
                         help="Does not sum the predictions before using threshold.")

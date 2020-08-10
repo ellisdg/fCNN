@@ -106,7 +106,10 @@ def generate_filenames_from_templates(subject_ids, feature_templates, target_tem
     filenames = list()
     for subject_id in subject_ids:
         feature_filename = format_templates(feature_templates, directory=directory, subject=subject_id)
-        target_filename = format_templates(target_templates, directory=directory, subject=subject_id)
+        if skip_targets:
+            target_filename = None
+        else:
+            target_filename = format_templates(target_templates, directory=directory, subject=subject_id)
         if feature_sub_volumes is not None:
             _feature_sub_volumes = feature_sub_volumes
         else:
@@ -115,7 +118,7 @@ def generate_filenames_from_templates(subject_ids, feature_templates, target_tem
             _target_sub_volumes = target_sub_volumes
         else:
             _target_sub_volumes = None
-        if exists(feature_filename) and (exists(target_filename) or skip_targets):
+        if exists(feature_filename) and (skip_targets or exists(target_filename)):
             filenames.append([feature_filename, _feature_sub_volumes, target_filename, _target_sub_volumes, subject_id])
         elif raise_if_not_exists:
             for filename in (feature_filename, target_filename):

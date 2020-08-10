@@ -512,7 +512,7 @@ def pytorch_subject_predictions(idx, model, dataset, criterion, basename, predic
     return row
 
 
-def single_volume_zstat_denoising(model_filename, model_name, n_features, filenames, window, output_dir,
+def single_volume_zstat_denoising(model_filename, model_name, n_features, filenames, window, prediction_dir,
                                   n_gpus=1, batch_size=1, model_kwargs=None, n_outputs=None,
                                   sequence_kwargs=None, spacing=None, sequence=None,
                                   strict_model_loading=True, metric_names=None,

@@ -25,7 +25,7 @@ def format_parser(parser=argparse.ArgumentParser(), sub_command=False):
     parser.add_argument("--interpolation", default="linear")
     parser.add_argument("--output_template")
     parser.add_argument("--segmentation", action="store_true", default=False)
-    parser.add_argument("--replace", nargs=2)
+    parser.add_argument("--replace", nargs="*")
     parser.add_argument("--threshold", default=0.5, type=float,
                         help="If segmentation is set, this is the threshold for segmentation cutoff.")
     parser.add_argument("--no_sum", default=False, action="store_true",
@@ -72,8 +72,10 @@ def run_inference(namespace):
             for _key in ("directory", "feature_templates", "target_templates"):
                 if _key in config["generate_filenames_kwargs"]:
                     if type(config["generate_filenames_kwargs"][_key]) == str:
-                        config["generate_filenames_kwargs"][_key] = config["generate_filenames_kwargs"][_key].replace(
-                            namespace.replace[0], namespace.replace[1])
+
+                        for i in range(0, len(namespace.replace), 2):
+                            config["generate_filenames_kwargs"][_key] = config["generate_filenames_kwargs"][_key].replace(
+                                namespace.replace[i], namespace.replace[i + 1])
                     else:
                         config["generate_filenames_kwargs"][_key] = [template.replace(namespace.replace[0],
                                                                                       namespace.replace[1]) for template

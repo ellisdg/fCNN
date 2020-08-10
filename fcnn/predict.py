@@ -529,6 +529,8 @@ def single_volume_zstat_denoising(model_filename, model_name, n_features, filena
         batch = list()
         for idx in range(len(dataset)):
             x_filename, subject_id = get_feature_filename_and_subject_id(dataset, idx, verbose=False)
+            while type(x_filename) == list:
+                x_filename = x_filename[0]
             if x_filename in completed:
                 continue
             if verbose:

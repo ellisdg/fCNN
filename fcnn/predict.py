@@ -563,15 +563,20 @@ def predictions_with_permutations(model_filename, model_name, n_features, filena
                                   spacing=None, sequence=None, strict_model_loading=True, metric_names=None,
                                   verbose=True, resample_predictions=False, interpolation="linear",
                                   output_template=None, segmentation=False, segmentation_labels=None,
-                                  sum_then_threshold=True, threshold=0.5, label_hierarchy=None,
+                                  sum_then_threshold=True, threshold=0.5, label_hierarchy=None, permutation_weight=None,
                                   **unused_args):
     import torch
-    model, dataset, basename = load_volumetric_model_and_dataset(model_name, model_filename, model_kwargs,
-                                                                 n_outputs,
+    model, dataset, basename = load_volumetric_model_and_dataset(model_name, model_filename, model_kwargs, n_outputs,
                                                                  n_features, strict_model_loading, n_gpus, sequence,
                                                                  sequence_kwargs, filenames, window, spacing,
                                                                  metric_names)
-    permutation_keys = generate_permutation_keys()
+    permutation_keys = list(generate_permutation_keys())
+    permutation_weights = np.ones((len(permutation_keys), 1, 1, 1, 1))
+    # TODO: make this work with models that only output one prediction map
+    if permutation_weight is not None:
+        non_perm_index = permutation_keys.index(((0, 0), 0, 0, 0, 0))
+        permutation_weights = permutation_weights * permutation_weight
+        permutation_weights[non_perm_index] = len(permutation_keys) * (1 - permutation_weight)
     dataset.extract_sub_volumes = False
     print("Dataset: ", len(dataset))
     with torch.no_grad():
@@ -579,7 +584,8 @@ def predictions_with_permutations(model_filename, model_name, n_features, filena
             x_filename, subject_id = get_feature_filename_and_subject_id(dataset, idx, verbose=False)
             x_image, ref_image = load_images_from_dataset(dataset, idx, resample_predictions)
             data = get_nibabel_data(x_image)
-            prediction_data = predict_with_permutations(model, data, n_outputs, batch_size, n_gpus, permutation_keys)
+            prediction_data = predict_with_permutations(model, data, n_outputs, batch_size, n_gpus, permutation_keys,
+                                                        permutation_weights)
             pred_image = prediction_to_image(prediction_data.squeeze(),
                                              input_image=x_image,
                                              reference_image=ref_image,
@@ -598,7 +604,7 @@ def predictions_with_permutations(model_filename, model_name, n_features, filena
                                            verbose=verbose)
 
 
-def predict_with_permutations(model, data, n_outputs, batch_size, n_gpus, permutation_keys):
+def predict_with_permutations(model, data, n_outputs, batch_size, n_gpus, permutation_keys, permutation_weights):
     import torch
     prediction_data = np.zeros((len(permutation_keys),) + data.shape[:3] + (n_outputs,))
     batch = list()
@@ -613,4 +619,4 @@ def predict_with_permutations(model, data, n_outputs, batch_size, n_gpus, permut
             batch = list()
             permutation_indices = list()
     # average over all the permutations
-    return prediction_data.mean(axis=0)
+    return np.mean(prediction_data * permutation_weights, axis=0)

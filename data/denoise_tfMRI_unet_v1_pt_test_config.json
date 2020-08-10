@@ -2,6 +2,7 @@
   "subjects_filename": "data/subjects_denoise.json",
   "generate_filenames": "templates",
   "generate_filenames_kwargs": {
+    "directory": "/work/aizenberg/dgellis/HCP/HCP_1200",
     "feature_templates": [
       "T1w/Results/tfMRI_ALL/tfMRI_ALL_hp200_s2_level2.feat/{subject}_tfMRI_ALL_level2_zstat_hp200_s2_TAVOR.nii.gz"
     ]

@@ -609,8 +609,11 @@ def predict_with_permutations(model, data, n_outputs, batch_size, n_gpus, permut
     prediction_data = np.zeros((len(permutation_keys),) + data.shape[:3] + (n_outputs,))
     batch = list()
     permutation_indices = list()
+    print("Data:", data.shape)
+    data = np.moveaxis(data, 3, 1)
+    print("Data:", data.shape)
     for permutation_idx, permutation_key in enumerate(permutation_keys):
-        batch.append(permute_data(np.moveaxis(data, 3, 1), permutation_key))
+        batch.append(permute_data(data, permutation_key))
         permutation_indices.append(permutation_idx)
         if len(batch) >= batch_size or permutation_key == permutation_keys[-1]:
             batch_prediction = pytorch_predict_batch(torch.tensor(batch).float(), model, n_gpus).numpy()

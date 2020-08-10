@@ -118,6 +118,7 @@ def generate_filenames_from_templates(subject_ids, feature_templates, target_tem
             _target_sub_volumes = target_sub_volumes
         else:
             _target_sub_volumes = None
+        print(feature_filename)
         if exists(feature_filename) and (skip_targets or exists(target_filename)):
             filenames.append([feature_filename, _feature_sub_volumes, target_filename, _target_sub_volumes, subject_id])
         elif raise_if_not_exists:

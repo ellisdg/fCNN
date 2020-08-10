@@ -595,6 +595,7 @@ def predictions_with_permutations(model_filename, model_name, n_features, filena
                                              threshold=threshold,
                                              sum_then_threshold=sum_then_threshold,
                                              label_hierarchy=label_hierarchy)
+            print(prediction_dir, output_template, subject_id)
             write_prediction_image_to_file(pred_image,
                                            output_template,
                                            subject_id=subject_id,

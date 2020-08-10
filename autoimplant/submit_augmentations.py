@@ -20,11 +20,21 @@ def main():
     skulls = glob.glob("/work/aizenberg/dgellis/MICCAI_Implant_2020/training_set/complete_skull/*.nii.gz")
     cases1 = sorted([os.path.basename(s).split(".")[0] for s in skulls])
     cases2 = copy.copy(cases1)
+    template = os.path.join("/work/aizenebrg/dgellis/MICCAI_Implant_2020/training_set/registrations",
+                            "augmented_{name}/sub-{case1}_space-{case2}_{name}.nii.gz")
     for i, case1 in enumerate(cases1):
         for case2 in cases2[(i+1):]:
-            wait_for_long_queue()
-            print(case1, "to", case2)
-            subprocess.call(["sbatch", "/home/aizenberg/dgellis/fCNN/autoimplant/augmentation_script.sh", case1, case2])
+            outputs_exist = list()
+            for name in ("defective_skull", "implant"):
+                outputs_exist.append(os.path.exists(template.format(case1=case1, case2=case2, name=name)))
+                outputs_exist.append(os.path.exists(template.format(case1=case2, case2=case1, name=name)))
+            if not all(outputs_exist):
+                wait_for_long_queue()
+                print("Submitting:", case1, "to", case2)
+                subprocess.call(["sbatch", "/home/aizenberg/dgellis/fCNN/autoimplant/augmentation_script.sh", case1,
+                                 case2])
+            else:
+                print("Outputs already exist:", case1, "to", case2)
 
 
 if __name__ == "__main__":

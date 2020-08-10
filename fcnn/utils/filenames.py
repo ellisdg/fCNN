@@ -100,7 +100,7 @@ def exists(filenames):
     return all([os.path.exists(filename) for filename in filenames])
 
 
-def generate_filenames_from_templates(subject_ids, feature_templates, target_templates, feature_sub_volumes=None,
+def generate_filenames_from_templates(subject_ids, feature_templates, target_templates=None, feature_sub_volumes=None,
                                       target_sub_volumes=None, raise_if_not_exists=False, directory="",
                                       skip_targets=False):
     filenames = list()

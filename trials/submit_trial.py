@@ -11,7 +11,7 @@ def parse_args():
     parser.add_argument("--n_folds", default=1, type=int)
     parser.add_argument("--slurm_config",
                         default="/home/aizenberg/dgellis/fCNN/data/hcc_v100_2gpu_32gb_slurm_config.json")
-    parser.add_argument("--prediction_dir", default="/work/aizenberg/dgellis/fCNN/predictions")
+    parser.add_argument("--output_dir", default="/work/aizenberg/dgellis/fCNN/predictions")
     return parser.parse_args()
 
 

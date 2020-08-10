@@ -10,6 +10,7 @@ from .utils.sequences import SubjectPredictionSequence
 from .utils.pytorch.dataset import HCPSubjectDataset
 from .utils.hcp import new_cifti_scalar_like, get_metric_data
 from .utils.filenames import generate_hcp_filenames, load_subject_ids
+from .utils.augment import generate_permutation_keys, permute_data
 
 
 def predict_data_loader(model, data_loader):
@@ -193,7 +194,7 @@ def volumetric_predictions(model_filename, filenames, output_dir, model_name, n_
                            model_kwargs=None, n_outputs=None, sequence_kwargs=None, sequence=None,
                            metric_names=None, evaluate_predictions=False, interpolation="linear",
                            resample_predictions=True, output_template=None, segmentation=False,
-                           segmentation_labels=None, threshold=0.7, sum_then_threshold=True, label_hierarchy=None):
+                           segmentation_labels=None, threshold=0.5, sum_then_threshold=True, label_hierarchy=None):
     if package == "pytorch":
         pytorch_volumetric_predictions(model_filename=model_filename,
                                        model_name=model_name,
@@ -458,56 +459,6 @@ def pytorch_volumetric_predictions(model_filename, model_name, n_features, filen
                 batch_subjects = list()
                 batch_filenames = list()
 
-            # image, target_image = dataset.get_image(idx)
-            # subject_id = dataset.epoch_filenames[idx][-1]
-            # y = y.unsqueeze(0)
-            # if n_gpus > 0:
-            #     x = x.cuda()
-            #     y = y.cuda()
-            # start = time.time()
-            # try:
-            #     pred_x = model.test(x)
-            # except AttributeError:
-            #     start = time.time()
-            #     pred_x = model(x)
-            # end = time.time()
-            # if print_prediction_time:
-            #     print("Prediction time: {:.2f}s".format(end - start))
-            # if type(pred_x) == tuple:
-            #     pred_x, mu, logvar = pred_x
-            #     mu = mu.cpu().numpy()
-            #     logvar = logvar.cpu().numpy()
-            # else:
-            #     mu = None
-            #     logvar = None
-            # if evaluate_predictions:
-            #     score = criterion(pred_x, y).cpu().numpy()
-            # pred_x = np.moveaxis(pred_x.cpu().numpy(), 1, -1).squeeze()
-            # pred_image = new_img_like(ref_niimg=image,
-            #                           data=pred_x,
-            #                           affine=image.affine)
-            #
-            # y = y.cpu().numpy()
-            # y = np.moveaxis(y, 1, -1).squeeze()
-            # t_image = new_img_like(ref_niimg=target_image,
-            #                        data=y,
-            #                        affine=target_image.affine)
-            # t_image.to_filename(os.path.join(output_dir,
-            #                                  "_".join(["target",
-            #                                            subject_id,
-            #                                            basename,
-            #                                            os.path.basename(dataset.epoch_filenames[idx][0])])))
-            # if evaluate_predictions:
-            #     results.append([subject_id, score, mu, logvar])
-
-    # if evaluate_predictions:
-    #     if output_dir and not output_csv:
-    #         output_csv = os.path.join(output_dir, str(basename) + "_prediction_scores.csv")
-    #         columns = ["subject_id", criterion_name, "mu", "logvar"]
-    #         if reference is not None:
-    #             columns.append("reference_" + criterion_name)
-    #         pd.DataFrame(results, columns=columns).to_csv(output_csv, sep=";")
-
 
 def save_predictions(prediction, args, basename, metric_names, surface_names, prediction_dir):
     ref_filename = args[2][0]
@@ -583,8 +534,6 @@ def single_volume_zstat_denoising(model_filename, model_name, n_features, filena
             if verbose:
                 print("Reading:", x_filename)
             x_image, ref_image = load_images_from_dataset(dataset, idx, resample_predictions)
-            x_image.to_filename(os.path.join(output_dir, "{}_x_image.nii.gz".format(subject_id)))
-            ref_image.to_filename(os.path.join(output_dir, "{}_ref_image.nii.gz".format(subject_id)))
             if len(x_image.shape) == 4:
                 volumes_per_image = x_image.shape[3]
                 prediction_data = np.zeros(x_image.shape)
@@ -597,7 +546,7 @@ def single_volume_zstat_denoising(model_filename, model_name, n_features, filena
                 if len(batch) >= batch_size or image_idx == volumes_per_image - 1:
                     prediction = pytorch_predict_batch_images(model, batch, n_gpus)
                     prediction = np.moveaxis(prediction, 0, -1).squeeze()
-                    prediction_data[..., (image_idx-prediction.shape[-1]+1):(image_idx+1)] = prediction
+                    prediction_data[..., (image_idx - prediction.shape[-1] + 1):(image_idx + 1)] = prediction
                     batch = list()
             pred_image = new_img_like(ref_niimg=x_image, data=prediction_data)
             output_filename = os.path.join(output_dir, "_".join((subject_id,
@@ -607,3 +556,61 @@ def single_volume_zstat_denoising(model_filename, model_name, n_features, filena
                 print("Writing:", output_filename)
             pred_image.to_filename(output_filename)
             completed.add(x_filename)
+
+
+def predictions_with_permutations(model_filename, model_name, n_features, filenames, window, prediction_dir=None,
+                                  n_gpus=1, batch_size=1, model_kwargs=None, n_outputs=None, sequence_kwargs=None,
+                                  spacing=None, sequence=None, strict_model_loading=True, metric_names=None,
+                                  verbose=True, resample_predictions=False, interpolation="linear",
+                                  output_template=None, segmentation=False, segmentation_labels=None,
+                                  sum_then_threshold=True, threshold=0.5, label_hierarchy=None,
+                                  **unused_args):
+    import torch
+    model, dataset, basename = load_volumetric_model_and_dataset(model_name, model_filename, model_kwargs,
+                                                                 n_outputs,
+                                                                 n_features, strict_model_loading, n_gpus, sequence,
+                                                                 sequence_kwargs, filenames, window, spacing,
+                                                                 metric_names)
+    permutation_keys = generate_permutation_keys()
+    dataset.extract_sub_volumes = False
+    print("Dataset: ", len(dataset))
+    with torch.no_grad():
+        for idx in range(len(dataset)):
+            x_filename, subject_id = get_feature_filename_and_subject_id(dataset, idx, verbose=False)
+            x_image, ref_image = load_images_from_dataset(dataset, idx, resample_predictions)
+            data = get_nibabel_data(x_image)
+            prediction_data = predict_with_permutations(model, data, n_outputs, batch_size, n_gpus, permutation_keys)
+            pred_image = prediction_to_image(prediction_data.squeeze(),
+                                             input_image=x_image,
+                                             reference_image=ref_image,
+                                             interpolation=interpolation,
+                                             segmentation=segmentation,
+                                             segmentation_labels=segmentation_labels,
+                                             threshold=threshold,
+                                             sum_then_threshold=sum_then_threshold,
+                                             label_hierarchy=label_hierarchy)
+            write_prediction_image_to_file(pred_image,
+                                           output_template,
+                                           subject_id=subject_id,
+                                           x_filename=x_filename,
+                                           prediction_dir=prediction_dir,
+                                           basename=basename,
+                                           verbose=verbose)
+
+
+def predict_with_permutations(model, data, n_outputs, batch_size, n_gpus, permutation_keys):
+    import torch
+    prediction_data = np.zeros((len(permutation_keys),) + data.shape[:3] + (n_outputs,))
+    batch = list()
+    permutation_indices = list()
+    for permutation_idx, permutation_key in permutation_keys:
+        batch.append(permute_data(np.moveaxis(data, 3, 1), permutation_key))
+        permutation_indices.append(permutation_idx)
+        if len(batch) >= batch_size or permutation_key == permutation_keys[-1]:
+            batch_prediction = pytorch_predict_batch(torch.tensor(batch).float(), model, n_gpus).numpy()
+            for batch_idx, perm_idx in enumerate(permutation_indices):
+                prediction_data[perm_idx] = batch_prediction[batch_idx].squeeze()
+            batch = list()
+            permutation_indices = list()
+    # average over all the permutations
+    return prediction_data.mean(axis=0)

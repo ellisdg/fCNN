@@ -189,7 +189,7 @@ def whole_brain_scalar_predictions(model_filename, subject_ids, hcp_dir, output_
         raise ValueError("Predictions not yet implemented for {}".format(package))
 
 
-def volumetric_predictions(model_filename, filenames, output_dir, model_name, n_features, window,
+def volumetric_predictions(model_filename, filenames, prediction_dir, model_name, n_features, window,
                            criterion_name, package="keras", n_gpus=1, n_workers=1, batch_size=1,
                            model_kwargs=None, n_outputs=None, sequence_kwargs=None, sequence=None,
                            metric_names=None, evaluate_predictions=False, interpolation="linear",
@@ -201,7 +201,7 @@ def volumetric_predictions(model_filename, filenames, output_dir, model_name, n_
                                        n_outputs=n_outputs,
                                        n_features=n_features,
                                        filenames=filenames,
-                                       prediction_dir=output_dir,
+                                       prediction_dir=prediction_dir,
                                        window=window,
                                        criterion_name=criterion_name,
                                        n_gpus=n_gpus,

@@ -164,7 +164,7 @@ def run_inference(namespace):
 
     return func(model_filename=namespace.model_filename,
                 filenames=filenames,
-                output_dir=namespace.output_directory,
+                prediction_dir=namespace.output_directory,
                 model_name=config["model_name"],
                 n_features=config["n_features"],
                 window=config["window"],

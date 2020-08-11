@@ -10,7 +10,7 @@ from .utils.sequences import SubjectPredictionSequence
 from .utils.pytorch.dataset import HCPSubjectDataset
 from .utils.hcp import new_cifti_scalar_like, get_metric_data
 from .utils.filenames import generate_hcp_filenames, load_subject_ids
-from .utils.augment import generate_permutation_keys, permute_data
+from .utils.augment import generate_permutation_keys, permute_data, reverse_permute_data
 
 
 def predict_data_loader(model, data_loader):
@@ -617,10 +617,11 @@ def predict_with_permutations(model, data, n_outputs, batch_size, n_gpus, permut
         batch.append(permute_data(data, permutation_key))
         permutation_indices.append(permutation_idx)
         if len(batch) >= batch_size or permutation_key == permutation_keys[-1]:
-            batch_prediction = np.moveaxis(pytorch_predict_batch(torch.tensor(batch).float(), model, n_gpus).numpy(),
-                                           1, 4)
+            batch_prediction = pytorch_predict_batch(torch.tensor(batch).float(), model, n_gpus).numpy()
             for batch_idx, perm_idx in enumerate(permutation_indices):
-                prediction_data[perm_idx] = batch_prediction[batch_idx].squeeze()
+                prediction_data[perm_idx] = np.moveaxis(reverse_permute_data(batch_prediction[batch_idx],
+                                                                             permutation_keys[perm_idx]).squeeze(),
+                                                        0, 3)
             batch = list()
             permutation_indices = list()
     # average over all the permutations

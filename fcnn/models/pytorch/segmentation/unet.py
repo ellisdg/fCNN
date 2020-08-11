@@ -41,5 +41,11 @@ class UNet(ConvolutionalAutoEncoder):
         self.set_final_convolution(n_outputs=n_outputs)
 
 
+class AutoImplant(UNet):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
+    def forward(self, x):
+        y = super(AutoImplant, self).forward(x)
+        return y - x
 

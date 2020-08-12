@@ -25,7 +25,7 @@ def format_process(**kwargs):
 
 def main():
     kwargs = parse_args()
-    slurm_options = kwargs.pop("slurm_options")
+    slurm_options = ["--" + option for option in kwargs.pop("slurm_options")]
     anaconda_env = kwargs.pop("anaconda_env")
     job_name = "predict_{}".format(os.path.basename(kwargs["config_filename"]).split(".")[0].replace("_config", ""))
     slurm_filename = kwargs.pop("slurm_filename").format(job_name)

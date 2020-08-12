@@ -17,7 +17,7 @@ def parse_args():
 
 def format_process(**kwargs):
     process = "python fcnn/scripts/run_unet_inference.py"
-    for key, value in kwargs.values():
+    for key, value in kwargs.items():
         process = "{process} --{key} {value}".format(process=process, key=key, value=value)
     return process
 

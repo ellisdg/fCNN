@@ -24,10 +24,10 @@ def format_process(**kwargs):
 
 def main():
     kwargs = parse_args()
-    slurm_filename = kwargs.pop("slurm_filename")
     slurm_options = kwargs.pop("slurm_options")
     anaconda_env = kwargs.pop("anaconda_env")
     job_name = "predict_{}".format(os.path.basename(kwargs["config_filename"]).split(".")[0].replace("_config", ""))
+    slurm_filename = kwargs.pop("slurm_filename").format(job_name)
     local = kwargs.pop("local")
     process = format_process(**kwargs)
     submit_slurm_gpu_process(process=process, slurm_script_filename=slurm_filename, slurm_options=slurm_options,

@@ -35,8 +35,8 @@ def submit_slurm_process(process, slurm_script_filename, slurm_options=None, loc
         cmd = ["bash"]
     else:
         cmd = ["sbatch"]
-    if slurm_options:
-        cmd.extend(slurm_options)
+        if slurm_options:
+            cmd.extend(slurm_options)
     cmd.append(slurm_script_filename)
     subprocess.call(cmd)
 

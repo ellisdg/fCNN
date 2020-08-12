@@ -35,7 +35,6 @@ def main():
     process = format_process(**kwargs)
     submit_slurm_gpu_process(process=process, slurm_script_filename=slurm_filename, slurm_options=slurm_options,
                              job_name=job_name, anaconda_env=anaconda_env, local=local)
-    pass
 
 
 if __name__ == "__main__":

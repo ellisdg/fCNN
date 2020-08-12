@@ -43,7 +43,7 @@ def format_parser(parser=argparse.ArgumentParser(), sub_command=False):
     parser.add_argument("--sub_volumes", nargs="*", type=int)
     parser.add_argument("--alternate_prediction_func", help="Manually set which function will be called to make the "
                                                             "volumetric predictions.")
-    parser.add_argument("--activation", default="sigmoid")
+    parser.add_argument("--activation", default=None)
     return parser
 
 
@@ -111,7 +111,8 @@ def run_inference(namespace):
     else:
         model_kwargs = dict()
 
-    model_kwargs["activation"] = namespace.activation
+    if namespace.activation:
+        model_kwargs["activation"] = namespace.activation
 
     if "sequence_kwargs" in config:
         sequence_kwargs = config["sequence_kwargs"]

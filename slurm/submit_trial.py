@@ -1,8 +1,8 @@
 import argparse
 import json
 import os
-import subprocess
 from random import shuffle
+from slurm.utils import submit_slurm_gpu_process
 
 
 def parse_args():
@@ -44,7 +44,7 @@ def submit_slurm_trial(config_filename, job_name=None, partition="gpu", n_gpus=2
         job_name = config_basename
 
     if output_dir is None:
-        output_dir = os.path.abspath(".")
+        output_dir = os.path.abspath("../trials")
     elif not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -60,39 +60,21 @@ def submit_slurm_trial(config_filename, job_name=None, partition="gpu", n_gpus=2
     if error_log is None:
         error_log = os.path.join(output_dir, "job." + job_name + "_%J.err".format(job_name))
 
-    slurm_script = """#!/bin/sh
-#SBATCH --time={days}-00:00:00          # Run time in hh:mm:ss
-#SBATCH --job-name={job_name}
-#SBATCH --partition={partition}
-#SBATCH --gres=gpu:{n_gpus}
-#SBATCH --constraint={constraint}
-#SBATCH --ntasks-per-node={n_tasks}
-#SBATCH --mem-per-cpu={mem_per_cpu}       # Maximum memory required per CPU (in megabytes)
-#SBATCH --error={error_log}
-#SBATCH --output={output_log}
-
-module load cuda
-module load anaconda
-conda activate {anaconda_env}
-
-export PYTHONPATH={fcnn_dir}:$PYTHONPATH
-
-{python} {fcnn_dir}/fcnn/scripts/run_trial.py\
+    script = """
+    {python} {fcnn_dir}/fcnn/scripts/run_trial.py\
  --config_filename {config_filename}\
  --model_filename {model_filename}\
  --training_log_filename {log_filename}\
  --machine_config_filename {machine_config_filename}
-""".format(days=days, job_name=job_name, partition=partition, n_gpus=n_gpus, constraint=constraint, n_tasks=n_tasks,
-           mem_per_cpu=mem_per_cpu, error_log=error_log, output_log=output_log, anaconda_env=anaconda_env,
-           fcnn_dir=fcnn_dir, config_filename=config_filename, model_filename=model_filename, python=python,
-           log_filename=training_log_filename,
+""".format(fcnn_dir=fcnn_dir, config_filename=config_filename,
+           model_filename=model_filename, python=python, log_filename=training_log_filename,
            machine_config_filename=machine_config_filename)
 
     slurm_script_filename = os.path.join(output_dir, job_name + ".slurm")
-    with open(slurm_script_filename, "w") as opened_file:
-        opened_file.write(slurm_script)
-
-    subprocess.call(["sbatch", slurm_script_filename])
+    submit_slurm_gpu_process(script, days=days, job_name=job_name, partition=partition, n_gpus=n_gpus,
+                             constraint=constraint, n_tasks=n_tasks, mem_per_cpu=mem_per_cpu,
+                             error_log=error_log, output_log=output_log, anaconda_env=anaconda_env,
+                             slurm_script_filename=slurm_script_filename)
 
 
 def submit_cross_validation_trials(config_filename, n_folds, group="training", **slurm_kwargs):
@@ -113,7 +95,7 @@ def submit_cross_validation_trials(config_filename, n_folds, group="training", *
 def divide_into_folds(x, n_folds):
     folds = list()
     start = 0
-    fold_size = len(x)/float(n_folds)
+    fold_size = len(x) / float(n_folds)
     step = int(fold_size)
     leftover_step = fold_size - step
     leftovers = 0

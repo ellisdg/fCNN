@@ -11,8 +11,8 @@ def check_queue_length():
     return len(list(io.TextIOWrapper(proc.stdout, encoding="utf-8")))
 
 
-def wait_for_long_queue(sleeping_time=60):
-    while check_queue_length() > 1000:
+def wait_for_long_queue(sleeping_time=60, limit=1000):
+    while check_queue_length() > limit:
         time.sleep(sleeping_time)
 
 

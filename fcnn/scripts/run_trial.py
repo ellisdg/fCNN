@@ -10,7 +10,7 @@ from fcnn.utils.pytorch.dataset import (WholeBrainCIFTI2DenseScalarDataset, HCPR
 from fcnn.utils.utils import load_json, in_config
 from fcnn.utils.custom import get_metric_data_from_config
 from fcnn.models.keras.resnet.resnet import compare_scores
-from fcnn.scripts.run_unet_inference import format_parser as format_prediction_args
+from fcnn.scripts.run_unet_inference import format_parser as format_prediction_args, check_hierarchy
 from fcnn.scripts.run_unet_inference import run_inference
 
 
@@ -106,14 +106,8 @@ def main():
     else:
         bias = None
 
-    if in_config("labels", config["sequence_kwargs"]) and in_config("use_label_hierarchy", config["sequence_kwargs"]):
-        config["sequence_kwargs"].pop("use_label_hierarchy")
-        labels = config["sequence_kwargs"].pop("labels")
-        new_labels = list()
-        while len(labels):
-            new_labels.append(labels)
-            labels = labels[1:]
-        config["sequence_kwargs"]["labels"] = new_labels
+    check_hierarchy(config)
+
     if in_config("add_contours", config["sequence_kwargs"], False):
         config["n_outputs"] = config["n_outputs"] * 2
 

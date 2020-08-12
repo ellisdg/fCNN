@@ -21,7 +21,7 @@ def parse_args():
     parser.add_argument("--training_log_filename", required=True)
     parser.add_argument("--machine_config_filename", required=True)
     parser.add_argument("--group_average_filenames")
-    subparsers = parser.add_subparsers(help="sub-commands", dest='command')
+    subparsers = parser.add_subparsers(help="sub-commands", dest='sub_command')
     prediction_parser = subparsers.add_parser(name="predict",
                                               help="Run prediction after the model has finished training")
     format_prediction_args(prediction_parser, sub_command=True)
@@ -147,7 +147,7 @@ def main():
                      sequence_class=sequence_class,
                      model_metrics=model_metrics, metric_to_monitor=metric_to_monitor, bias=bias, **system_config)
 
-    if namespace.command == "predict":
+    if namespace.sub_command == "predict":
         run_inference(namespace)
 
 

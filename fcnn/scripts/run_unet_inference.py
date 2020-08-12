@@ -3,6 +3,7 @@ import argparse
 from fcnn.utils.utils import load_json, in_config
 from fcnn.predict import volumetric_predictions
 from fcnn.utils.filenames import generate_filenames, load_subject_ids, load_sequence
+from fcnn.scripts.segment import format_parser as format_segmentation_parser
 
 
 def format_parser(parser=argparse.ArgumentParser(), sub_command=False):
@@ -24,15 +25,7 @@ def format_parser(parser=argparse.ArgumentParser(), sub_command=False):
                              "space when needed.")
     parser.add_argument("--interpolation", default="linear")
     parser.add_argument("--output_template")
-    parser.add_argument("--segmentation", action="store_true", default=False)
     parser.add_argument("--replace", nargs="*")
-    parser.add_argument("--threshold", default=0.5, type=float,
-                        help="If segmentation is set, this is the threshold for segmentation cutoff.")
-    parser.add_argument("--no_sum", default=False, action="store_true",
-                        help="Does not sum the predictions before using threshold.")
-    parser.add_argument("--use_contours", action="store_true", default=False,
-                        help="If the model was trained to predict contours you can use the contours to assist in the "
-                             "segmentation. (This has not been shown to improve results.)")
     parser.add_argument("--subjects_config_filename",
                         help="Allows for specification of the config that contains the subject ids. If not set and the "
                              "subject ids are not listed in the main config, then the filename for the subjects config "
@@ -44,6 +37,7 @@ def format_parser(parser=argparse.ArgumentParser(), sub_command=False):
     parser.add_argument("--alternate_prediction_func", help="Manually set which function will be called to make the "
                                                             "volumetric predictions.")
     parser.add_argument("--activation", default=None)
+    format_segmentation_parser(parser, sub_command=True)
     return parser
 
 
@@ -191,7 +185,7 @@ def run_inference(namespace):
                 segmentation=namespace.segmentation,
                 segmentation_labels=labels,
                 threshold=namespace.threshold,
-                sum_then_threshold=(namespace.no_sum is False),
+                sum_then_threshold=namespace.sum,
                 label_hierarchy=label_hierarchy)
 
 

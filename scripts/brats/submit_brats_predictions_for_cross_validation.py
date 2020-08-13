@@ -13,7 +13,7 @@ def main():
     error_log_tmp = "/work/aizenberg/dgellis/MICCAI_BraTS2020/predictions/job.{fold}_{placeholder}.err"
     output_log_tmp = "/work/aizenberg/dgellis/MICCAI_BraTS2020/predictions/job.{fold}_{placeholder}.out"
     for training_job_fn in glob.glob("/work/aizenberg/dgellis/MICCAI_BraTS2020/models/job.brats_fold*_*.err"):
-        _, fold, jobid, = os.path.basename(training_job_fn).split("_")
+        _, fold, jobid, = os.path.basename(training_job_fn).replace(".err", "").split("_")
         config_filename = config_filename_tmp.format(fold=fold)
         model_filename = model_filename_tmp.format(fold=fold)
         error_log = error_log_tmp.format(fold=fold, placeholder="%J")

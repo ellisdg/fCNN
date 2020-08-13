@@ -53,7 +53,7 @@ def main():
                                         output_template="BraTS20_Validation_{subject}.nii.gz"))
         process = "\n\n".join(processes)
         submit_slurm_gpu_process(process=process, slurm_script_filename=slurm_filename, slurm_options=slurm_options,
-                                 job_name=job_name, anaconda_env=anaconda_env, local=True, error_log=error_log,
+                                 job_name=job_name, anaconda_env=anaconda_env, error_log=error_log,
                                  output_log=output_log)
 
 

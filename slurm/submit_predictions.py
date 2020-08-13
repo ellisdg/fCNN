@@ -19,6 +19,8 @@ def format_process(**kwargs):
     process = "python fcnn/scripts/run_unet_inference.py"
     for key, value in kwargs.items():
         if value:
+            if type(value) == list:
+                value = " ".join(value)
             process = "{process} --{key} {value}".format(process=process, key=key, value=value)
     return process
 

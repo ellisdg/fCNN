@@ -38,6 +38,7 @@ def submit_slurm_process(process, slurm_script_filename, slurm_options=None, loc
         if slurm_options:
             cmd.extend(slurm_options)
     cmd.append(slurm_script_filename)
+    print(" ".join(cmd))
     subprocess.call(cmd)
 
 

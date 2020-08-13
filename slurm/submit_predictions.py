@@ -9,7 +9,9 @@ def parse_args():
     format_prediction_parser(parser, sub_command=False)
     parser.add_argument("--slurm_options", help="Add slurm optoins in quotations in order with no quotations.",
                         nargs="*")
-    parser.add_argument("--slurm_filename", default="/work/aizenberg/dgellis/predict_{job}_{model}.slurm")
+    parser.add_argument("--slurm_filename", default="/work/aizenberg/dgellis/{job}_{model}.slurm")
+    parser.add_argument("--error_log", default="/work/aizenberg/dgellis/job.{job}_{model}_{placeholder}.err")
+    parser.add_argument("--output_log", default="/work/aizenberg/dgellis/job.{job}_{model}_{placeholder}.out")
     parser.add_argument("--anaconda_env", default="fcnn-1.12")
     parser.add_argument("--local", action="store_true", default=False)
     return vars(parser.parse_args())
@@ -31,12 +33,15 @@ def main():
     anaconda_env = kwargs.pop("anaconda_env")
     job_name = "predict_{}_{}".format(os.path.basename(kwargs["config_filename"]).split(".")[0].replace("_config", ""),
                                       kwargs["group"])
-    slurm_filename = kwargs.pop("slurm_filename").format(job=job_name,
-                                                         model=os.path.basename(kwargs["model_filename"]).split(".")[0])
+    model_name = os.path.basename(kwargs["model_filename"]).split(".")[0]
+    slurm_filename = kwargs.pop("slurm_filename").format(job=job_name, model=model_name)
+    error_log = kwargs.pop("error_log").format(job=job_name, model=model_name, placeholder="%J")
+    output_log = kwargs.pop("output_log").format(job=job_name, model=model_name, placeholder="%J")
     local = kwargs.pop("local")
     process = format_process(**kwargs)
     submit_slurm_gpu_process(process=process, slurm_script_filename=slurm_filename, slurm_options=slurm_options,
-                             job_name=job_name, anaconda_env=anaconda_env, local=local)
+                             job_name=job_name, anaconda_env=anaconda_env, local=local, error_log=error_log,
+                             output_log=output_log)
 
 
 if __name__ == "__main__":

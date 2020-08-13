@@ -16,8 +16,8 @@ def main():
         _, fold, jobid, = os.path.basename(training_job_fn).split("_")
         config_filename = config_filename_tmp.format(fold=fold)
         model_filename = model_filename_tmp.format(fold=fold)
-        error_log = error_log_tmp.format(fold=fold, placehold="%J")
-        output_log = output_log_tmp.format(fold=fold, placehold="%J")
+        error_log = error_log_tmp.format(fold=fold, placeholder="%J")
+        output_log = output_log_tmp.format(fold=fold, placeholder="%J")
         slurm_options = ["--dependency=afterany:{jobid}".format(jobid=jobid)]
         anaconda_env = "fcnn-1.12"
         job_name = "{}_predict".format(fold)

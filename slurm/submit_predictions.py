@@ -1,10 +1,11 @@
 import argparse
 import os
-from fcnn.scripts.run_unet_inference import format_parser as format_prediction_parser
 from slurm.utils import submit_slurm_gpu_process
 
 
 def parse_args():
+    from fcnn.scripts.run_unet_inference import format_parser as format_prediction_parser
+
     parser = argparse.ArgumentParser()
     format_prediction_parser(parser, sub_command=False)
     parser.add_argument("--slurm_options", help="Add slurm optoins in quotations in order with no quotations.",

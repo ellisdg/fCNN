@@ -46,6 +46,6 @@ class AutoImplantUNet(UNet):
         super().__init__(*args, **kwargs)
 
     def forward(self, x):
-        y = super(AutoImplant, self).forward(x)
+        y = super(AutoImplantUNet, self).forward(x)
         return y - x
 

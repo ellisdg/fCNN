@@ -125,7 +125,7 @@ def convert_one_hot_to_label_map_using_hierarchy(one_hot_encoding, labels, thres
     roi = np.ones(one_hot_encoding.shape[:axis], dtype=np.bool)
     label_map = np.zeros(one_hot_encoding.shape[:axis], dtype=dtype)
     for index, label in enumerate(labels):
-        roi = one_hot_encoding[..., index][roi] > threshold
+        roi = (one_hot_encoding[..., index][roi] > threshold).reshape(roi.shape)
         label_map[roi] = label
     return label_map
 

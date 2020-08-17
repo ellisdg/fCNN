@@ -11,9 +11,9 @@
     ]
   },
   "window": [
-    144,
-    192,
-    112
+    176,
+    224,
+    144
   ],
   "n_features": 1,
   "optimizer": "Adam",
@@ -40,7 +40,7 @@
     "base_width":  32,
     "encoder_blocks": [2, 2, 2, 2, 2],
     "decoder_mirrors_encoder": false,
-    "input_shape": [144, 192, 112],
+    "input_shape": [176, 224, 144],
     "activation": "sigmoid"
   },
   "skip_validation": false,

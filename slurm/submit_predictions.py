@@ -8,7 +8,7 @@ def parse_args():
 
     parser = argparse.ArgumentParser()
     format_prediction_parser(parser, sub_command=False)
-    parser.add_argument("--slurm_options", help="Add slurm optoins in quotations in order with no quotations.",
+    parser.add_argument("--slurm_options", help="Add slurm options in quotations in order with no quotations.",
                         nargs="*")
     parser.add_argument("--slurm_filename", default="/work/aizenberg/dgellis/{job}_{model}.slurm")
     parser.add_argument("--error_log", default="/work/aizenberg/dgellis/job.{job}_{model}_{placeholder}.err")

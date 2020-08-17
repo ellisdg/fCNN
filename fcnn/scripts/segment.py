@@ -15,6 +15,8 @@ def format_parser(parser, sub_command=False):
         parser.add_argument("--labels", nargs="*", required=True)
         parser.add_argument("--hierarchy", default=False, action="store_true")
         parser.add_argument("--verbose", action="store_true", default=False)
+        parser.add_argument("--output_replace", nargs="*")
+        parser.add_argument("--output_filenames", nargs="*")
     parser.add_argument("--threshold", default=0.5, type=float,
                         help="If segmentation is set, this is the threshold for segmentation cutoff.")
     parser.add_argument("--sum", default=False, action="store_true",
@@ -27,7 +29,18 @@ def format_parser(parser, sub_command=False):
 
 def main():
     namespace = parse_args()
-    for fn, ofn in zip(namespace.filenames, namespace.output_filenames):
+    if namespace.output_filenames:
+        output_filenames = namespace.output_filenames
+    elif namespace.output_replace:
+        output_filenames = list()
+        for fn in namespace.filenames:
+            ofn = fn
+            for i in range(int(len(namespace.output_replace)/2)):
+                ofn = ofn.replace(namespace.output_replace[i], namespace.output_replace[i + 1])
+            output_filenames.append(ofn)
+    else:
+        raise RuntimeError("Please specify output_filenames or output_replace.")
+    for fn, ofn in zip(namespace.filenames, output_filenames):
         if namespace.verbose:
             print(fn, "-->", ofn)
         image = nib.load(fn)

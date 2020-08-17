@@ -73,7 +73,7 @@ class ConvolutionalAutoEncoder(nn.Module):
             if decoder_class is None:
                 decoder_class = MirroredDecoder
         elif decoder_blocks is None:
-            decoder_blocks = [1] * (len(encoder_blocks) - 1)
+            decoder_blocks = [1] * len(encoder_blocks)
             if decoder_class is None:
                 decoder_class = MyronenkoDecoder
         return decoder_class, decoder_blocks

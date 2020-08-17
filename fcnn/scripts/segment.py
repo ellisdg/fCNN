@@ -1,4 +1,5 @@
 import argparse
+import os
 import nibabel as nib
 from fcnn.utils.utils import one_hot_image_to_label_map
 
@@ -43,6 +44,8 @@ def main():
     for fn, ofn in zip(namespace.filenames, output_filenames):
         if namespace.verbose:
             print(fn, "-->", ofn)
+        if not os.path.exists(os.path.dirname(ofn)):
+            os.makedirs(os.path.dirname(ofn))
         image = nib.load(fn)
         label_map = one_hot_image_to_label_map(image,
                                                labels=namespace.labels,

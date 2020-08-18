@@ -6,7 +6,8 @@ import numpy as np
 from fcnn.utils.affine import resize_affine, get_spacing_from_affine
 from fcnn.utils.resample import resample, resample_image_to_spacing
 from fcnn.utils.nilearn_custom_utils.nilearn_utils import crop_img, reorder_affine
-from fcnn.utils.utils import compile_one_hot_encoding
+from fcnn.utils.utils import (compile_one_hot_encoding, break_down_volume_into_half_size_volumes,
+                              combine_half_size_volumes)
 
 
 class TestUtils(TestCase):
@@ -118,3 +119,21 @@ class TestUtils(TestCase):
         np.testing.assert_array_equal(compile_one_hot_encoding(data[None, None], 1, labels=[[5, 22]]),
                                       _target2[None, None])
 
+    def test_super_resolution(self):
+        shape = np.asarray((4, 4, 4))
+        image = self._create_image(shape)
+        new_shape = shape * 2
+        data = image.get_fdata()
+        new_data = np.ones(new_shape) * -1
+        new_data[::2, ::2, ::2] = data  # original
+        new_data[1::2, ::2, ::2] = data  # x shifted
+        new_data[1::2, 1::2, ::2] = data  # x and y shifted
+        new_data[1::2, ::2, 1::2] = data  # x and z shifted
+        new_data[1::2, 1::2, 1::2] = data  # x, y, and z shifted
+        new_data[::2, 1::2, ::2] = data  # y shifted
+        new_data[::2, 1::2, 1::2] = data  # y and z shifted
+        new_data[::2, ::2, 1::2] = data  # z shifted
+        assert np.all(new_data != -1)  # test that all the values have been assigned
+
+        volumes = break_down_volume_into_half_size_volumes(data)
+        np.testing.assert_array_equal(data, combine_half_size_volumes(volumes))

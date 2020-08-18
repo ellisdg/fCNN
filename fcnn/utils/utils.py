@@ -285,3 +285,27 @@ def add_one_hot_encoding_contours(one_hot_encoding):
         new_encoding[..., one_hot_encoding.shape[-1] + index] = estimate_binary_contour(
             one_hot_encoding[..., index] > 0)
     return new_encoding
+
+
+def break_down_volume_into_half_size_volumes(data):
+    return (data[::2, ::2, ::2],  # original
+            data[1::2, ::2, ::2],  # x shifted
+            data[1::2, 1::2, ::2],  # x and y shifted
+            data[1::2, ::2, 1::2],  # x and z shifted
+            data[1::2, 1::2, 1::2],  # x, y, and z shifted
+            data[::2, 1::2, ::2],  # y shifted
+            data[::2, 1::2, 1::2],  # y and z shifted
+            data[::2, ::2, 1::2])  # z shifted
+
+
+def combine_half_size_volumes(volumes):
+    data = np.zeros(tuple(np.asarray(volumes[0].shape[:3]) * 2) + volumes[0].shape[3:], dtype=volumes[0].dtype)
+    data[::2, ::2, ::2] = volumes[0]  # original
+    data[1::2, ::2, ::2] = volumes[1]  # x shifted
+    data[1::2, 1::2, ::2] = volumes[2]  # x and y shifted
+    data[1::2, ::2, 1::2] = volumes[3]  # x and z shifted
+    data[1::2, 1::2, 1::2] = volumes[4]  # x, y, and z shifted
+    data[::2, 1::2, ::2] = volumes[5]  # y shifted
+    data[::2, 1::2, 1::2] = volumes[6]  # y and z shifted
+    data[::2, ::2, 1::2] = volumes[7]  # z shifted
+    return data

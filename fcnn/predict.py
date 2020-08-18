@@ -674,6 +674,7 @@ def predict_super_resolution_data(model, data, batch_size, n_gpus):
         print(volume.shape)
         batch.append(volume)
         if len(batch) >= batch_size or i == (len(input_data) - 1):
+            print(batch)
             batch_prediction = pytorch_predict_batch_array(batch, model, n_gpus)
             for batch_idx in range(batch_prediction.shape[0]):
                 predicted_data.append(batch_prediction[batch_idx])

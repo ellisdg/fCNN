@@ -389,9 +389,6 @@ def write_prediction_image_to_file(pred_image, output_template, subject_id, x_fi
 
 def pytorch_predict_batch_array(model, batch, n_gpus=1):
     import torch
-    print(np.asarray(batch).shape)
-    for item in batch:
-        print(item.shape)
     batch_x = torch.tensor(np.moveaxis(np.asarray(batch), -1, 1)).float()
     pred_x = pytorch_predict_batch(batch_x, model, n_gpus)
     return np.moveaxis(pred_x.numpy(), 1, -1)
@@ -673,10 +670,9 @@ def predict_super_resolution_data(model, data, batch_size, n_gpus):
     input_data = break_down_volume_into_half_size_volumes(data)
     predicted_data = list()
     for i, volume in enumerate(input_data):
-        print(volume.shape)
         batch.append(volume)
         if len(batch) >= batch_size or i == (len(input_data) - 1):
-            batch_prediction = pytorch_predict_batch_array(batch, model, n_gpus)
+            batch_prediction = pytorch_predict_batch_array(model=model, batch=batch, n_gpus=n_gpus)
             for batch_idx in range(batch_prediction.shape[0]):
                 predicted_data.append(batch_prediction[batch_idx])
             batch = list()

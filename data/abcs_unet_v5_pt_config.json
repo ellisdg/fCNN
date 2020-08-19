@@ -11,8 +11,8 @@
     "target_templates": ["{subject}_labelmap_task1.nii.gz", "{subject}_labelmap_task2.nii.gz"]
   },
   "window": [
-    160,
-    192,
+    128,
+    128,
     128
   ],
   "n_features": 5,

@@ -12,8 +12,8 @@
   },
   "window": [
     160,
-    160,
-    160
+    192,
+    128
   ],
   "n_features": 5,
   "optimizer": "Adam",
@@ -37,8 +37,8 @@
   "model_kwargs": {
     "base_width":  32,
     "encoder_blocks": [2, 2, 2, 2, 2],
-    "decoder_mirrors_encoder": true,
-    "input_shape": [160, 160, 160],
+    "decoder_mirrors_encoder": false,
+    "input_shape": [160, 192, 128],
     "activation": "sigmoid"
   },
   "skip_validation": false,

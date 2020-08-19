@@ -11,7 +11,7 @@
 
 module load cuda
 module load anaconda
-source activate fcnn-1.12
+source activate pytorch-1.6
 
 TRIAL=dti4_wb_18_LS_biased_augmented
 CONFIG=/home/aizenberg/dgellis/fCNN/data/${TRIAL}_config.json
@@ -25,5 +25,5 @@ export KERAS_BACKEND=tensorflow
 OLD_MODEL=/work/aizenberg/dgellis/fCNN/model_dti4_wb_18_LS.h5
 BIAS=/work/aizenberg/dgellis/HCP/HCP_1200/training_tfMRI_LANGUAGE_level2_hp200_s4_MSMAll.dscalar.nii
 
-/home/aizenberg/dgellis/.conda/envs/fcnn-1.12/bin/python /home/aizenberg/dgellis/fCNN/scripts/set_model_bias.py ${OLD_MODEL} ${CONFIG} ${BIAS} ${MODEL}
-/home/aizenberg/dgellis/.conda/envs/fcnn-1.12/bin/python /home/aizenberg/dgellis/fCNN/trials/run_trial.py ${CONFIG} ${MODEL} ${LOG} ${HCC_CONFIG}
+/home/aizenberg/dgellis/.conda/envs/pytorch-1.6/bin/python /home/aizenberg/dgellis/fCNN/scripts/set_model_bias.py ${OLD_MODEL} ${CONFIG} ${BIAS} ${MODEL}
+/home/aizenberg/dgellis/.conda/envs/pytorch-1.6/bin/python /home/aizenberg/dgellis/fCNN/trials/run_trial.py ${CONFIG} ${MODEL} ${LOG} ${HCC_CONFIG}

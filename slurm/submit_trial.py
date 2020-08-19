@@ -34,9 +34,9 @@ def load_subject_ids(config):
 
 
 def submit_slurm_trial(config_filename, job_name=None, partition="gpu", n_gpus=2, constraint="gpu_v100", days=7,
-                       n_tasks=40, mem_per_cpu=4000, error_log=None, output_log=None, anaconda_env="fcnn-1.12",
+                       n_tasks=40, mem_per_cpu=4000, error_log=None, output_log=None, anaconda_env="pytorch-1.6",
                        fcnn_dir="/home/aizenberg/dgellis/fCNN",
-                       python="/home/aizenberg/dgellis/.conda/envs/fcnn-1.12/bin/python",
+                       python="/home/aizenberg/dgellis/.conda/envs/pytorch-1.6/bin/python",
                        model_filename=None, training_log_filename=None, output_dir=None,
                        machine_config_filename="/home/aizenberg/dgellis/fCNN/data/hcc_v100_2gpu_32gb_config.json"):
     config_basename = os.path.basename(config_filename).split(".")[0].replace("_config", "")

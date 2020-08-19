@@ -13,7 +13,7 @@ def parse_args():
     parser.add_argument("--slurm_filename", default="/work/aizenberg/dgellis/{job}_{model}.slurm")
     parser.add_argument("--error_log", default="/work/aizenberg/dgellis/job.{job}_{model}_{placeholder}.err")
     parser.add_argument("--output_log", default="/work/aizenberg/dgellis/job.{job}_{model}_{placeholder}.out")
-    parser.add_argument("--anaconda_env", default="fcnn-1.12")
+    parser.add_argument("--anaconda_env", default="pytorch-1.6")
     parser.add_argument("--local", action="store_true", default=False)
     return vars(parser.parse_args())
 

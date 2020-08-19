@@ -7,4 +7,4 @@ MCONF=/home/aizenberg/dgellis/fCNN/data/hcc_${SYSTEM}_config.json
 ODIR=/work/aizenberg/dgellis/fCNN/predictions
 BIAS=/work/aizenberg/dgellis/HCP/HCP_1200/v3_training_tfMRI_LANGUAGE_level2_hp200_s2.dscalar.nii
 SID=100206
-/home/aizenberg/dgellis/.conda/envs/fcnn-1.12/bin/python /home/aizenberg/dgellis/fCNN/fcnn/scripts/make_whole_brain_predictions.py ${CONF} ${MODEL} ${MCONF} ${ODIR} ${BIAS} ${SID}
+/home/aizenberg/dgellis/.conda/envs/pytorch-1.6/bin/python /home/aizenberg/dgellis/fCNN/fcnn/scripts/make_whole_brain_predictions.py ${CONF} ${MODEL} ${MCONF} ${ODIR} ${BIAS} ${SID}

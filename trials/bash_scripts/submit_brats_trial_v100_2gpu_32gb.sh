@@ -11,7 +11,7 @@
 
 module load cuda
 module load anaconda
-conda activate fcnn-1.12
+conda activate pytorch-1.6
 
 export PYTHONPATH=/home/aizenberg/dgellis/fCNN:/home/aizenberg/dgellis/3DUnetCNN:${PYTHONPATH}
 
@@ -23,7 +23,7 @@ LOG=/work/aizenberg/dgellis/fCNN/log_${TRIAL}.csv
 GROUP="test_validation"
 PREDICTION_DIR=/work/aizenberg/dgellis/fCNN/predictions/${TRIAL}_${GROUP}
 
-/home/aizenberg/dgellis/.conda/envs/fcnn-1.12/bin/python /home/aizenberg/dgellis/fCNN/fcnn/scripts/run_trial.py\
+/home/aizenberg/dgellis/.conda/envs/pytorch-1.6/bin/python /home/aizenberg/dgellis/fCNN/fcnn/scripts/run_trial.py\
  --config_filename "${CONFIG}"\
  --model_filename "${MODEL}"\
  --training_log_filename "${LOG}"\

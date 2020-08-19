@@ -11,7 +11,7 @@
 
 module load cuda
 module load anaconda
-source activate fcnn-1.12
+source activate pytorch-1.6
 
 TRIAL=trial_2b
 CONFIG=/home/aizenberg/dgellis/fCNN/data/trial2_config.json

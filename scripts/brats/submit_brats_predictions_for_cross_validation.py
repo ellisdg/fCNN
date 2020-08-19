@@ -19,7 +19,7 @@ def main():
         error_log = error_log_tmp.format(fold=fold, placeholder="%J")
         output_log = output_log_tmp.format(fold=fold, placeholder="%J")
         slurm_options = ["--dependency=afterany:{jobid}".format(jobid=jobid)]
-        anaconda_env = "fcnn-1.12"
+        anaconda_env = "pytorch-1.6"
         job_name = "{}_predict".format(fold)
         slurm_filename = "/work/aizenberg/dgellis/MICCAI_BraTS2020/predictions/{job}.slurm".format(job=job_name)
         processes = list()

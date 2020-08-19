@@ -11,7 +11,7 @@
 
 module load cuda
 module load anaconda
-source activate fcnn-1.12
+source activate pytorch-1.6
 
 TRIAL=v2_dti4_wb_senet18_LS_2mm_augmented005
 CONFIG=/home/aizenberg/dgellis/fCNN/data/${TRIAL}_config.json
@@ -22,4 +22,4 @@ LOG=/work/aizenberg/dgellis/fCNN/log_${TRIAL}.csv
 export PYTHONPATH=/home/aizenberg/dgellis/3DUnetCNN:$PYTHONPATH
 export KERAS_BACKEND=tensorflow
 
-/home/aizenberg/dgellis/.conda/envs/fcnn-1.12/bin/python /home/aizenberg/dgellis/fCNN/trials/run_trial.py ${CONFIG} ${MODEL} ${LOG} ${HCC_CONFIG}
+/home/aizenberg/dgellis/.conda/envs/pytorch-1.6/bin/python /home/aizenberg/dgellis/fCNN/trials/run_trial.py ${CONFIG} ${MODEL} ${LOG} ${HCC_CONFIG}

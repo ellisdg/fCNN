@@ -11,7 +11,7 @@
 
 module load cuda
 module load anaconda
-source activate fcnn-1.12
+source activate pytorch-1.6
 
 export PYTHONPATH=/home/aizenberg/dgellis/fCNN:/home/aizenberg/dgellis/3DUnetCNN:${PYTHONPATH}
 
@@ -21,4 +21,4 @@ HCC_CONFIG=/home/aizenberg/dgellis/fCNN/data/hcc_p100_config.json
 MODEL=/work/aizenberg/dgellis/fCNN/model_${TRIAL}.pt
 LOG=/work/aizenberg/dgellis/fCNN/log_${TRIAL}.csv
 
-/home/aizenberg/dgellis/.conda/envs/fcnn-1.12/bin/python /home/aizenberg/dgellis/fCNN/fcnn/scripts/run_trial.py ${CONFIG} ${MODEL} ${LOG} ${HCC_CONFIG}
+/home/aizenberg/dgellis/.conda/envs/pytorch-1.6/bin/python /home/aizenberg/dgellis/fCNN/fcnn/scripts/run_trial.py ${CONFIG} ${MODEL} ${LOG} ${HCC_CONFIG}

@@ -18,7 +18,7 @@ in2=${10}
 fnout1=${11}
 fnout2=${12}
 export PATH=/work/aizenberg/dgellis/tools/fsl/bin:/work/aizenberg/dgellis/tools/workbench/bin_rh_linux64:${PATH}
-export LD_LIBRARY_PATH=/home/aizenberg/dgellis/.conda/envs/fcnn-1.12/lib:${LD_LIBRARY_PATH}
+export LD_LIBRARY_PATH=/home/aizenberg/dgellis/.conda/envs/pytorch-1.6/lib:${LD_LIBRARY_PATH}
 convertwarp --warp1=${warp1S} --warp2=${warpS2} --ref=${ref2} -o ${compwarp12}
 convertwarp --warp1=${warp2S} --warp2=${warpS1} --ref=${ref1} -o ${compwarp21}
 wb_command -volume-warpfield-resample ${in1} ${compwarp12} ${ref2} TRILINEAR ${fnout1} -fnirt ${ref2}

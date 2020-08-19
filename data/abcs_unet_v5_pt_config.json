@@ -43,7 +43,7 @@
   },
   "skip_validation": false,
   "iterations_per_epoch": 1,
-  "n_outputs": 15,
+  "n_outputs": 11,
   "sequence": "WholeVolumeSegmentationDataset",
   "sequence_kwargs": {
     "normalization": ["static_windows", "zero_one_window"],

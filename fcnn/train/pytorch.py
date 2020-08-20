@@ -185,11 +185,14 @@ def train(model, optimizer, criterion, n_epochs, training_loader, validation_loa
     elif learning_rate_decay_step_size:
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=learning_rate_decay_step_size,
                                                     gamma=decay_factor, last_epoch=-1)
+        # Setting the last epoch to anything other than -1 requires the optimizer that was previously used.
+        # Since I don't save the optimizer, I have to manually step the scheduler the number of epochs that have already
+        # been completed. Stepping the scheduler before the optimizer raises a warning, so I have added the below
+        # code to step the scheduler and catch the UserWarning that would normally be thrown.
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             for i in range(start_epoch):
                 scheduler.step()
-        warnings.warn("TEST WARNING", UserWarning)
     else:
         scheduler = None
 

@@ -16,7 +16,7 @@
     128
   ],
   "n_features": 5,
-  "optimizer": "Adam",
+  "optimizer": "SGD",
   "package": "pytorch",
   "loss": "per_channel_dice_loss",
   "evaluation_metric": "per_channel_dice_loss",

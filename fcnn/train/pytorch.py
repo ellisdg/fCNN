@@ -16,7 +16,7 @@ from ..utils.utils import in_config
 
 
 def build_optimizer(optimizer_name, model_parameters, learning_rate=1e-4):
-    return getattr(torch.optim, optimizer_name)(model_parameters, lr=learning_rate).cuda()
+    return getattr(torch.optim, optimizer_name)(model_parameters, lr=learning_rate)
 
 
 def run_pytorch_training(config, model_filename, training_log_filename, verbose=1, use_multiprocessing=False,

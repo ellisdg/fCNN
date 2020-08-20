@@ -189,6 +189,7 @@ def train(model, optimizer, criterion, n_epochs, training_loader, validation_loa
             warnings.simplefilter("ignore")
             for i in range(start_epoch):
                 scheduler.step()
+        warnings.warn("TEST WARNING", UserWarning)
     else:
         scheduler = None
 

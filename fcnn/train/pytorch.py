@@ -185,8 +185,8 @@ def train(model, optimizer, criterion, n_epochs, training_loader, validation_loa
     elif learning_rate_decay_step_size:
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=learning_rate_decay_step_size,
                                                     gamma=decay_factor, last_epoch=-1)
-        from contextlib import suppress
-        with suppress(UserWarning):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
             for i in range(start_epoch):
                 scheduler.step()
     else:

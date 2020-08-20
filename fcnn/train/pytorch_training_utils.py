@@ -217,23 +217,23 @@ def epoch_training(train_loader, model, criterion, optimizer, epoch, n_gpus=None
         # measure data loading time
         data_time.update(time.time() - end)
 
-        if n_gpus:
-            torch.cuda.empty_cache()
-            if print_gpu_memory:
-                for i_gpu in range(n_gpus):
-                    print("Memory allocated (device {}):".format(i_gpu),
-                          human_readable_size(torch.cuda.memory_allocated(i_gpu)))
-                    print("Max memory allocated (device {}):".format(i_gpu),
-                          human_readable_size(torch.cuda.max_memory_allocated(i_gpu)))
-                    print("Memory cached (device {}):".format(i_gpu),
-                          human_readable_size(torch.cuda.memory_cached(i_gpu)))
-                    print("Max memory cached (device {}):".format(i_gpu),
-                          human_readable_size(torch.cuda.max_memory_cached(i_gpu)))
+        # if n_gpus:
+        #     torch.cuda.empty_cache()
+        #     if print_gpu_memory:
+        #         for i_gpu in range(n_gpus):
+        #             print("Memory allocated (device {}):".format(i_gpu),
+        #                   human_readable_size(torch.cuda.memory_allocated(i_gpu)))
+        #             print("Max memory allocated (device {}):".format(i_gpu),
+        #                   human_readable_size(torch.cuda.max_memory_allocated(i_gpu)))
+        #             print("Memory cached (device {}):".format(i_gpu),
+        #                   human_readable_size(torch.cuda.memory_cached(i_gpu)))
+        #             print("Max memory cached (device {}):".format(i_gpu),
+        #                   human_readable_size(torch.cuda.max_memory_cached(i_gpu)))
 
         loss, batch_size = batch_loss(model, images, target, criterion, n_gpus=n_gpus, regularized=regularized,
                                       vae=vae)
-        if n_gpus:
-            torch.cuda.empty_cache()
+        # if n_gpus:
+        #     torch.cuda.empty_cache()
 
         # measure accuracy and record loss
         losses.update(loss.item(), batch_size)

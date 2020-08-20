@@ -1,6 +1,7 @@
 import os
 import math
 import torch
+import torch.nn
 
 from .classification import resnet
 from .classification import custom

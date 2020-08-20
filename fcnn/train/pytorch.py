@@ -14,6 +14,9 @@ from .pytorch_training_utils import epoch_training, epoch_validatation, collate_
 from ..utils.pytorch import functions
 from ..utils.utils import in_config
 
+import torch.backends.cudnn
+torch.backends.cudnn.enabled = False
+
 
 def build_optimizer(optimizer_name, model_parameters, learning_rate=1e-4):
     return getattr(torch.optim, optimizer_name)(model_parameters, lr=learning_rate)

@@ -11,7 +11,7 @@
 
 module load cuda
 module load anaconda
-source activate pytorch-1.6
+source activate pytorch-1.5
 
 TRIAL=trial_lowq_2
 CONFIG=/home/aizenberg/dgellis/fCNN/data/${TRIAL}_config.json
@@ -22,4 +22,4 @@ LOG=/work/aizenberg/dgellis/fCNN/log_${TRIAL}.csv
 export PYTHONPATH=/home/aizenberg/dgellis/3DUnetCNN:$PYTHONPATH
 export KERAS_BACKEND=tensorflow
 
-/home/aizenberg/dgellis/.conda/envs/pytorch-1.6/bin/python /home/aizenberg/dgellis/fCNN/trials/run_trial.py ${CONFIG} ${MODEL} ${LOG} ${HCC_CONFIG}
+/home/aizenberg/dgellis/.conda/envs/pytorch-1.5/bin/python /home/aizenberg/dgellis/fCNN/trials/run_trial.py ${CONFIG} ${MODEL} ${LOG} ${HCC_CONFIG}

@@ -184,9 +184,7 @@ def train(model, optimizer, criterion, n_epochs, training_loader, validation_loa
                                                                verbose=verbose, factor=decay_factor, min_lr=min_lr)
     elif learning_rate_decay_step_size:
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=learning_rate_decay_step_size,
-                                                    gamma=decay_factor, last_epoch=-1)
-        for i in range(start_epoch):
-            scheduler.step(epoch=i+1)
+                                                    gamma=decay_factor, last_epoch=start_epoch-1)
     else:
         scheduler = None
 
@@ -226,7 +224,7 @@ def train(model, optimizer, criterion, n_epochs, training_loader, validation_loa
             elif scheduler.__class__ == torch.optim.lr_scheduler.ReduceLROnPlateau:
                 scheduler.step(loss)
             else:
-                scheduler.step(epoch=epoch+1)
+                scheduler.step()
 
         # save model
         torch.save(model.state_dict(), model_filename)

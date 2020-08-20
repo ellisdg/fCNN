@@ -11,7 +11,7 @@
 
 module load cuda
 module load anaconda
-source activate pytorch-1.6
+source activate pytorch-1.5
 
 TRIAL=v3_dti4_wb_CustResNet8_LS_2mm_pt_regularized
 CONFIG=/home/aizenberg/dgellis/fCNN/data/${TRIAL}_config.json
@@ -19,4 +19,4 @@ HCC_CONFIG=/home/aizenberg/dgellis/fCNN/data/hcc_p100_config.json
 MODEL=/work/aizenberg/dgellis/fCNN/model_${TRIAL}.pt
 LOG=/work/aizenberg/dgellis/fCNN/log_${TRIAL}.csv
 
-/home/aizenberg/dgellis/.conda/envs/pytorch-1.6/bin/python /home/aizenberg/dgellis/fCNN/fcnn/scripts/run_trial.py ${CONFIG} ${MODEL} ${LOG} ${HCC_CONFIG}
+/home/aizenberg/dgellis/.conda/envs/pytorch-1.5/bin/python /home/aizenberg/dgellis/fCNN/fcnn/scripts/run_trial.py ${CONFIG} ${MODEL} ${LOG} ${HCC_CONFIG}

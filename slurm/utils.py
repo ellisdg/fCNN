@@ -44,7 +44,7 @@ def submit_slurm_process(process, slurm_script_filename, slurm_options=None, loc
 
 def submit_slurm_gpu_process(process, slurm_script_filename, slurm_options=None, job_name="fcnn", partition="gpu",
                              n_gpus=2, constraint="gpu_v100", days=7, n_tasks=40, mem_per_cpu=4000,
-                             error_log="./job.fcnn_%J.err", output_log="./job.fcnn_%J.out", anaconda_env="pytorch-1.6",
+                             error_log="./job.fcnn_%J.err", output_log="./job.fcnn_%J.out", anaconda_env="pytorch-1.5",
                              fcnn_dir=os.path.abspath(os.path.dirname(os.path.dirname(__file__))), local=False):
     return submit_slurm_process(process, slurm_script_filename, slurm_options, job_name=job_name, partition=partition,
                                 days=days, n_gpus=n_gpus, constraint=constraint, n_tasks=n_tasks,

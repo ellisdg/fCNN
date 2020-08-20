@@ -11,7 +11,7 @@
 
 module load cuda
 module load anaconda
-conda activate pytorch-1.6
+conda activate pytorch-1.5
 
 export PYTHONPATH=/home/aizenberg/dgellis/fCNN:/home/aizenberg/dgellis/3DUnetCNN:${PYTHONPATH}
 
@@ -21,7 +21,7 @@ HCC_CONFIG=/home/aizenberg/dgellis/fCNN/data/hcc_v100_1gpu_config.json
 MODEL=/work/aizenberg/dgellis/fCNN/model_${TRIAL}.h5
 LOG=/work/aizenberg/dgellis/fCNN/log_${TRIAL}.csv
 
-/home/aizenberg/dgellis/.conda/envs/pytorch-1.6/bin/python /home/aizenberg/dgellis/fCNN/fcnn/scripts/run_trial.py\
+/home/aizenberg/dgellis/.conda/envs/pytorch-1.5/bin/python /home/aizenberg/dgellis/fCNN/fcnn/scripts/run_trial.py\
  --config_filename ${CONFIG}\
  --model_filename ${MODEL}\
  --training_log_filename ${LOG}\

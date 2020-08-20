@@ -184,7 +184,11 @@ def train(model, optimizer, criterion, n_epochs, training_loader, validation_loa
                                                                verbose=verbose, factor=decay_factor, min_lr=min_lr)
     elif learning_rate_decay_step_size:
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=learning_rate_decay_step_size,
-                                                    gamma=decay_factor, last_epoch=start_epoch-1)
+                                                    gamma=decay_factor, last_epoch=-1)
+        from contextlib import suppress
+        with suppress(UserWarning):
+            for i in range(start_epoch):
+                scheduler.step()
     else:
         scheduler = None
 

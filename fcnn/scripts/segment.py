@@ -25,11 +25,14 @@ def format_parser(parser, sub_command=False):
     parser.add_argument("--use_contours", action="store_true", default=False,
                         help="If the model was trained to predict contours you can use the contours to assist in the "
                              "segmentation. (This has not been shown to improve results.)")
+    parser.add_argument("--no_overwrite", action="store_true", default=False,
+                        help="Default is to overwrite.")
     return parser
 
 
 def main():
     namespace = parse_args()
+    overwrite = not namespace.no_overwrite
     if namespace.output_filenames:
         output_filenames = namespace.output_filenames
     elif namespace.output_replace:
@@ -42,17 +45,18 @@ def main():
     else:
         raise RuntimeError("Please specify output_filenames or output_replace.")
     for fn, ofn in zip(namespace.filenames, output_filenames):
-        if namespace.verbose:
-            print(fn, "-->", ofn)
-        if not os.path.exists(os.path.dirname(ofn)):
-            os.makedirs(os.path.dirname(ofn))
-        image = nib.load(fn)
-        label_map = one_hot_image_to_label_map(image,
-                                               labels=namespace.labels,
-                                               threshold=namespace.threshold,
-                                               sum_then_threshold=namespace.sum,
-                                               label_hierarchy=namespace.hierarchy)
-        label_map.to_filename(ofn)
+        if overwrite or not os.path.exists(ofn):
+            if namespace.verbose:
+                print(fn, "-->", ofn)
+            if not os.path.exists(os.path.dirname(ofn)):
+                os.makedirs(os.path.dirname(ofn))
+            image = nib.load(fn)
+            label_map = one_hot_image_to_label_map(image,
+                                                   labels=namespace.labels,
+                                                   threshold=namespace.threshold,
+                                                   sum_then_threshold=namespace.sum,
+                                                   label_hierarchy=namespace.hierarchy)
+            label_map.to_filename(ofn)
 
 
 if __name__ == "__main__":

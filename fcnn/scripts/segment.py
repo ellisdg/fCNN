@@ -36,7 +36,7 @@ def main():
         output_filenames = list()
         for fn in namespace.filenames:
             ofn = fn
-            for i in range(int(len(namespace.output_replace)/2)):
+            for i in range(0, len(namespace.output_replace), 2):
                 ofn = ofn.replace(namespace.output_replace[i], namespace.output_replace[i + 1])
             output_filenames.append(ofn)
     else:

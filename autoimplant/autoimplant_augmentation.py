@@ -171,19 +171,15 @@ def augment_auto_implant_cases(case1, case2, directory, output_directory, n_thre
         prefix = prefix1
     transforms = get_prefix_transforms(prefix, output_directory)
     # apply transforms
-    # augment defective skull
-    augment_defective_skull(case1, case2, directory, output_directory, [transforms[1], transforms[0]],
-                            num_threads=n_threads)
-    augment_defective_skull(case2, case1, directory, output_directory, [transforms[0], transforms[2]],
-                            invert_transform_flags=[True, False], num_threads=n_threads)
-    # augment implant
-    augment_implant(case1, case2, directory, output_directory, [transforms[1], transforms[0]],
-                    num_threads=n_threads)
-    augment_implant(case2, case1, directory, output_directory, [transforms[0], transforms[2]],
-                    invert_transform_flags=[True, False], num_threads=n_threads)
+    for name in ("implant", "defective_skull", "complete_skull"):
+        # augment defective skull
+        augment_image(case1, case2, directory, output_directory, [transforms[1], transforms[0]],
+                      num_threads=n_threads, name=name)
+        augment_image(case2, case1, directory, output_directory, [transforms[0], transforms[2]],
+                      invert_transform_flags=[True, False], num_threads=n_threads, name=name)
     # copy over non-augmented filenames
     for case in (case1, case2):
-        for name in ("implant", "defective_skull"):
+        for name in ("implant", "defective_skull", "complete_skull"):
             copy_image(case, directory, output_directory, name)
 
 

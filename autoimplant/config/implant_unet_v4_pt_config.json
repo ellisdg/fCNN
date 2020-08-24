@@ -7,7 +7,7 @@
       "augmented_defective_skull/{subject}_defective_skull.nii.gz"
     ],
     "target_templates": [
-      "augmented_implant/{subject}_complete_skull.nii.gz"
+      "complete_skull/{subject}_complete_skull.nii.gz"
     ]
   },
   "window": [
@@ -51,7 +51,7 @@
     "normalization": null,
     "crop": true,
     "cropping_kwargs": null,
-    "interpolation": "nearest",
+    "interpolation": "linear",
     "labels": [1],
     "add_contours": false
   },

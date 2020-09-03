@@ -3,6 +3,7 @@ import json
 import os
 from random import shuffle
 from slurm.utils import submit_slurm_gpu_process
+from sklearn.model_selection import KFold
 
 
 def parse_args():
@@ -93,22 +94,10 @@ def submit_cross_validation_trials(config_filename, n_folds, group="training", *
 
 
 def divide_into_folds(x, n_folds):
+    kf = KFold(n_folds)
     folds = list()
-    start = 0
-    fold_size = len(x) / float(n_folds)
-    step = int(fold_size)
-    leftover_step = fold_size - step
-    leftovers = 0
-    for i in range(n_folds):
-        stop = (i + 1) * step
-        leftovers = leftovers + leftover_step
-        while leftovers >= 1 - 1e-4:
-            stop = stop + 1
-            leftovers = leftovers - 1
-        validation = x[start:stop]
-        train = x[:start] + x[stop:]
+    for train, validation in kf.split(x):
         folds.append([train, validation])
-        start = stop
     return folds
 
 

@@ -7,7 +7,7 @@
       "augmented_defective_skull/{subject}_defective_skull.nii.gz"
     ],
     "target_templates": [
-      "complete_skull/{subject}_complete_skull.nii.gz"
+      "augmented_complete_skull/{subject}_complete_skull.nii.gz"
     ]
   },
   "window": [

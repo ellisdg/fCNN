@@ -11,9 +11,9 @@
     "target_templates": ["{subject}_labelmap_task1.nii.gz", "{subject}_labelmap_task2.nii.gz"]
   },
   "window": [
-    64,
-    64,
-    64
+    176,
+    208,
+    144
   ],
   "n_features": 5,
   "optimizer": "Adam",
@@ -38,7 +38,7 @@
     "base_width":  32,
     "encoder_blocks": [2, 2, 2, 2, 2],
     "decoder_mirrors_encoder": false,
-    "input_shape": [64, 64, 64],
+    "input_shape": [176, 208, 144],
     "activation": "sigmoid"
   },
   "skip_validation": false,

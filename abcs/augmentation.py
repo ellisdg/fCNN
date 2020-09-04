@@ -8,7 +8,7 @@ def main():
     t1 = "/work/aizenberg/dgellis/MICCAI_ABCs_2020/ABCs_training_data/{}_t1.nii.gz"
     t2 = "/work/aizenberg/dgellis/MICCAI_ABCs_2020/ABCs_training_data/{}_t2.nii.gz"
     subjects = [os.path.basename(f).split("_")[0] for f in
-                glob.glob("/work/aizenberg/dgellis/MICCAI_ABCs_2020/*_ct.nii.gz")]
+                glob.glob("/work/aizenberg/dgellis/MICCAI_ABCs_2020/ABCs_training_data/*_ct.nii.gz")]
     for i in range(len(subjects)):
         s1 = subjects[i]
         for s2 in subjects[(i + 1):]:

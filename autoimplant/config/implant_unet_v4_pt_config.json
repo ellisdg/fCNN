@@ -35,7 +35,7 @@
   "batch_size": 2,
   "validation_batch_size": 2,
   "initial_learning_rate": 1e-04,
-  "model_name": "AutoImplantUNet",
+  "model_name": "UNet",
   "model_kwargs": {
     "base_width":  32,
     "encoder_blocks": [2, 2, 2, 2, 2],

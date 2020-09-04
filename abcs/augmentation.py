@@ -12,6 +12,7 @@ def main():
     for i in range(len(subjects)):
         s1 = subjects[i]
         for s2 in subjects[(i + 1):]:
+            print(s1, s2)
             bn = "{}_to_{}".format(s1, s2)
             cmd = ['antsRegistrationSyNQuick.sh',
                              '-f',

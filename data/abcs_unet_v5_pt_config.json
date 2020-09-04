@@ -58,7 +58,7 @@
       }
     },
     "crop": true,
-    "cropping_kwargs": {"percentile": 50},
+    "cropping_kwargs": {"percentile": 90},
     "interpolation": "linear",
     "labels": [[1, 2, 3, 4, 5], [1, 2, [3, 4], [5, 6], [7, 8], [9, 10]]],
     "add_contours": false

@@ -4,15 +4,15 @@ from slurm.submit_trial import divide_into_folds, dump_json, load_json, submit_s
 def submit_cross_validation_trials(config_filename, n_folds, group="training", **slurm_kwargs):
     config = load_json(config_filename)
     subject_ids = ["{:03d}".format(i) for i in range(100)]
-    folds = divide_into_folds(subject_ids, n_folds)
+    folds = divide_into_folds(subject_ids, n_folds, shuffle=True)
     for i, (train, validation) in enumerate(folds):
         real_train = list()
         real_validation = list()
         for s1 in train:
             for s2 in train:
-                real_train.append("sub-{}_space-{}".format(s1, s2))
+                real_train.append("sub-{:03d}_space-{:03d}".format(s1, s2))
         for s1 in validation:
-            real_validation.append("sub-{0}_space-{0}".format(s1))
+            real_validation.append("sub-{0:03d}_space-{0:03d}".format(s1))
         config["training"] = real_train
         config["validation"] = real_validation
         fold_config_filename = config_filename.replace(".json", "_fold{}.json".format(i))

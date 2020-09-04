@@ -93,8 +93,8 @@ def submit_cross_validation_trials(config_filename, n_folds, group="training", *
         submit_slurm_trial(fold_config_filename, **slurm_kwargs)
 
 
-def divide_into_folds(x, n_folds):
-    kf = KFold(n_folds)
+def divide_into_folds(x, n_folds, shuffle=True):
+    kf = KFold(n_folds, shuffle=shuffle)
     folds = list()
     for train, validation in kf.split(x):
         folds.append([train, validation])

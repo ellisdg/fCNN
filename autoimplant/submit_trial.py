@@ -1,5 +1,6 @@
 from slurm.submit_trial import divide_into_folds, dump_json, load_json, submit_slurm_trial, parse_args, os
 
+
 def submit_cross_validation_trials(config_filename, n_folds, group="training", **slurm_kwargs):
     config = load_json(config_filename)
     subject_ids = ["{:03d}".format(i) for i in range(100)]
@@ -28,6 +29,7 @@ def main():
                                        **slurm_config)
     else:
         submit_slurm_trial(namespace.trial_config, output_dir=namespace.output_dir, **slurm_config)
+
 
 if __name__ == "__main__":
     main()

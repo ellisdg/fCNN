@@ -13,7 +13,7 @@ def main():
         s1 = subjects[i]
         for s2 in subjects[(i + 1):]:
             bn = "{}_to_{}".format(s1, s2)
-            subprocess.call(['antsRegistrationSyNQuick.sh',
+            cmd = ['antsRegistrationSyNQuick.sh',
                              '-f',
                              ct.format(s1),
                              '-f',
@@ -31,7 +31,9 @@ def main():
                              '-d',
                              '3',
                              '-o',
-                             bn])
+                             bn]
+            print(" ".join(cmd))
+            subprocess.call(cmd)
 
 
 if __name__ == "__main__":

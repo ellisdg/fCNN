@@ -13,7 +13,8 @@ def main():
     error_log_tmp = "/work/aizenberg/dgellis/MICCAI_BraTS2020/predictions/job.{group}_{fold}_{placeholder}.err"
     output_log_tmp = "/work/aizenberg/dgellis/MICCAI_BraTS2020/predictions/job.{group}_{fold}_{placeholder}.out"
     group = "test"
-    for fold in range(10):
+    for fold_id in range(10):
+        fold = "fold" + str(fold_id)
         config_filename = config_filename_tmp.format(fold=fold)
         model_filename = model_filename_tmp.format(fold=fold)
         error_log = error_log_tmp.format(group=group, fold=fold, placeholder="%J")

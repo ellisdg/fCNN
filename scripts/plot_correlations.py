@@ -207,7 +207,7 @@ def plot_self_vs_other_correlations(corr_matrices, model_labels, method_labels, 
     save_fig(fig, os.path.join(output_dir, output_filename), bbox_inches="tight", extensions=extensions)
 
 
-def compare_overall_correlation_models_and_methods(correlation_files, labels, output_directory):
+def compare_overall_correlation_models_and_methods(correlation_files, labels, output_directory, extensions=(".pdf",)):
     temp_correlations = list()
     subjects = list()
     model_labels = list()
@@ -235,17 +235,18 @@ def compare_overall_correlation_models_and_methods(correlation_files, labels, ou
     plot_self_vs_other_correlations(correlations, model_labels, method_labels, output_directory,
                                     metric_func=self_vs_other_correlation,
                                     output_filename="compared_increase_correlation_over_mean_correlation_average",
-                                    xlabel="Self vs other increase (in %)")
+                                    xlabel="Self vs other increase (in %)",
+                                    extensions=extensions)
 
     plot_self_vs_other_correlations(correlations, model_labels, method_labels, output_directory,
                                     metric_func=mean_diagonal,
                                     output_filename="compared_mean_correlation",
-                                    xlabel="Mean Correlation")
+                                    xlabel="Mean Correlation", extensions=extensions)
 
     plot_self_vs_other_correlations(correlations, model_labels, method_labels, output_directory,
                                     metric_func=normalized_mean_diagonal,
                                     output_filename="compared_normalized_mean_correlation",
-                                    xlabel="Normalized Mean Correlation")
+                                    xlabel="Normalized Mean Correlation", extensions=extensions)
 
 
 def plot_per_domain(corr_matrices, domains, metric_names, method_labels, labels, output_dir, average_per_domain=True,
@@ -341,7 +342,7 @@ def main():
         if len(args["correlation_filename"]) > 1:
             # compare correlations
             compare_overall_correlation_models_and_methods(args["correlation_filename"], args["labels"],
-                                                           args["output_dir"])
+                                                           args["output_dir"], extensions=args["extensions"])
         else:
             # plot correlation results for a single correlation file
             corr_matrix = np.load(args["correlation_filename"][0])[..., 0]

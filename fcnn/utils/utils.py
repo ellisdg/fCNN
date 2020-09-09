@@ -79,7 +79,7 @@ def compile_one_hot_encoding(data, n_labels, labels=None, dtype=np.uint8, return
     return y
 
 
-def convert_one_hot_to_label_map(one_hot_encoding, labels, axis=3, threshold=0.5, sum_then_threshold=True,
+def convert_one_hot_to_label_map(one_hot_encoding, labels, axis=3, threshold=0.5, sum_then_threshold=False,
                                  dtype=np.int16, label_hierarchy=False):
     if label_hierarchy:
         return convert_one_hot_to_label_map_using_hierarchy(one_hot_encoding, labels, axis=axis, threshold=threshold,
@@ -96,12 +96,18 @@ def convert_one_hot_to_label_map(one_hot_encoding, labels, axis=3, threshold=0.5
                 i = i + len(_labels)
             label_map = np.stack(label_maps, axis=axis)
         else:
-            # output a single labelmap volume
-            segmentation_mask = mask_encoding(one_hot_encoding, len(labels), threshold=threshold, axis=axis,
-                                              sum_then_threshold=sum_then_threshold)
-            label_map = assign_labels(one_hot_encoding, segmentation_mask, labels=labels, axis=axis,
-                                      dtype=dtype, label_indices=np.arange(len(labels)))
+            label_map = convert_one_hot_to_single_label_map_volume(one_hot_encoding, labels, threshold, axis,
+                                                                   sum_then_threshold, dtype)
         return label_map
+
+
+def convert_one_hot_to_single_label_map_volume(one_hot_encoding, labels, threshold=0.5, axis=3,
+                                               sum_then_threshold=False, dtype=np.int16):
+    # output a single label map volume
+    segmentation_mask = mask_encoding(one_hot_encoding, len(labels), threshold=threshold, axis=axis,
+                                      sum_then_threshold=sum_then_threshold)
+    return assign_labels(one_hot_encoding, segmentation_mask, labels=labels, axis=axis,
+                         dtype=dtype, label_indices=np.arange(len(labels)))
 
 
 def mask_encoding(one_hot_encoding, n_labels, threshold=0.5, axis=3, sum_then_threshold=False):
@@ -309,3 +315,12 @@ def combine_half_size_volumes(volumes):
     data[::2, 1::2, 1::2] = volumes[6]  # y and z shifted
     data[::2, ::2, 1::2] = volumes[7]  # z shifted
     return data
+
+
+def split_left_right(data):
+    center_index = data.shape[0] // 2
+    left = np.zeros(data.shape, dtype=data.dtype)
+    right = np.copy(left)
+    left[:center_index] = data[:center_index]
+    right[center_index:] = data[center_index:]
+    return left, right

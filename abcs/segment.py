@@ -38,7 +38,7 @@ def main():
             d = np.stack(volumes, axis=-1)
             label_map = convert_one_hot_to_single_label_map_volume(d, l, dtype=np.uint8)
             out_image = image.__class__(dataobj=label_map, affine=image.affine)
-            out_image.to_filename(ofn.replace(".", "_pred{}.".format(i + 1)))
+            out_image.to_filename(ofn.replace(".", "_pred{}.".format(i + 1), 1))
 
 
 if __name__ == "__main__":

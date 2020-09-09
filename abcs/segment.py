@@ -33,10 +33,10 @@ def main():
             for ii, label in enumerate(l):
                 if type(l) == list and len(l) == 2:
                     volumes.extend(split_left_right(d[..., ii]))
-                    labels.extend(l)
+                    labels.extend(l[ii])
                 else:
                     volumes.append(d[..., ii])
-                    labels.append(l)
+                    labels.append(l[ii])
             print(labels)
             label_map = convert_one_hot_to_single_label_map_volume(np.stack(volumes, axis=-1), labels, dtype=np.uint8)
             out_image = image.__class__(dataobj=label_map, affine=image.affine)

@@ -40,7 +40,7 @@ def main():
                 else:
                     volumes.append(d[..., ii])
                     labels.append(label)
-            fixed_data = resample_to_img(_image.__class__(dattaobj=np.stack(volumes, axis=-1),
+            fixed_data = resample_to_img(_image.__class__(dataobj=np.stack(volumes, axis=-1),
                                                           affine=_image.affine), target_img=image).get_fdata()
             label_map = convert_one_hot_to_single_label_map_volume(fixed_data, labels, dtype=np.uint8)
             out_image = image.__class__(dataobj=label_map, affine=image.affine)

@@ -16,6 +16,8 @@ def parse_args():
 
 def main():
     namespace = parse_args()
+    if not os.path.exists(namespace.output_dir):
+        os.makedirs(namespace.output_dir)
     config = load_json(namespace.config_filename)
     labels = config["sequence_kwargs"]["labels"]
     labels1, labels2 = labels

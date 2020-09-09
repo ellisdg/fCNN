@@ -37,6 +37,7 @@ def format_parser(parser=argparse.ArgumentParser(), sub_command=False):
     parser.add_argument("--alternate_prediction_func", help="Manually set which function will be called to make the "
                                                             "volumetric predictions.")
     parser.add_argument("--activation", default=None)
+    parser.add_argument("--write_input_images", default=False, action="store_true")
     format_segmentation_parser(parser, sub_command=True)
     return parser
 
@@ -187,7 +188,8 @@ def run_inference(namespace):
                 segmentation_labels=labels,
                 threshold=namespace.threshold,
                 sum_then_threshold=namespace.sum,
-                label_hierarchy=label_hierarchy)
+                label_hierarchy=label_hierarchy,
+                write_input_images=namespace.write_input_images)
 
 
 def check_hierarchy(config):

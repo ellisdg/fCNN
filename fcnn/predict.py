@@ -195,7 +195,8 @@ def volumetric_predictions(model_filename, filenames, prediction_dir, model_name
                            model_kwargs=None, n_outputs=None, sequence_kwargs=None, sequence=None,
                            metric_names=None, evaluate_predictions=False, interpolation="linear",
                            resample_predictions=True, output_template=None, segmentation=False,
-                           segmentation_labels=None, threshold=0.5, sum_then_threshold=True, label_hierarchy=None):
+                           segmentation_labels=None, threshold=0.5, sum_then_threshold=True, label_hierarchy=None,
+                           write_input_images=False):
     if package == "pytorch":
         pytorch_volumetric_predictions(model_filename=model_filename,
                                        model_name=model_name,
@@ -220,7 +221,8 @@ def volumetric_predictions(model_filename, filenames, prediction_dir, model_name
                                        segmentation_labels=segmentation_labels,
                                        threshold=threshold,
                                        sum_then_threshold=sum_then_threshold,
-                                       label_hierarchy=label_hierarchy)
+                                       label_hierarchy=label_hierarchy,
+                                       write_input_images=write_input_images)
     else:
         raise ValueError("Predictions not yet implemented for {}".format(package))
 
@@ -397,7 +399,7 @@ def pytorch_predict_batch_array(model, batch, n_gpus=1):
 def predict_volumetric_batch(model, batch, batch_references, batch_subjects, batch_filenames,
                              basename, prediction_dir,
                              segmentation, output_template, n_gpus, verbose, threshold, interpolation,
-                             segmentation_labels, sum_then_threshold, label_hierarchy):
+                             segmentation_labels, sum_then_threshold, label_hierarchy, write_input_image=False):
     pred_x = pytorch_predict_batch_array(model, batch, n_gpus=n_gpus)
     for batch_idx in range(len(batch)):
         pred_image = prediction_to_image(pred_x[batch_idx].squeeze(), input_image=batch_references[batch_idx][0],
@@ -411,6 +413,13 @@ def predict_volumetric_batch(model, batch, batch_references, batch_subjects, bat
                                        prediction_dir=prediction_dir,
                                        basename=basename,
                                        verbose=verbose)
+        if write_input_image:
+            write_prediction_image_to_file(batch_references[batch_idx][0], output_template=output_template,
+                                           subject_id=batch_subjects[batch_idx] + "_input",
+                                           x_filename=batch_filenames[batch_idx],
+                                           prediction_dir=prediction_dir,
+                                           basename=basename,
+                                           verbose=verbose)
 
 
 def pytorch_volumetric_predictions(model_filename, model_name, n_features, filenames, window,
@@ -421,7 +430,8 @@ def pytorch_volumetric_predictions(model_filename, model_name, n_features, filen
                                    print_prediction_time=True, verbose=True,
                                    evaluate_predictions=False, resample_predictions=False, interpolation="linear",
                                    output_template=None, segmentation=False, segmentation_labels=None,
-                                   sum_then_threshold=True, threshold=0.7, label_hierarchy=None):
+                                   sum_then_threshold=True, threshold=0.7, label_hierarchy=None,
+                                   write_input_images=False):
     import torch
     # from .train.pytorch import load_criterion
 
@@ -453,7 +463,8 @@ def pytorch_volumetric_predictions(model_filename, model_name, n_features, filen
                                          segmentation=segmentation, output_template=output_template, n_gpus=n_gpus,
                                          verbose=verbose, threshold=threshold, interpolation=interpolation,
                                          segmentation_labels=segmentation_labels,
-                                         sum_then_threshold=sum_then_threshold, label_hierarchy=label_hierarchy)
+                                         sum_then_threshold=sum_then_threshold, label_hierarchy=label_hierarchy,
+                                         write_input_image=write_input_images)
                 batch = list()
                 batch_references = list()
                 batch_subjects = list()

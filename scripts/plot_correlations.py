@@ -184,7 +184,8 @@ def self_vs_other_correlation(corr_matrix):
 def plot_self_vs_other_correlations(corr_matrices, model_labels, method_labels, output_dir,
                                     metric_func=self_vs_other_correlation,
                                     output_filename="{}_increase_correlation_over_mean_correlation",
-                                    xlabel="Self vs other increase (in %)"):
+                                    xlabel="Self vs other increase (in %)",
+                                    extensions=(".pdf",)):
     result = list()
     for i, (model_name, method_name) in enumerate(zip(model_labels, method_labels)):
         corr_matrix = corr_matrices[i]
@@ -249,7 +250,7 @@ def compare_overall_correlation_models_and_methods(correlation_files, labels, ou
 
 def plot_per_domain(corr_matrices, domains, metric_names, method_labels, labels, output_dir, average_per_domain=True,
          metric_func=self_vs_other_correlation, output_filename="{}_increase_correlation_over_mean_correlation",
-         xlabel="Self vs other increase (in %)"):
+         xlabel="Self vs other increase (in %)", extensions=(".pdf",)):
     names = list()
     result = list()
     titles = list()
@@ -284,7 +285,8 @@ def plot_per_domain(corr_matrices, domains, metric_names, method_labels, labels,
     ax.set_xlabel(xlabel)
     ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
     seaborn.despine(ax=ax, top=True)
-    save_fig(fig, os.path.join(output_dir, output_filename.format("_".join(labels))), bbox_inches="tight", extensions=extensions)
+    save_fig(fig, os.path.join(output_dir, output_filename.format("_".join(labels))), bbox_inches="tight",
+             extensions=extensions)
 
 
 def compare_domain_correlation_models(correlation_files, name_file, labels, output_directory, average_per_domain=True):

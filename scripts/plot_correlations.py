@@ -16,7 +16,7 @@ def parse_args():
     parser.add_argument('--task_names', default="/home/aizenberg/dgellis/fCNN/data/labels/ALL-TAVOR_name-file.txt")
     parser.add_argument('--level', default="overall", choices=["overall", "domain", "task"])
     parser.add_argument('--stats_filename', default=None)
-    parser.add_argument('--extensions', nargs="*", default=["pdf"])
+    parser.add_argument('--extensions', nargs="*", default=[".pdf"])
     return vars(parser.parse_args())
 
 
@@ -107,7 +107,8 @@ def plot_heatmap(data, ax, vmin, vmax, cmap, cbar=True, cbar_ax=None, set_xlabel
         ax.set_ylabel(ylabel)
 
 
-def plot_correlation_panel(corr_matrix, column_width=3, row_height=3, norm_vmax=3, norm_vmin=-3, output_dir="."):
+def plot_correlation_panel(corr_matrix, column_width=3, row_height=3, norm_vmax=3, norm_vmin=-3, output_dir=".",
+                           extensions=(".pdf",)):
     # define a separate color bar for the overall corr matrix
     overall_cbar_fig, overall_cbar_ax = plt.subplots(figsize=(0.5, 5))
     norm_cbar_fig, norm_cbar_ax = plt.subplots(figsize=(0.5, 5))
@@ -136,19 +137,23 @@ def plot_correlation_panel(corr_matrix, column_width=3, row_height=3, norm_vmax=
     plot_heatmap(data=corr_matrix_norm, ax=_overall_norm_ax, set_xlabel=True, set_ylabel=True, cbar=True, vmax=norm_vmax,
                  vmin=norm_vmin, cmap=overall_cmap, cbar_ax=norm_cbar_ax)
 
-    save_fig(overall_fig, output_dir + "/correlation_matrix_overall", bbox_inches="tight")
-    save_fig(overall_norm_fig, output_dir + "/correlation_matrix_overall_normalized", bbox_inches="tight")
-    save_fig(overall_cbar_fig, output_dir + "/correlation_matrix_overall_colorbar", bbox_inches="tight")
-    save_fig(norm_cbar_fig, output_dir + "/correlation_matrix_overall_normalized_colorbar", bbox_inches="tight")
+    save_fig(overall_fig, output_dir + "/correlation_matrix_overall", bbox_inches="tight", extensions=extensions)
+    save_fig(overall_norm_fig, output_dir + "/correlation_matrix_overall_normalized", bbox_inches="tight",
+             extensions=extensions)
+    save_fig(overall_cbar_fig, output_dir + "/correlation_matrix_overall_colorbar", bbox_inches="tight",
+             extensions=extensions)
+    save_fig(norm_cbar_fig, output_dir + "/correlation_matrix_overall_normalized_colorbar", bbox_inches="tight",
+             extensions=extensions)
 
     overall_hist_fig, overall_hist_ax = plt.subplots()
     d, p = plot_hist(corr_matrix, overall_hist_ax, title=None, plot_p_value=True, legend=True)
     print("D-value: {:.2f}\tp-value = {:.2e}".format(d, p))
-    save_fig(overall_hist_fig, output_dir + "/correlation_overall_histogram", bbox_inches="tight")
+    save_fig(overall_hist_fig, output_dir + "/correlation_overall_histogram", bbox_inches="tight",
+             extensions=extensions)
 
     _ = plot_hist(corr_matrix, _overall_hist_ax, title=None, plot_p_value=True, legend=True)
 
-    save_fig(overall_all_fig, output_dir + "/correlation_overall_panel", bbox_inches="tight")
+    save_fig(overall_all_fig, output_dir + "/correlation_overall_panel", bbox_inches="tight", extensions=extensions)
 
 
 def mean_correlations(array, axis=None):
@@ -198,7 +203,7 @@ def plot_self_vs_other_correlations(corr_matrices, model_labels, method_labels, 
     seaborn.despine(ax=ax, top=True)
     if "{}" in output_filename:
         output_filename = "_".join(method_labels + model_labels)
-    save_fig(fig, os.path.join(output_dir, output_filename), bbox_inches="tight")
+    save_fig(fig, os.path.join(output_dir, output_filename), bbox_inches="tight", extensions=extensions)
 
 
 def compare_overall_correlation_models_and_methods(correlation_files, labels, output_directory):
@@ -279,7 +284,7 @@ def plot_per_domain(corr_matrices, domains, metric_names, method_labels, labels,
     ax.set_xlabel(xlabel)
     ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
     seaborn.despine(ax=ax, top=True)
-    save_fig(fig, os.path.join(output_dir, output_filename.format("_".join(labels))), bbox_inches="tight")
+    save_fig(fig, os.path.join(output_dir, output_filename.format("_".join(labels))), bbox_inches="tight", extensions=extensions)
 
 
 def compare_domain_correlation_models(correlation_files, name_file, labels, output_directory, average_per_domain=True):
@@ -338,7 +343,8 @@ def main():
         else:
             # plot correlation results for a single correlation file
             corr_matrix = np.load(args["correlation_filename"][0])[..., 0]
-            plot_correlation_panel(corr_matrix=corr_matrix, output_dir=args["output_dir"])
+            plot_correlation_panel(corr_matrix=corr_matrix, output_dir=args["output_dir"], 
+                                   extensions=args["extensions"])
     elif args["level"] == "domain":
         compare_domain_correlation_models(args["correlation_filename"], args["task_names"], args["labels"],
                                           args["output_dir"])

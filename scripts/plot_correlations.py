@@ -16,6 +16,7 @@ def parse_args():
     parser.add_argument('--task_names', default="/home/aizenberg/dgellis/fCNN/data/labels/ALL-TAVOR_name-file.txt")
     parser.add_argument('--level', default="overall", choices=["overall", "domain", "task"])
     parser.add_argument('--stats_filename', default=None)
+    parser.add_argument('--extensions', nargs="*", default=["pdf"])
     return vars(parser.parse_args())
 
 

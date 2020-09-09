@@ -37,6 +37,7 @@ def main():
                 else:
                     volumes.append(d[..., ii])
                     labels.append(l)
+            print(labels)
             label_map = convert_one_hot_to_single_label_map_volume(np.stack(volumes, axis=-1), labels, dtype=np.uint8)
             out_image = image.__class__(dataobj=label_map, affine=image.affine)
             out_image.to_filename(ofn.replace(".", "_pred{}.".format(i + 1), 1))

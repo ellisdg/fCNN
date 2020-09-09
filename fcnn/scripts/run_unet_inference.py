@@ -62,7 +62,7 @@ def run_inference(namespace):
     if namespace.filenames:
         filenames = list()
         for filename in namespace.filenames:
-            filenames.append([filename, namespace.sub_volumes, None, None, ""])
+            filenames.append([filename, namespace.sub_volumes, None, None, os.path.basename(filename).split(".")[0]])
     elif key not in config:
         if namespace.replace is not None:
             for _key in ("directory", "feature_templates", "target_templates"):

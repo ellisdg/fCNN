@@ -31,6 +31,7 @@ def main():
             volumes = list()
             labels = list()
             for ii, label in enumerate(l):
+                print(label)
                 if type(l) == list and len(l) == 2:
                     volumes.extend(split_left_right(d[..., ii]))
                     labels.extend(label)

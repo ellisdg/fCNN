@@ -119,6 +119,9 @@ def run_inference(namespace):
     else:
         sequence_kwargs = dict()
 
+    if "reorder" not in sequence_kwargs:
+        sequence_kwargs["reorder"] = in_config("reorder", config, False)
+
     if "generate_filenames" in config and config["generate_filenames"] == "multisource_templates":
         if namespace.filenames is not None:
             sequence_kwargs["inputs_per_epoch"] = None

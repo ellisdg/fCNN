@@ -49,3 +49,5 @@ class AutoImplantUNet(UNet):
         y = super(AutoImplantUNet, self).forward(x)
         return y - x
 
+    def test(self, x):
+        return super(AutoImplantUNet, self).forward(x)

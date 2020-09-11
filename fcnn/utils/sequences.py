@@ -7,7 +7,7 @@ from nilearn.image import new_img_like, resample_to_img
 import random
 import warnings
 
-from .nilearn_custom_utils.nilearn_utils import crop_img
+from .nilearn_custom_utils.nilearn_utils import crop_img, reorder_affine
 from .radiomic_utils import binary_classification, multilabel_classification, fetch_data, fetch_data_for_point
 from .hcp import (extract_gifti_surface_vertices, get_vertices_from_scalar, get_metric_data,
                   extract_cifti_volumetric_data)
@@ -106,9 +106,11 @@ def format_feature_image(feature_image, window, crop=False, cropping_kwargs=None
                          augment_scale_probability=1, additive_noise_std=None, additive_noise_probability=0,
                          flip_left_right_probability=0, augment_translation_std=None,
                          augment_translation_probability=0, augment_blur_mean=None, augment_blur_std=None,
-                         augment_blur_probability=0, flip_front_back_probability=0):
+                         augment_blur_probability=0, flip_front_back_probability=0, reorder=False):
     affine = feature_image.affine.copy()
     shape = feature_image.shape
+    if reorder:
+        affine = reorder_affine(affine, shape)
     if crop:
         if cropping_kwargs is None:
             cropping_kwargs = dict()
@@ -437,7 +439,7 @@ class WholeVolumeToSurfaceSequence(HCPRegressionSequence):
         return np.asarray(x), np.asarray(y)
 
     def resample_input(self, feature_filename):
-        feature_image = load_image(feature_filename, reorder=self.reorder)
+        feature_image = load_image(feature_filename, reorder=False)
         feature_image, affine = format_feature_image(feature_image=feature_image, window=self.window, crop=self.crop,
                                                      cropping_kwargs=self.cropping_kwargs,
                                                      augment_scale_std=self.augment_scale_std,
@@ -450,7 +452,8 @@ class WholeVolumeToSurfaceSequence(HCPRegressionSequence):
                                                      flip_left_right_probability=self.flip_left_right_probability,
                                                      flip_front_back_probability=self.flip_front_back_probability,
                                                      augment_translation_std=self.augment_translation_std,
-                                                     augment_translation_probability=self.augment_translation_probability)
+                                                     augment_translation_probability=self.augment_translation_probability,
+                                                     reorder=self.reorder)
         input_img = resample(feature_image, affine, self.window, interpolation=self.interpolation)
         return get_nibabel_data(self.normalize_image(input_img))
 
@@ -514,7 +517,7 @@ class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
 
     def load_image(self, filenames, index, force_4d=True, interpolation="linear", sub_volume_indices=None):
         filename = filenames[index]
-        image = load_image(filename, force_4d=force_4d, reorder=self.reorder, interpolation=interpolation)
+        image = load_image(filename, force_4d=force_4d, reorder=False, interpolation=interpolation)
         if sub_volume_indices:
             image = extract_sub_volumes(image, sub_volume_indices)
         return image
@@ -541,7 +544,8 @@ class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
                                              flip_left_right_probability=self.flip_left_right_probability,
                                              flip_front_back_probability=self.flip_front_back_probability,
                                              augment_translation_std=self.augment_translation_std,
-                                             augment_translation_probability=self.augment_translation_probability)
+                                             augment_translation_probability=self.augment_translation_probability,
+                                             reorder=self.reorder)
         resampled = resample(image, affine, self.window, interpolation=self.interpolation)
         if return_unmodified:
             return resampled, unmodified_image

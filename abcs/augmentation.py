@@ -20,8 +20,12 @@ def main():
         func = partial(augment_image, filename=filename, case1=case, directory=directory,
                        transforms_directory=transforms_directory, name=name, num_threads=1,
                        output_directory=output_directory)
-        pool = Pool(num_threads)
-        pool.map(func, subjects)
+        if num_threads > 1:
+            pool = Pool(num_threads)
+            pool.map(func, subjects)
+        else:
+            for subject in subjects:
+                func(subject)
 
 
 def get_subjects():

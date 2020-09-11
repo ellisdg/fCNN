@@ -116,6 +116,7 @@ def format_feature_image(feature_image, window, crop=False, cropping_kwargs=None
         if cropping_kwargs is None:
             cropping_kwargs = dict()
         affine, shape = crop_img(feature_image, return_affine=True, **cropping_kwargs)
+        print("Cropped:", affine)
     affine = augment_affine(affine, shape,
                             augment_scale_std=augment_scale_std,
                             augment_scale_probability=augment_scale_probability,
@@ -123,6 +124,7 @@ def format_feature_image(feature_image, window, crop=False, cropping_kwargs=None
                             augment_translation_probability=augment_translation_probability,
                             flip_left_right_probability=flip_left_right_probability,
                             flip_front_back_probability=flip_front_back_probability)
+    print("Augmented:", affine)
     feature_image = augment_image(feature_image,
                                   augment_blur_mean=augment_blur_mean,
                                   augment_blur_std=augment_blur_std,
@@ -130,6 +132,7 @@ def format_feature_image(feature_image, window, crop=False, cropping_kwargs=None
                                   additive_noise_std=additive_noise_std,
                                   additive_noise_probability=additive_noise_probability)
     affine = resize_affine(affine, shape, window)
+    print("Resized:", affine)
     return feature_image, affine
 
 

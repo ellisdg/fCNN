@@ -7,7 +7,7 @@ from fcnn.scripts.segment import format_parser as format_segmentation_parser
 
 
 def format_parser(parser=argparse.ArgumentParser(), sub_command=False):
-    parser.add_argument("--directory", required=True)
+    parser.add_argument("--output_directory", required=True)
     if not sub_command:
         parser.add_argument("--config_filename", required=True)
         parser.add_argument("--model_filename", required=True)

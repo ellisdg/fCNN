@@ -3,7 +3,8 @@ from slurm.submit_trial import divide_into_folds, dump_json, load_json, submit_s
 
 def submit_cross_validation_trials(config_filename, n_folds, group="training", **slurm_kwargs):
     config = load_json(config_filename)
-    subject_ids = ["{:03d}".format(i) for i in range(100)]
+    subjects_config = load_json(config["subjects_filename"])
+    subject_ids = subjects_config[group]
     folds = divide_into_folds(subject_ids, n_folds, shuffle=True)
     for i, (train, validation) in enumerate(folds):
         real_train = list()

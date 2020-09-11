@@ -518,6 +518,7 @@ class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
 
     def load_image(self, filenames, index, force_4d=True, interpolation="linear", sub_volume_indices=None):
         filename = filenames[index]
+        # Reordering is done when the image is formatted
         image = load_image(filename, force_4d=force_4d, reorder=False, interpolation=interpolation)
         if sub_volume_indices:
             image = extract_sub_volumes(image, sub_volume_indices)

@@ -111,6 +111,7 @@ def format_feature_image(feature_image, window, crop=False, cropping_kwargs=None
     shape = feature_image.shape
     if reorder:
         affine = reorder_affine(affine, shape)
+        print("Reordered:", affine)
     if crop:
         if cropping_kwargs is None:
             cropping_kwargs = dict()

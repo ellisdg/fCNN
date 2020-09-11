@@ -107,16 +107,15 @@ def format_feature_image(feature_image, window, crop=False, cropping_kwargs=None
                          flip_left_right_probability=0, augment_translation_std=None,
                          augment_translation_probability=0, augment_blur_mean=None, augment_blur_std=None,
                          augment_blur_probability=0, flip_front_back_probability=0, reorder=False):
-    affine = feature_image.affine.copy()
-    shape = feature_image.shape
-    if reorder:
-        affine = reorder_affine(affine, shape)
-        print("Reordered:", affine)
     if crop:
         if cropping_kwargs is None:
             cropping_kwargs = dict()
         affine, shape = crop_img(feature_image, return_affine=True, **cropping_kwargs)
-        print("Cropped:", affine)
+    else:
+        affine = feature_image.affine.copy()
+        shape = feature_image.shape
+    if reorder:
+        affine = reorder_affine(affine, shape)
     affine = augment_affine(affine, shape,
                             augment_scale_std=augment_scale_std,
                             augment_scale_probability=augment_scale_probability,
@@ -124,7 +123,6 @@ def format_feature_image(feature_image, window, crop=False, cropping_kwargs=None
                             augment_translation_probability=augment_translation_probability,
                             flip_left_right_probability=flip_left_right_probability,
                             flip_front_back_probability=flip_front_back_probability)
-    print("Augmented:", affine)
     feature_image = augment_image(feature_image,
                                   augment_blur_mean=augment_blur_mean,
                                   augment_blur_std=augment_blur_std,
@@ -132,7 +130,6 @@ def format_feature_image(feature_image, window, crop=False, cropping_kwargs=None
                                   additive_noise_std=additive_noise_std,
                                   additive_noise_probability=additive_noise_probability)
     affine = resize_affine(affine, shape, window)
-    print("Resized:", affine)
     return feature_image, affine
 
 
@@ -536,7 +533,6 @@ class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
 
     def format_feature_image(self, input_filenames, return_unmodified=False):
         unmodified_image = self.load_feature_image(input_filenames)
-        print("Unmodified:", unmodified_image.affine)
         image, affine = format_feature_image(feature_image=self.normalize_image(unmodified_image),
                                              crop=self.crop,
                                              cropping_kwargs=self.cropping_kwargs,
@@ -551,7 +547,6 @@ class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
                                              augment_translation_std=self.augment_translation_std,
                                              augment_translation_probability=self.augment_translation_probability,
                                              reorder=self.reorder)
-        print("Final:", affine)
         resampled = resample(image, affine, self.window, interpolation=self.interpolation)
         if return_unmodified:
             return resampled, unmodified_image

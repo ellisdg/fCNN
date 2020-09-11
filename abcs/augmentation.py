@@ -11,7 +11,7 @@ def main():
     directory = "/work/aizenberg/dgellis/MICCAI_ABCs_2020/ABCs_training_data"
     transforms_directory = "/work/aizenberg/dgellis/MICCAI_ABCs_2020/augmentation"
     output_directory = "/work/aizenberg/dgellis/MICCAI_ABCs_2020/ABCs_augmented_training_data"
-    num_threads = 16
+    num_threads = 1
     filenames = glob.glob(os.path.join(directory, "*.nii.gz"))
     subjects = get_subjects()
     for filename in filenames:

@@ -532,6 +532,7 @@ class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
 
     def format_feature_image(self, input_filenames, return_unmodified=False):
         unmodified_image = self.load_feature_image(input_filenames)
+        print("Unmodified:", unmodified_image.affine)
         image, affine = format_feature_image(feature_image=self.normalize_image(unmodified_image),
                                              crop=self.crop,
                                              cropping_kwargs=self.cropping_kwargs,
@@ -546,6 +547,7 @@ class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
                                              augment_translation_std=self.augment_translation_std,
                                              augment_translation_probability=self.augment_translation_probability,
                                              reorder=self.reorder)
+        print("Final:", affine)
         resampled = resample(image, affine, self.window, interpolation=self.interpolation)
         if return_unmodified:
             return resampled, unmodified_image

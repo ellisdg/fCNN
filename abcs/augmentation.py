@@ -15,6 +15,7 @@ def main():
     filenames = [os.path.basename(f).split("_")[0] for f in glob.glob(os.path.join(directory, "*.nii.gz"))]
     subjects = get_subjects()
     for filename in filenames:
+        print(filename)
         case, name = os.path.basename(filename).split("_", 2)
         func = partial(augment_image, filename=filename, case1=case, directory=directory,
                        transforms_directory=transforms_directory, name=name, num_threads=1,

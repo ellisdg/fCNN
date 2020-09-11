@@ -63,8 +63,10 @@ def apply_transforms(input_filename, reference_filename, transforms, output_file
         invert_transform_flags = [False for t in transforms]
     cmd = ApplyTransforms(transforms=transforms, input_image=input_filename, output_image=output_filename,
                           reference_image=reference_filename, interpolation=interpolation,
-                          args=args, num_threads=num_threads,
+                          num_threads=num_threads,
                           invert_transform_flags=invert_transform_flags)
+    if args:
+        cmd.inputs.args = args
     print(cmd.cmdline)
     cmd.run()
     return cmd.output_spec().output_image

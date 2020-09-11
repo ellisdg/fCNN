@@ -33,7 +33,7 @@ def get_filename(case, name, directory="/work/aizenberg/dgellis/MICCAI_ABCs_2020
     return os.path.join(directory, "{case}_{name}.nii.gz".format(case=case, name=name))
 
 
-def augment_image(filename, case1, case2, directory, transforms_directory, output_directory, name, num_threads=1):
+def augment_image(case2, filename, case1, directory, transforms_directory, output_directory, name, num_threads=1):
     output_filename = os.path.join(output_directory,
                                    "sub-{}_space-{}_{}.nii.gz".format(case1, case2, name))
     if "labelmap" in name:

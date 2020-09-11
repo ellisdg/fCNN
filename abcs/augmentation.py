@@ -16,7 +16,7 @@ def main():
     subjects = get_subjects()
     for filename in filenames:
         print(filename)
-        case, name = os.path.basename(filename).split("_", 2)
+        case, name = os.path.basename(filename).split(".")[0].split("_", 2)
         func = partial(augment_image, filename=filename, case1=case, directory=directory,
                        transforms_directory=transforms_directory, name=name, num_threads=1,
                        output_directory=output_directory)

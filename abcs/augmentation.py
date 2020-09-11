@@ -86,12 +86,12 @@ def all_files_exist(filenames):
 
 
 def get_transforms(case1, case2, directory):
-    prefix = "{}_to_{}".format(case1, case2)
-    transforms = get_prefix_transforms(prefix, directory=directory)
+    # the prefixes are backwards because I performed the registrations backwards
+    transforms = get_prefix_transforms("{}_to_{}".format(case2, case1), directory=directory)
     if all_files_exist(transforms):
         return [transforms[1], transforms[0]], [False, False]
     else:
-        transforms = get_prefix_transforms("{}_to_{}".format(case2, case1), directory=directory)
+        transforms = get_prefix_transforms("{}_to_{}".format(case1, case2), directory=directory)
         return [transforms[0], transforms[2]], [True, False]
 
 

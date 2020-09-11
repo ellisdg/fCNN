@@ -11,17 +11,20 @@ def main():
     directory = "/work/aizenberg/dgellis/MICCAI_ABCs_2020/ABCs_training_data"
     transforms_directory = "/work/aizenberg/dgellis/MICCAI_ABCs_2020/augmentation"
     output_directory = "/work/aizenberg/dgellis/MICCAI_ABCs_2020/ABCs_augmented_training_data"
-    num_threads = 1
+    num_threads = 16
     filenames = glob.glob(os.path.join(directory, "*.nii.gz"))
     subjects = get_subjects()
+    if num_threads > 1:
+        pool = Pool(num_threads)
+    else:
+        pool = None
     for filename in filenames:
         print(filename)
         case, name = os.path.basename(filename).split(".")[0].split("_", 1)
         func = partial(augment_image, filename=filename, case1=case, directory=directory,
                        transforms_directory=transforms_directory, name=name, num_threads=1,
                        output_directory=output_directory)
-        if num_threads > 1:
-            pool = Pool(num_threads)
+        if pool:
             pool.map(func, subjects)
         else:
             for subject in subjects:

@@ -11,9 +11,9 @@ def submit_cross_validation_trials(config_filename, n_folds, group="training", *
         real_validation = list()
         for s1 in train:
             for s2 in train:
-                real_train.append("sub-{:03d}_space-{:03d}".format(s1, s2))
+                real_train.append("sub-{}_space-{}".format(s1, s2))
         for s1 in validation:
-            real_validation.append("sub-{0:03d}_space-{0:03d}".format(s1))
+            real_validation.append("sub-{0}_space-{0}".format(s1))
         config["training"] = real_train
         config["validation"] = real_validation
         fold_config_filename = config_filename.replace(".json", "_fold{}.json".format(i))
@@ -26,8 +26,8 @@ def main():
     assert os.path.exists(namespace.trial_config)
     slurm_config = load_json(namespace.slurm_config)
     if namespace.n_folds > 1:
-        submit_cross_validation_trials(namespace.trial_config, namespace.n_folds, output_dir=namespace.output_dir,
-                                       **slurm_config)
+        submit_cross_validation_trials(os.path.abspath(namespace.trial_config), namespace.n_folds,
+                                       output_dir=namespace.output_dir, **slurm_config)
     else:
         submit_slurm_trial(namespace.trial_config, output_dir=namespace.output_dir, **slurm_config)
 

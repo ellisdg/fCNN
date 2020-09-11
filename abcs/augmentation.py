@@ -11,7 +11,7 @@ def main():
     directory = "/work/aizenberg/dgellis/MICCAI_ABCs_2020/ABCs_training_data"
     transforms_directory = "/work/aizenberg/dgellis/MICCAI_ABCs_2020/augmentation"
     output_directory = "/work/aizenberg/dgellis/MICCAI_ABCs_2020/ABCs_augmented_training_data"
-    num_threads = 16
+    num_threads = 1
     filenames = glob.glob(os.path.join(directory, "*.nii.gz"))
     subjects = get_subjects()
     for filename in filenames:
@@ -59,6 +59,7 @@ def augment_image(case2, filename, case1, directory, transforms_directory, outpu
 def apply_transforms(input_filename, reference_filename, transforms, output_filename,
                      interpolation="NearestNeighbor", args="-u uchar", num_threads=1,
                      invert_transform_flags=None):
+    print(input_filename, "-->", reference_filename)
     if invert_transform_flags is None:
         invert_transform_flags = [False for t in transforms]
     cmd = ApplyTransforms(transforms=transforms, input_image=input_filename, output_image=output_filename,

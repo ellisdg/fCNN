@@ -3,11 +3,11 @@ from functools import partial
 import numpy as np
 import nibabel as nib
 from keras.utils import Sequence
-from nilearn.image import new_img_like, resample_to_img
+from nilearn.image import new_img_like, resample_to_img, reorder_img
 import random
 import warnings
 
-from .nilearn_custom_utils.nilearn_utils import crop_img, reorder_affine
+from .nilearn_custom_utils.nilearn_utils import crop_img
 from .radiomic_utils import binary_classification, multilabel_classification, fetch_data, fetch_data_for_point
 from .hcp import (extract_gifti_surface_vertices, get_vertices_from_scalar, get_metric_data,
                   extract_cifti_volumetric_data)
@@ -106,7 +106,10 @@ def format_feature_image(feature_image, window, crop=False, cropping_kwargs=None
                          augment_scale_probability=1, additive_noise_std=None, additive_noise_probability=0,
                          flip_left_right_probability=0, augment_translation_std=None,
                          augment_translation_probability=0, augment_blur_mean=None, augment_blur_std=None,
-                         augment_blur_probability=0, flip_front_back_probability=0, reorder=False):
+                         augment_blur_probability=0, flip_front_back_probability=0, reorder=False,
+                         interpolation="linear"):
+    if reorder:
+        feature_image = reorder_img(feature_image, resample=interpolation)
     if crop:
         if cropping_kwargs is None:
             cropping_kwargs = dict()
@@ -114,8 +117,6 @@ def format_feature_image(feature_image, window, crop=False, cropping_kwargs=None
     else:
         affine = feature_image.affine.copy()
         shape = feature_image.shape
-    if reorder:
-        affine = reorder_affine(affine, shape)
     affine = augment_affine(affine, shape,
                             augment_scale_std=augment_scale_std,
                             augment_scale_probability=augment_scale_probability,
@@ -454,7 +455,8 @@ class WholeVolumeToSurfaceSequence(HCPRegressionSequence):
                                                      flip_front_back_probability=self.flip_front_back_probability,
                                                      augment_translation_std=self.augment_translation_std,
                                                      augment_translation_probability=self.augment_translation_probability,
-                                                     reorder=self.reorder)
+                                                     reorder=self.reorder,
+                                                     interpolation=self.interpolation)
         input_img = resample(feature_image, affine, self.window, interpolation=self.interpolation)
         return get_nibabel_data(self.normalize_image(input_img))
 
@@ -547,7 +549,8 @@ class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
                                              flip_front_back_probability=self.flip_front_back_probability,
                                              augment_translation_std=self.augment_translation_std,
                                              augment_translation_probability=self.augment_translation_probability,
-                                             reorder=self.reorder)
+                                             reorder=self.reorder,
+                                             interpolation=self.interpolation)
         resampled = resample(image, affine, self.window, interpolation=self.interpolation)
         if return_unmodified:
             return resampled, unmodified_image

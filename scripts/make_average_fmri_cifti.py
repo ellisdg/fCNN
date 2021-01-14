@@ -43,8 +43,10 @@ def make_average_cifti(config, directory, output_directory, subset, output_basen
             cifti_filename = os.path.join(directory, subject_id, target_basename.format(subject_id))
             if replace[0] in cifti_filename:
                 cifti_filename = cifti_filename.replace(*replace)
-            cmd.append(cifti_filename)
+            if os.path.exists(cifti_filename):
+                cmd.append(cifti_filename)
         print(" ".join(cmd))
+        print("Total files: ", len(cmd) - 3)
         subprocess.call(cmd)
 
 

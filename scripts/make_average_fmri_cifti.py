@@ -30,7 +30,10 @@ def make_average_cifti(config, directory, output_directory, subset, output_basen
     else:
         subject_ids = config[subset]
 
-    for target_basename in config["target_basenames"]:
+    target_basenames = config["target_basenames"]
+    if type(target_basenames) == str:
+        target_basenames = [target_basenames]
+    for target_basename in target_basenames:
         output_filename = os.path.join(output_directory,
                                        output_basename + os.path.basename(target_basename.format(subset)))
         cmd = ["wb_command", "-cifti-average", output_filename]

@@ -22,7 +22,8 @@ def main(args):
                        output_basename=output_basename)
 
 
-def make_average_cifti(config, directory, output_directory, subset, output_basename):
+def make_average_cifti(config, directory, output_directory, subset, output_basename,
+                       replace=(".nii.gz", ".midthickness.dscalar.nii")):
     if subset not in config and "subjects_filename" in config:
         subjects_config = load_json(config["subjects_filename"])
         subject_ids = subjects_config[subset]
@@ -36,7 +37,10 @@ def make_average_cifti(config, directory, output_directory, subset, output_basen
         for subject_id in subject_ids:
             subject_id = str(subject_id)
             cmd.append("-cifti")
-            cmd.append(os.path.join(directory, subject_id, target_basename.format(subject_id)))
+            cifti_filename = os.path.join(directory, subject_id, target_basename.format(subject_id))
+            if replace[0] in cifti_filename:
+                cifti_filename = cifti_filename.replace(*replace)
+            cmd.append(cifti_filename)
         print(" ".join(cmd))
         subprocess.call(cmd)
 

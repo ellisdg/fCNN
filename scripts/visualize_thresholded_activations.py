@@ -76,14 +76,17 @@ def compare_data(actual, predicted, group_avg, sulc, surface_fn, metric_name, he
     surface_names = ["Cortex" + hemi.capitalize()]
     data = list()
     for image in (actual, predicted, group_avg):
-        try:
-            data.append(np.ravel(get_metric_data([image], [[metric_name]], surface_names, None)))
-        except ValueError:
-            data.append(np.ravel(get_metric_data([image], [[metric_name.split(" ")[-1]]], surface_names, None)))
+        if image:
+            try:
+                data.append(np.ravel(get_metric_data([image], [[metric_name]], surface_names, None)))
+            except ValueError:
+                data.append(np.ravel(get_metric_data([image], [[metric_name.split(" ")[-1]]], surface_names, None)))
+        else:
+            data.append(None)
     a, p, g = data
     sulc_data = np.ravel(get_metric_data([sulc], [[sulc_name]], surface_names, subject_id))
     for d, n in ((a, "actual"), (p, "predicted"), (g, "group average")):
-        if subject_id or n == "group average":
+        if d:
             if output_template is not None:
                 output_filename = output_template.format(subject=subject_id, task=metric_name, method=n,
                                                          hemi=hemi, view="{view}").replace(" ", "_")
@@ -132,8 +135,12 @@ def visualize_subject_contrast(subject, contrast, prediction_dir, input_name, hc
         surface_template = os.path.join(hcp_dir, subject, "MNINonLinear", "fsaverage_LR32k",
                                         "{subject}.{hemi}.inflated.32k_fs_LR.surf.gii")
 
-    actual = nib.load(actual_fn)
-    predicted = nib.load(predicted_fn)
+    if subject:
+        actual = nib.load(actual_fn)
+        predicted = nib.load(predicted_fn)
+    else:
+        actual = None
+        predicted = None
     group_avg = nib.load(group_avg_fn)
     sulc = nib.load(sulc_fn)
 

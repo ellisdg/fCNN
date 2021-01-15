@@ -27,7 +27,12 @@ def main():
     config = load_json(namespace.config_filename)
     if namespace.subset not in config and "subjects_filename" in config:
         subjects_config = load_json(config["subjects_filename"])
-        subject_ids = subjects_config[namespace.subset]
+        if namespace.subset == "all":
+            subject_ids = list()
+            for subset in ("training", "validation", "test"):
+                subject_ids.extend(subjects_config[subset])
+        else:
+            subject_ids = subjects_config[namespace.subset]
     else:
         subject_ids = config[namespace.subset]
 

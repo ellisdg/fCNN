@@ -7,7 +7,7 @@ import numpy as np
 import nibabel as nib
 from fcnn.utils.nipy.ggmixture import GGGM
 from fcnn.utils.wquantiles.wquantiles import quantile_1D
-from fcnn.utils.hcp import get_metric_data
+from fcnn.utils.hcp import get_metric_data, extract_cifti_scalar_map_names
 from nilearn.plotting import plot_surf_stat_map
 import matplotlib.pyplot as plt
 
@@ -72,7 +72,7 @@ def plot_data(data, surface_fn, sulc_data, title, hemi="left", output_file=None)
 
 
 def compare_data(actual, predicted, group_avg, sulc, surface_fn, metric_name, hemi="left",
-                 subject_id=None, sulc_name="{}_Sulc", output_template=None):
+                 subject_id=None, sulc_name=None, output_template=None):
     surface_names = ["Cortex" + hemi.capitalize()]
     data = list()
     for image in (actual, predicted, group_avg):
@@ -84,6 +84,8 @@ def compare_data(actual, predicted, group_avg, sulc, surface_fn, metric_name, he
         else:
             data.append(None)
     a, p, g = data
+    if sulc_name is None:
+        sulc_name = extract_cifti_scalar_map_names(sulc)
     sulc_data = np.ravel(get_metric_data([sulc], [[sulc_name]], surface_names, subject_id))
     for d, n in ((a, "actual"), (p, "predicted"), (g, "group average")):
         if d:

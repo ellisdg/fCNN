@@ -104,17 +104,18 @@ def main():
         func = partial(visualize_subject_contrast, contrast=namespace.metric_name,
                        prediction_dir=namespace.prediction_dir,
                        input_name=namespace.input_name, output_dir=namespace.output_dir, hcp_dir=namespace.hcp_dir,
-                    domain=namespace.domain,
+                       domain=namespace.domain, sulc_fn=namespace.sulc,
                        group_avg_fn=namespace.group_avg, surface_template=namespace.surface_template)
         pool.map(func=func, iterable=namespace.subject)
     else:
         visualize_subject_contrast(namespace.subject[0], namespace.metric_name, namespace.prediction_dir,
                                    namespace.input_name, namespace.hcp_dir, namespace.domain, namespace.output_dir,
-                                   namespace.group_avg, surface_template=namespace.surface_template)
+                                   namespace.group_avg, surface_template=namespace.surface_template,
+                                   sulc_fn=namespace.sulc)
 
 
 def visualize_subject_contrast(subject, contrast, prediction_dir, input_name, hcp_dir, domain, output_dir,
-                               group_avg_fn, surface_template=None, sulf_fn=None):
+                               group_avg_fn, surface_template=None, sulc_fn=None):
     prediction_dir = prediction_dir.format(input=input_name)
 
     prediction_basename = os.path.basename(prediction_dir).replace("_test", "")
@@ -127,7 +128,7 @@ def visualize_subject_contrast(subject, contrast, prediction_dir, input_name, hc
     predicted_fn = os.path.join(prediction_dir,
                                 "{subject}_model_{prediction}_{input}.midthickness.dscalar.nii".format(
                                     subject=subject, prediction=prediction_basename, input=input_basename))
-    if sulf_fn is None:
+    if sulc_fn is None:
         sulc_fn = os.path.join(hcp_dir, subject, "MNINonLinear", "fsaverage_LR32k",
                                "{subject}.sulc.32k_fs_LR.dscalar.nii".format(subject=subject))
 

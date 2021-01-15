@@ -1,7 +1,20 @@
 import subprocess
 import json
-import sys
 import os
+import argparse
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config_filename",
+                        default="/home/aizenberg/dgellis/fCNN/v4_struct14_unet_ALL-TAVOR_2mm_v2_pt_config")
+    parser.add_argument("--directory", default="/work/aizenberg/dgellis/HCP/HCP_1200")
+    parser.add_argument("--output_directory", default="/work/aizenberg/dgellis/fCNN")
+    parser.add_argument("--subset", default="test")
+    parser.add_argument("--output_basename", default="")
+    parser.add_argument("--target_basenames", nargs="+")
+    parser.add_argument("--replace", nargs=2, default=["", ""])
+    return parser.parse_args()
 
 
 def load_json(filename):
@@ -9,30 +22,31 @@ def load_json(filename):
         return json.load(opened_file)
 
 
-def main(args):
-    config = load_json(args[1])
-    directory = os.path.abspath(args[2])
-    output_directory = os.path.abspath(args[3])
-    subset = str(args[4])
-    try:
-        output_basename = str(args[5])
-    except IndexError:
-        output_basename = ""
-    make_average_cifti(config=config, directory=directory, subset=subset, output_directory=output_directory,
-                       output_basename=output_basename)
-
-
-def make_average_cifti(config, directory, output_directory, subset, output_basename,
-                       replace=(".nii.gz", ".midthickness.dscalar.nii")):
-    if subset not in config and "subjects_filename" in config:
+def main():
+    namespace = parse_args()
+    config = load_json(namespace.config_filename)
+    if namespace.subset not in config and "subjects_filename" in config:
         subjects_config = load_json(config["subjects_filename"])
-        subject_ids = subjects_config[subset]
+        subject_ids = subjects_config[namespace.subset]
     else:
-        subject_ids = config[subset]
+        subject_ids = config[namespace.subset]
 
-    target_basenames = config["target_basenames"]
-    if type(target_basenames) == str:
-        target_basenames = [target_basenames]
+    if namespace.target_basenames:
+        target_basenames = namespace.target_basenames
+    else:
+        target_basenames = config["target_basenames"]
+        if type(target_basenames) == str:
+            target_basenames = [target_basenames]
+
+    make_average_cifti(target_basenames=target_basenames, subject_ids=subject_ids,
+                       directory=namespace.directory, subset=namespace.subset,
+                       output_directory=namespace.output_directory, output_basename=namespace.output_basename,
+                       replace=namespace.replace)
+
+
+def make_average_cifti(target_basenames, subject_ids, directory, output_directory, subset, output_basename,
+                       replace=(".nii.gz", ".midthickness.dscalar.nii")):
+
     for target_basename in target_basenames:
         output_filename = os.path.join(output_directory,
                                        output_basename + os.path.basename(target_basename.format(subset)))
@@ -53,4 +67,4 @@ def make_average_cifti(config, directory, output_directory, subset, output_basen
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    main()

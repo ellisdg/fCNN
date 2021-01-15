@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--subject", required=True, nargs="+")
+    parser.add_argument("--subject", nargs="+", default=[None])
     parser.add_argument("--metric_name", required=True)
     parser.add_argument("--input_name", default="struct14")
     parser.add_argument("--hcp_dir", default="/work/aizenberg/dgellis/HCP/HCP_1200")
@@ -83,12 +83,13 @@ def compare_data(actual, predicted, group_avg, sulc, surface_fn, metric_name, he
     a, p, g = data
     sulc_data = np.ravel(get_metric_data([sulc], [[sulc_name]], surface_names, subject_id))
     for d, n in ((a, "actual"), (p, "predicted"), (g, "group average")):
-        if output_template is not None:
-            output_filename = output_template.format(subject=subject_id, task=metric_name, method=n,
-                                                     hemi=hemi, view="{view}").replace(" ", "_")
-        else:
-            output_filename = None
-        figs = plot_data(d, surface_fn, sulc_data, title=n, hemi=hemi, output_file=output_filename)
+        if subject_id or n == "group average":
+            if output_template is not None:
+                output_filename = output_template.format(subject=subject_id, task=metric_name, method=n,
+                                                         hemi=hemi, view="{view}").replace(" ", "_")
+            else:
+                output_filename = None
+            figs = plot_data(d, surface_fn, sulc_data, title=n, hemi=hemi, output_file=output_filename)
 
 
 def main():

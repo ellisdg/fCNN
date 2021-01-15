@@ -88,7 +88,7 @@ def compare_data(actual, predicted, group_avg, sulc, surface_fn, metric_name, he
         sulc_name = extract_cifti_scalar_map_names(sulc)[0]
     sulc_data = np.ravel(get_metric_data([sulc], [[sulc_name]], surface_names, subject_id))
     for d, n in ((a, "actual"), (p, "predicted"), (g, "group average")):
-        if d:
+        if d is not None:
             if output_template is not None:
                 output_filename = output_template.format(subject=subject_id, task=metric_name, method=n,
                                                          hemi=hemi, view="{view}").replace(" ", "_")

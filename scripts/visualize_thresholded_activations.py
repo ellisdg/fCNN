@@ -16,7 +16,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--subject", required=True, nargs="+")
     parser.add_argument("--metric_name", required=True)
-    parser.add_argument("--input_name", required=True)
+    parser.add_argument("--input_name", default="struct14")
     parser.add_argument("--hcp_dir", default="/work/aizenberg/dgellis/HCP/HCP_1200")
     parser.add_argument("--prediction_dir",
                         default="/work/aizenberg/dgellis/fCNN/predictions/v4_{input}_unet_ALL-TAVOR_2mm_v2_pt_test")
@@ -97,12 +97,14 @@ def main():
         os.makedirs(namespace.output_dir)
     if len(namespace.subject) > 1:
         pool = Pool(len(namespace.subject))
-        func = partial(visualize_subject_contrast, contrast=namespace.metric_name, prediction_dir=namespace.prediction_dir,
-                       input_name=namespace.input_name, output_dir=namespace.output_dir, hcp_dir=namespace.hcp_dir, domain=namespace.domain,
+        func = partial(visualize_subject_contrast, contrast=namespace.metric_name,
+                       prediction_dir=namespace.prediction_dir,
+                       input_name=namespace.input_name, output_dir=namespace.output_dir, hcp_dir=namespace.hcp_dir,
+                    domain=namespace.domain,
                        group_avg_fn=namespace.group_avg, surface_template=namespace.surface_template)
         pool.map(func=func, iterable=namespace.subject)
     else:
-        visualize_subject_contrast(namespace.subject, namespace.metric_name, namespace.prediction_dir,
+        visualize_subject_contrast(namespace.subject[0], namespace.metric_name, namespace.prediction_dir,
                                    namespace.input_name, namespace.hcp_dir, namespace.domain, namespace.output_dir,
                                    namespace.group_avg, surface_template=namespace.surface_template)
 

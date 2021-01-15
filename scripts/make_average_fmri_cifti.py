@@ -7,7 +7,7 @@ import argparse
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config_filename",
-                        default="/home/aizenberg/dgellis/fCNN/v4_struct14_unet_ALL-TAVOR_2mm_v2_pt_config")
+                        default="/home/aizenberg/dgellis/fCNN/v4_struct14_unet_ALL-TAVOR_2mm_v2_pt_config.json")
     parser.add_argument("--directory", default="/work/aizenberg/dgellis/HCP/HCP_1200")
     parser.add_argument("--output_directory", default="/work/aizenberg/dgellis/fCNN")
     parser.add_argument("--subset", default="test")

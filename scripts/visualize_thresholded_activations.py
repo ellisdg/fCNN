@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--subject", nargs="+", default=[None])
+    parser.add_argument("--subject", nargs="+", default=[""])
     parser.add_argument("--metric_name", required=True)
     parser.add_argument("--input_name", default="struct14")
     parser.add_argument("--hcp_dir", default="/work/aizenberg/dgellis/HCP/HCP_1200")

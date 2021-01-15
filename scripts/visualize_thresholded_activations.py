@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-import sys
 import os
+import argparse
 from multiprocessing import Pool
 from functools import partial
 import numpy as np
@@ -10,6 +10,28 @@ from fcnn.utils.wquantiles.wquantiles import quantile_1D
 from fcnn.utils.hcp import get_metric_data
 from nilearn.plotting import plot_surf_stat_map
 import matplotlib.pyplot as plt
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--subject", required=True, nargs="+")
+    parser.add_argument("--metric_name", required=True)
+    parser.add_argument("--input_name", required=True)
+    parser.add_argument("--hcp_dir", default="/work/aizenberg/dgellis/HCP/HCP_1200")
+    parser.add_argument("--prediction_dir",
+                        default="/work/aizenberg/dgellis/fCNN/predictions/v4_{input}_unet_ALL-TAVOR_2mm_v2_pt_test")
+    parser.add_argument("--output_dir",
+                        default=os.path.join("/work/aizenberg/dgellis", "fCNN", "predictions", "figures", "test",
+                                             "weighted", "struct14", "statmaps"))
+    parser.add_argument("--group_avg",
+                        default="/work/aizenberg/dgellis/fCNN/"
+                                "v4_average_test_tfMRI_ALL_level2_zstat_hp200_s2_TAVOR.midthickness.dscalar.nii")
+    parser.add_argument("--surface_template",
+                        default="/work/aizenberg/dgellis/fCNN/v4_training.{hemi}.inflated.32k_fs_LR.surf.gii")
+    parser.add_argument("--sulc",
+                        default="/work/aizenberg/dgellis/fCNN/v4_average_training.sulc.32k_fs_LR.dscalar.nii")
+    parser.add_argument("--domain", default="ALL")
+    return parser.parse_args()
 
 
 def g2gm_threshold(data, iterations=1000):
@@ -32,7 +54,7 @@ def plot_data(data, surface_fn, sulc_data, title, hemi="left", output_file=None)
             if output_file is not None:
                 _output_file = output_file.format(view=view)
                 if positive_only:
-                    _output_file =  _output_file.replace(".png", "_positives.png")
+                    _output_file = _output_file.replace(".png", "_positives.png")
                 print(_output_file)
             else:
                 _output_file = output_file
@@ -41,7 +63,7 @@ def plot_data(data, surface_fn, sulc_data, title, hemi="left", output_file=None)
                 _data_to_plot[data_thresholded < 0] = 0
             else:
                 _data_to_plot = data_thresholded
-            fig = plot_surf_stat_map(surface_fn, _data_to_plot, threshold=0.01, bg_map=sulc_data, title=title,
+            fig = plot_surf_stat_map(surface_fn, _data_to_plot, threshold=0.01, bg_map=-sulc_data, title=title,
                                      hemi=hemi, output_file=None, view=view)
             fig.savefig(_output_file, bbox_inches="tight")
             plt.close(fig)
@@ -70,36 +92,23 @@ def compare_data(actual, predicted, group_avg, sulc, surface_fn, metric_name, he
 
 
 def main():
-    subject = str(sys.argv[1])
-    contrast = str(sys.argv[2])
-    input_name = str(sys.argv[3])
-
-    hcp_dir = "/work/aizenberg/dgellis/HCP/HCP_1200"
-    prediction_dir = "/work/aizenberg/dgellis/fCNN/predictions/v4_{input}_unet_ALL-TAVOR_2mm_v2_pt_test"
-    output_dir = os.path.join("/work/aizenberg/dgellis", "fCNN", "predictions", "figures", "test", "weighted",
-                              "struct14", "statmaps")
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-    group_avg_fn = "/work/aizenberg/dgellis/fCNN/" \
-                   "v4_tfMRI_group_average_errors_level2_zstat_hp200_s2_TAVOR.midthickness.dscalar.nii"
-
-    surface_template = "/work/aizenberg/dgellis/fCNN/v4_training.{hemi}.inflated.32k_fs_LR.surf.gii"
-
-    domain = "ALL"
-    if "," in subject:
-        subjects = subject.split(",")
-        pool = Pool(len(subjects))
-        func = partial(visualize_subject_contrast, contrast=contrast, prediction_dir=prediction_dir,
-                       input_name=input_name, output_dir=output_dir, hcp_dir=hcp_dir, domain=domain,
-                       group_avg_fn=group_avg_fn, surface_template=surface_template)
-        pool.map(func=func, iterable=subjects)
+    namespace = parse_args()
+    if not os.path.exists(namespace.output_dir):
+        os.makedirs(namespace.output_dir)
+    if len(namespace.subject) > 1:
+        pool = Pool(len(namespace.subject))
+        func = partial(visualize_subject_contrast, contrast=namespace.metric_name, prediction_dir=namespace.prediction_dir,
+                       input_name=namespace.input_name, output_dir=namespace.output_dir, hcp_dir=namespace.hcp_dir, domain=namespace.domain,
+                       group_avg_fn=namespace.group_avg, surface_template=namespace.surface_template)
+        pool.map(func=func, iterable=namespace.subject)
     else:
-        visualize_subject_contrast(subject, contrast, prediction_dir, input_name, hcp_dir, domain, output_dir,
-                                   group_avg_fn, surface_template=surface_template)
+        visualize_subject_contrast(namespace.subject, namespace.metric_name, namespace.prediction_dir,
+                                   namespace.input_name, namespace.hcp_dir, namespace.domain, namespace.output_dir,
+                                   namespace.group_avg, surface_template=namespace.surface_template)
 
 
 def visualize_subject_contrast(subject, contrast, prediction_dir, input_name, hcp_dir, domain, output_dir,
-                               group_avg_fn, surface_template=None):
+                               group_avg_fn, surface_template=None, sulf_fn=None):
     prediction_dir = prediction_dir.format(input=input_name)
 
     prediction_basename = os.path.basename(prediction_dir).replace("_test", "")
@@ -112,8 +121,9 @@ def visualize_subject_contrast(subject, contrast, prediction_dir, input_name, hc
     predicted_fn = os.path.join(prediction_dir,
                                 "{subject}_model_{prediction}_{input}.midthickness.dscalar.nii".format(
                                     subject=subject, prediction=prediction_basename, input=input_basename))
-    sulc_fn = os.path.join(hcp_dir, subject, "MNINonLinear", "fsaverage_LR32k",
-                           "{subject}.sulc.32k_fs_LR.dscalar.nii".format(subject=subject))
+    if sulf_fn is None:
+        sulc_fn = os.path.join(hcp_dir, subject, "MNINonLinear", "fsaverage_LR32k",
+                               "{subject}.sulc.32k_fs_LR.dscalar.nii".format(subject=subject))
 
     if surface_template is None:
         surface_template = os.path.join(hcp_dir, subject, "MNINonLinear", "fsaverage_LR32k",

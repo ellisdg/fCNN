@@ -50,7 +50,7 @@ def main():
     all_surfaces = list()
     prediction_images = list()
     surf_name = "midthickness"
-    metric_filename = "/home/neuro-user/PycharmProjects/fCNN/data/labels/{task}-TAVOR_name-file.txt".format(task=task)
+    metric_filename = "/home/aizenberg/dgellis/fCNN/data/labels/{task}-TAVOR_name-file.txt".format(task=task)
     metric_names = read_namefile(metric_filename)
 
     for p_image_fn in all_prediction_images:

@@ -351,6 +351,8 @@ def main():
     elif args["level"] == "domain":
         compare_domain_correlation_models(args["correlation_filename"], args["task_names"], args["labels"],
                                           args["output_dir"])
+    elif args["level"] == "task":
+        raise NotImplementedError("Level={}. Use 'plot_combined_correlations.py' instead.".format(args["level"]))
     else:
         raise NotImplementedError("Level={}".format(args["level"]))
 

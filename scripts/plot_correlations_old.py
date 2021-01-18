@@ -35,8 +35,8 @@ def main():
     seaborn.set_palette('muted')
     seaborn.set_style('whitegrid')
     task = sys.argv[1]
-    config_filename = "/home/neuro-user/PycharmProjects/fCNN/data/v4_struct6_unet_{task}-TAVOR_2mm_v1_pt_config.json".format(task=task)
-    hcp_dir = "/media/crane/HCP/HCP_1200"
+    config_filename = "/home/aizenberg/dgellis/fCNN/data/v4_struct6_unet_{task}-TAVOR_2mm_v1_pt_config.json".format(task=task)
+    hcp_dir = "/work/aizenberg/dgellis/HCP/HCP_1200"
     config = load_json(config_filename)
     target_basename = config["target_basenames"]
     prediction_dir = sys.argv[2]

@@ -61,7 +61,7 @@ def compute_correlation(target_fn, predicted_data, metric_names, structure_names
 
 def main():
     namespace = parse_args()
-    output_file = namespace.output_file
+    output_file = namespace.output_filename
     config_filename = namespace.config_filename
     hcp_dir = namespace.hcp_dir
     config = load_json(config_filename)

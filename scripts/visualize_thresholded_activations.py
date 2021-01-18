@@ -25,11 +25,11 @@ def parse_args():
                                              "weighted", "struct14", "statmaps"))
     parser.add_argument("--group_avg",
                         default="/work/aizenberg/dgellis/fCNN/"
-                                "v4_average_test_tfMRI_ALL_level2_zstat_hp200_s2_TAVOR.midthickness.dscalar.nii")
+                                "v4_average_all_tfMRI_ALL_level2_zstat_hp200_s2_TAVOR.midthickness.dscalar.nii")
     parser.add_argument("--surface_template",
                         default="/work/aizenberg/dgellis/fCNN/v4_training.{hemi}.inflated.32k_fs_LR.surf.gii")
     parser.add_argument("--sulc",
-                        default="/work/aizenberg/dgellis/fCNN/v4_average_training.sulc.32k_fs_LR.dscalar.nii")
+                        default="/work/aizenberg/dgellis/fCNN/v4_average_all.sulc.32k_fs_LR.dscalar.nii")
     parser.add_argument("--domain", default="ALL")
     return parser.parse_args()
 

@@ -17,7 +17,7 @@ def parse_args():
     parser.add_argument("--config_filename", required=True)
     parser.add_argument("--hcp_dir", default="/work/aizenberg/dgellis/HCP/HCP_1200")
     parser.add_argument("--prediction_dir", required=True)
-    parser.add_argument("--task_namefile", default="/home/aizenberg/dgellis/fCNN/data/labels/ALL-TAVOR_name-file")
+    parser.add_argument("--task_namefile", default="/home/aizenberg/dgellis/fCNN/data/labels/ALL-TAVOR_name-file.txt")
     parser.add_argument("--surf_name", default="midthickness")
     parser.add_argument("--n_threads", type=int)
     return parser.parse_args()

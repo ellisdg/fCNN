@@ -8,6 +8,19 @@ from fcnn.utils.hcp import get_metric_data, extract_cifti_scalar_map_names
 from scipy.stats import pearsonr
 import nibabel as nib
 import numpy as np
+import argparse
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--output_filename", required=True)
+    parser.add_argument("--config_filename", required=True)
+    parser.add_argument("--hcp_dir", default="/work/aizenberg/dgellis/HCP/HCP_1200")
+    parser.add_argument("--prediction_dir", required=True)
+    parser.add_argument("--task_namefile", default="/home/aizenberg/dgellis/fCNN/data/labels/ALL-TAVOR_name-file")
+    parser.add_argument("--surf_name", default="midthickness")
+    parser.add_argument("--n_threads", type=int)
+    return parser.parse_args()
 
 
 def read_namefile(filename):
@@ -47,20 +60,21 @@ def compute_correlation(target_fn, predicted_data, metric_names, structure_names
 
 
 def main():
-    output_file = sys.argv[1]
-    config_filename = sys.argv[2]
-    hcp_dir = "/work/aizenberg/dgellis/HCP/HCP_1200"
+    namespace = parse_args()
+    output_file = namespace.output_file
+    config_filename = namespace.config_filename
+    hcp_dir = namespace.hcp_dir
     config = load_json(config_filename)
     target_basename = config["target_basenames"]
-    prediction_dir = sys.argv[3]
-    metric_filename = sys.argv[4]
-    surf_name = sys.argv[5]
+    prediction_dir = namespace.prediction_dir
+    metric_filename = namespace.task_namefile
+    surf_name = namespace.surf_name
     all_prediction_images = glob.glob(os.path.join(prediction_dir, "*.{}.dscalar.nii".format(surf_name)))
     target_images = list()
     structure_names = ["CortexLeft", "CortexRight"]
     prediction_images = list()
     metric_names = read_namefile(metric_filename)
-    pool_size = 32
+    pool_size = namespace.n_threads
     subjects = list()
     for p_image_fn in all_prediction_images:
         if "target" not in p_image_fn:

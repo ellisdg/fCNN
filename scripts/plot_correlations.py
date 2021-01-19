@@ -17,6 +17,7 @@ def parse_args():
     parser.add_argument('--level', default="overall", choices=["overall", "domain", "task"])
     parser.add_argument('--stats_filename', default=None)
     parser.add_argument('--extensions', nargs="*", default=[".pdf"])
+    parser.add_argument('--cmap', default=None)
     return vars(parser.parse_args())
 
 
@@ -335,6 +336,8 @@ def main():
     seaborn.set_palette('muted')
     seaborn.set_style('whitegrid')
     args = parse_args()
+    if not os.path.exists(args['output_dir']):
+        os.makedirs(args['output_dir'])
 
     if args["stats_filename"] is None:
         stats_filename = os.path.join(args["output_dir"], args["level"] + "_correlation_stats.csv")
@@ -350,7 +353,7 @@ def main():
             # plot correlation results for a single correlation file
             corr_matrix = np.load(args["correlation_filename"][0])[..., 0]
             plot_correlation_panel(corr_matrix=corr_matrix, output_dir=args["output_dir"], 
-                                   extensions=args["extensions"])
+                                   extensions=args["extensions"], cmap=args["cmap"])
     elif args["level"] == "domain":
         compare_domain_correlation_models(args["correlation_filename"], args["task_names"], args["labels"],
                                           args["output_dir"])

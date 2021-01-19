@@ -108,11 +108,14 @@ def plot_heatmap(data, ax, vmin, vmax, cmap, cbar=True, cbar_ax=None, set_xlabel
 
 
 def plot_correlation_panel(corr_matrix, column_width=3, row_height=3, norm_vmax=3, norm_vmin=-3, output_dir=".",
-                           extensions=(".pdf",)):
+                           extensions=(".pdf",), cmap="jet"):
     # define a separate color bar for the overall corr matrix
     overall_cbar_fig, overall_cbar_ax = plt.subplots(figsize=(0.5, 5))
     norm_cbar_fig, norm_cbar_ax = plt.subplots(figsize=(0.5, 5))
-    overall_cmap = seaborn.diverging_palette(220, 10, sep=1, center="light", as_cmap=True)
+    if type(cmap) == str:
+        overall_cmap = plt.get_cmap(cmap)
+    else:
+        overall_cmap = seaborn.diverging_palette(220, 10, sep=1, center="light", as_cmap=True)
 
     overall_all_fig, (_overall_ax, _overall_cbar_ax, _overall_norm_ax, _overall_hist_ax) = plt.subplots(1, 4,
                                                                                     figsize=(5 * 3 + 1, 5),

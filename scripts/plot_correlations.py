@@ -108,7 +108,7 @@ def plot_heatmap(data, ax, vmin, vmax, cmap, cbar=True, cbar_ax=None, set_xlabel
 
 
 def plot_correlation_panel(corr_matrix, column_width=3, row_height=3, norm_vmax=3, norm_vmin=-3, output_dir=".",
-                           extensions=(".pdf",), cmap="jet"):
+                           extensions=(".pdf",), cmap="viridis"):
     # define a separate color bar for the overall corr matrix
     overall_cbar_fig, overall_cbar_ax = plt.subplots(figsize=(0.5, 5))
     norm_cbar_fig, norm_cbar_ax = plt.subplots(figsize=(0.5, 5))

@@ -17,6 +17,7 @@ def parse_args():
     parser.add_argument('--level', default="overall", choices=["overall", "domain", "task"])
     parser.add_argument('--stats_filename', default=None)
     parser.add_argument('--extensions', nargs="*", default=[".pdf"])
+    parser.add_argument('--cmap', default=None)
     return vars(parser.parse_args())
 
 
@@ -108,11 +109,14 @@ def plot_heatmap(data, ax, vmin, vmax, cmap, cbar=True, cbar_ax=None, set_xlabel
 
 
 def plot_correlation_panel(corr_matrix, column_width=3, row_height=3, norm_vmax=3, norm_vmin=-3, output_dir=".",
-                           extensions=(".pdf",)):
+                           extensions=(".pdf",), cmap="viridis"):
     # define a separate color bar for the overall corr matrix
     overall_cbar_fig, overall_cbar_ax = plt.subplots(figsize=(0.5, 5))
     norm_cbar_fig, norm_cbar_ax = plt.subplots(figsize=(0.5, 5))
-    overall_cmap = seaborn.diverging_palette(220, 10, sep=1, center="light", as_cmap=True)
+    if type(cmap) == str:
+        overall_cmap = plt.get_cmap(cmap)
+    else:
+        overall_cmap = seaborn.diverging_palette(220, 10, sep=1, center="light", as_cmap=True)
 
     overall_all_fig, (_overall_ax, _overall_cbar_ax, _overall_norm_ax, _overall_hist_ax) = plt.subplots(1, 4,
                                                                                     figsize=(5 * 3 + 1, 5),
@@ -332,6 +336,8 @@ def main():
     seaborn.set_palette('muted')
     seaborn.set_style('whitegrid')
     args = parse_args()
+    if not os.path.exists(args['output_dir']):
+        os.makedirs(args['output_dir'])
 
     if args["stats_filename"] is None:
         stats_filename = os.path.join(args["output_dir"], args["level"] + "_correlation_stats.csv")
@@ -347,10 +353,12 @@ def main():
             # plot correlation results for a single correlation file
             corr_matrix = np.load(args["correlation_filename"][0])[..., 0]
             plot_correlation_panel(corr_matrix=corr_matrix, output_dir=args["output_dir"], 
-                                   extensions=args["extensions"])
+                                   extensions=args["extensions"], cmap=args["cmap"])
     elif args["level"] == "domain":
         compare_domain_correlation_models(args["correlation_filename"], args["task_names"], args["labels"],
                                           args["output_dir"])
+    elif args["level"] == "task":
+        raise NotImplementedError("Level={}. Use 'plot_combined_correlations.py' instead.".format(args["level"]))
     else:
         raise NotImplementedError("Level={}".format(args["level"]))
 

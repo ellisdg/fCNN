@@ -41,7 +41,7 @@ def plot_data(data, surface_fn, sulc_data, title, hemi="left", output_file=None)
                 _data_to_plot[data_thresholded < 0] = 0
             else:
                 _data_to_plot = data_thresholded
-            fig = plot_surf_stat_map(surface_fn, _data_to_plot, threshold=0.01, bg_map=sulc_data, title=title,
+            fig = plot_surf_stat_map(surface_fn, _data_to_plot, threshold=0.01, bg_map=-sulc_data, title=title,
                                      hemi=hemi, output_file=None, view=view)
             fig.savefig(_output_file, bbox_inches="tight")
             plt.close(fig)
@@ -99,7 +99,7 @@ def main():
 
 
 def visualize_subject_contrast(subject, contrast, prediction_dir, input_name, hcp_dir, domain, output_dir,
-                               group_avg_fn, surface_template=None):
+                               group_avg_fn, surface_template=None, sulc_fn=None):
     prediction_dir = prediction_dir.format(input=input_name)
 
     prediction_basename = os.path.basename(prediction_dir).replace("_test", "")
@@ -112,8 +112,9 @@ def visualize_subject_contrast(subject, contrast, prediction_dir, input_name, hc
     predicted_fn = os.path.join(prediction_dir,
                                 "{subject}_model_{prediction}_{input}.midthickness.dscalar.nii".format(
                                     subject=subject, prediction=prediction_basename, input=input_basename))
-    sulc_fn = os.path.join(hcp_dir, subject, "MNINonLinear", "fsaverage_LR32k",
-                           "{subject}.sulc.32k_fs_LR.dscalar.nii".format(subject=subject))
+    if sulc_fn is None:
+        sulc_fn = os.path.join(hcp_dir, subject, "MNINonLinear", "fsaverage_LR32k",
+                               "{subject}.sulc.32k_fs_LR.dscalar.nii".format(subject=subject))
 
     if surface_template is None:
         surface_template = os.path.join(hcp_dir, subject, "MNINonLinear", "fsaverage_LR32k",

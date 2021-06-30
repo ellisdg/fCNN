@@ -47,7 +47,7 @@ def main():
     overwrite = False
     subject_ids = config['validation'] + config["training"] + config["test"]
     func = partial(write_image, hcp_dir=hcp_dir, feature_basenames=feature_basenames, overwrite=overwrite)
-    with Pool(16) as pool:
+    with Pool(1) as pool:
         pool.map(func, subject_ids)
 
 

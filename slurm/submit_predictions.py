@@ -30,7 +30,10 @@ def format_process(**kwargs):
 
 def main():
     kwargs = parse_args()
-    slurm_options = ["--" + option for option in kwargs.pop("slurm_options")]
+    if kwargs["slurm_options"]:
+        slurm_options = ["--" + option for option in kwargs.pop("slurm_options")]
+    else:
+        slurm_options = []
     anaconda_env = kwargs.pop("anaconda_env")
     job_name = "predict_{}_{}".format(os.path.basename(kwargs["config_filename"]).split(".")[0].replace("_config", ""),
                                       kwargs["group"])

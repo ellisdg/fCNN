@@ -142,7 +142,7 @@ def fetch_prediction_filenames(prediction_dir, hcp_dir, target_basename, surf_na
             target_images.append(target_fn)
             prediction_images.append(p_image_fn)
             if covariate_dir:
-                _pfns = glob.glob(os.path.join(covariate_dir, "".join((sid, "_", all_prediction_images))))
+                _pfns = glob.glob(os.path.join(covariate_dir, "".join((sid, "_", "*", p_image_fn.split(".")[-1]))))
                 assert len(_pfns) == 1
                 covariate_prediction_filenames.append(_pfns[0])
 

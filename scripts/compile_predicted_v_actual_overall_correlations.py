@@ -69,7 +69,10 @@ def pcorr(x, y, covar):
 def compute_correlation(target_fn, predicted_data, metric_names, structure_names, level="overall", volume=False,
                         covariate=None):
     if covariate is not None:
-        correlation_func = partial(pcorr, covar=covariate)
+        if level == "overall":
+            correlation_func = partial(pcorr, covar=covariate.flatten())
+        else:
+            raise NotImplementedError("Level must be set to 'overall' to use a covariate")
     else:
         correlation_func = pearsonr
     target_image = nib.load(target_fn)

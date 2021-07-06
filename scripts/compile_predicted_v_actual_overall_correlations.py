@@ -112,6 +112,7 @@ def parse_args():
     parser.add_argument('--structures', nargs=2, default=["CortexLeft", "CortexRight"])
     parser.add_argument('--verbose', action="store_true", default=False)
     parser.add_argument('--submit', action="store_true", default=False)
+    parser.add_argument('--mem_per_cpu', default=4, type=float)
     parser.add_argument('--covariate_dir', required=False)
     return vars(parser.parse_args())
 
@@ -160,7 +161,8 @@ def main():
                     flags.append(os.path.abspath(arg))
                 else:
                     flags.append(arg)
-        return submit_slurm_script(nthreads=args["nthreads"], mem_per_cpu=4000, python_file=os.path.abspath(__file__),
+        return submit_slurm_script(nthreads=args["nthreads"], mem_per_cpu=args["mem_per_cpu"] * 1000,
+                                   python_file=os.path.abspath(__file__),
                                    job_name=os.path.basename(args["output_filename"].split(".")[0]),
                                    slurm_script_filename=args["output_filename"].replace(".npy", ".slurm"),
                                    flags=" ".join(flags), job_template="CORR_%J")

@@ -115,7 +115,7 @@ def parse_args():
     parser.add_argument('--structures', nargs=2, default=["CortexLeft", "CortexRight"])
     parser.add_argument('--verbose', action="store_true", default=False)
     parser.add_argument('--submit', action="store_true", default=False)
-    parser.add_argument('--mem_per_cpu', default=4, type=float)
+    parser.add_argument('--mem_per_cpu', default=4, type=int)
     parser.add_argument('--covariate_dir', required=False)
     return vars(parser.parse_args())
 

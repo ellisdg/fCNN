@@ -159,7 +159,7 @@ def main():
         from scripts.process_dti_script import submit_slurm_script
         flags = list()
         for arg in sys.argv[1:]:
-            if arg != "--submit":
+            if arg != "--submit" or arg != "--mem_per_cpu":
                 if os.path.isfile(arg) or os.path.isdir(arg):
                     flags.append(os.path.abspath(arg))
                 else:

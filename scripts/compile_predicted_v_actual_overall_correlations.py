@@ -158,12 +158,17 @@ def main():
     if args["submit"]:
         from scripts.process_dti_script import submit_slurm_script
         flags = list()
+        skip_next = False
         for arg in sys.argv[1:]:
-            if arg not in ("--submit", "--mem_per_cpu"):
+            if arg not in ("--submit", "--mem_per_cpu") and not skip_next:
                 if os.path.isfile(arg) or os.path.isdir(arg):
                     flags.append(os.path.abspath(arg))
                 else:
                     flags.append(arg)
+            elif arg == "--mem_per_cpu":
+                skip_next = True
+            elif skip_next:
+                skip_next = False
         return submit_slurm_script(nthreads=args["nthreads"], mem_per_cpu=args["mem_per_cpu"] * 1000,
                                    python_file=os.path.abspath(__file__),
                                    job_name=os.path.basename(args["output_filename"].split(".")[0]),

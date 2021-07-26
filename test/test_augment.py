@@ -12,7 +12,7 @@ class TestAugmentation(TestCase):
     def setUp(self):
         self.shape = (4, 4, 4)
         self.affine = np.diag(np.ones(4))
-        self.data = np.arange(np.prod(self.shape), dtype=np.float).reshape(self.shape)
+        self.data = np.arange(np.prod(self.shape), dtype=float).reshape(self.shape)
         self.image = nib.Nifti1Image(self.data, self.affine)
 
     def test_scale_affine(self):

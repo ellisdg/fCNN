@@ -21,6 +21,17 @@ def parse_args():
     return vars(parser.parse_args())
 
 
+def load_corr_matrix(in_file):
+    corr_matrix = np.load(in_file)
+    return check_corr_matrix(corr_matrix)
+
+
+def check_corr_matrix(corr_matrix):
+    if corr_matrix.shape[-1] == 2:
+        corr_matrix = corr_matrix[..., 0]
+    return corr_matrix
+
+
 def normalize_correlation_matrix_by_axis(matrix, new_max, new_min, axis=0):
     matrix = (matrix - matrix.min(axis=axis))/(matrix.max(axis=axis) - matrix.min(axis=axis))
     matrix = ((new_max - new_min) * matrix) + new_min
@@ -236,8 +247,7 @@ def compare_overall_correlation_models_and_methods(correlation_files, labels, ou
     correlations = np.asarray(correlations)
     print("original shape:", correlations.shape)
 
-    if len(correlations.shape) == 3:
-        correlations = correlations[..., 0]
+    correlations = check_corr_matrix(corr_matrix=correlations)
 
     print("final_shape:", correlations.shape)
 
@@ -330,7 +340,7 @@ def compare_domain_correlation_models(correlation_files, name_file, labels, outp
     else:
         correlations = np.asarray(temp_correlations[0])
 
-    corr_matrices = np.asarray(correlations)[..., 0]
+    corr_matrices = check_corr_matrix(correlations)
     plot_per_domain(corr_matrices, domains, metric_names, method_labels, labels, average_per_domain=average_per_domain,
                     output_dir=output_directory, metric_func=self_vs_other_correlation,
                     output_filename="{}_increase_correlation_over_mean_correlation",
@@ -356,7 +366,7 @@ def main():
                                                            args["output_dir"], extensions=args["extensions"])
         else:
             # plot correlation results for a single correlation file
-            corr_matrix = np.load(args["correlation_filename"][0])[..., 0]
+            corr_matrix = load_corr_matrix(args["correlation_filename"][0])
             plot_correlation_panel(corr_matrix=corr_matrix, output_dir=args["output_dir"], 
                                    extensions=args["extensions"], cmap=args["cmap"])
     elif args["level"] == "domain":

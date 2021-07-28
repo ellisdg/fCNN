@@ -233,8 +233,13 @@ def compare_overall_correlation_models_and_methods(correlation_files, labels, ou
         s, i, i_all = np.intersect1d(sub_list, all_subjects, return_indices=True)
         np.testing.assert_equal(s, all_subjects)
         correlations.append(corr[i][:, i])
-    correlations = np.asarray(correlations)[..., 0]
-    print(correlations.shape)
+    correlations = np.asarray(correlations)
+    print("original shape:", correlations.shape)
+
+    if len(correlations.shape) == 3:
+        correlations = correlations[..., 0]
+
+    print("final_shape:", correlations.shape)
 
     plot_self_vs_other_correlations(correlations, model_labels, method_labels, output_directory,
                                     metric_func=self_vs_other_correlation,

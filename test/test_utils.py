@@ -12,7 +12,7 @@ from fcnn.utils.utils import (compile_one_hot_encoding, break_down_volume_into_h
 
 class TestUtils(TestCase):
     def _create_image(self, image_shape):
-        data = np.asarray(np.arange(np.prod(image_shape)).reshape(image_shape), dtype=np.float)
+        data = np.asarray(np.arange(np.prod(image_shape)).reshape(image_shape), dtype=float)
         affine = np.zeros((4, 4))
         np.fill_diagonal(affine, 1)
         return nib.Nifti1Image(data, affine)

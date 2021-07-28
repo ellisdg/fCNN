@@ -267,7 +267,7 @@ def extract_sub_volumes(image, sub_volume_indices):
     return new_img_like(ref_niimg=image, data=data)
 
 
-def mask(data, threshold=0, dtype=np.float):
+def mask(data, threshold=0, dtype=float):
     return np.asarray(data > threshold, dtype=dtype)
 
 

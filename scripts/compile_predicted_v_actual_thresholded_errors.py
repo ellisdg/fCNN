@@ -80,7 +80,7 @@ def g2gm_threshold(data, iterations=1000, return_thresholds=False):
 
 
 def threshold_data(data, lower_threshold, upper_threshold):
-    thresholded_data = np.zeros((2,) + data.shape, np.int)
+    thresholded_data = np.zeros((2,) + data.shape, int)
     thresholded_data[0][data >= upper_threshold] = 1
     thresholded_data[1][data <= lower_threshold] = 1
     return thresholded_data

@@ -111,7 +111,7 @@ def view_mdfa_image(mdfa_filename, reference_filename):
                                                 interpolation='linear')
     mdfa_data = mdfa_image.get_data()
     reference_data = resampled_reference_image.get_data()
-    midway_points = np.asarray(np.divide(mdfa_image.shape[:3], 2), np.int)
+    midway_points = np.asarray(np.divide(mdfa_image.shape[:3], 2), int)
     fig, axes = plt.subplots(3, 3, figsize=(12, 12), num=1)
     axes[0, 1].imshow(np.rot90(reference_data[midway_points[0], :, :]), cmap='gray')
     axes[0, 2].imshow(np.rot90(reference_data[:, midway_points[1], :]), cmap='gray')
@@ -147,7 +147,7 @@ def index_to_point(index, affine):
 
 
 def view_input_data(data):
-    midway_points = np.asarray(np.divide(data.shape[:3], 2), np.int)
+    midway_points = np.asarray(np.divide(data.shape[:3], 2), int)
     fig, axes = plt.subplots(2, 3, figsize=(12, 8), num=1)
     axes[0, 1].imshow(np.rot90(data[midway_points[0], :, :,0]), cmap='gray')
     axes[0, 2].imshow(np.rot90(data[:, midway_points[1], :,0]), cmap='gray')

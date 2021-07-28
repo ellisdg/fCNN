@@ -17,7 +17,7 @@ def pad_image(image, mode='edge', pad_width=1):
 
 def resample_image_to_spacing(image, new_spacing, interpolation='continuous'):
     new_affine = adjust_affine_spacing(image.affine, new_spacing, spacing=image.header.get_zooms()[:3])
-    new_shape = np.asarray(np.ceil(np.divide(get_extent_from_image(image), new_spacing)), dtype=np.int)
+    new_shape = np.asarray(np.ceil(np.divide(get_extent_from_image(image), new_spacing)), dtype=int)
     new_data = np.zeros(new_shape)
     new_image = new_img_like(image, new_data, affine=new_affine)
     return resample_to_img(image, new_image, interpolation=interpolation)

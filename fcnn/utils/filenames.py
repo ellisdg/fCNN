@@ -15,7 +15,7 @@ def wrapped_partial(func, *args, **kwargs):
 
 
 def generate_hcp_filenames(directory, surface_basename_template, target_basenames, feature_basenames, subject_ids,
-                           hemispheres):
+                           hemispheres, skip_targets=False):
     rows = list()
     for subject_id in subject_ids:
         subject_id = str(subject_id)
@@ -36,7 +36,7 @@ def generate_hcp_filenames(directory, surface_basename_template, target_basename
             metric_filenames = os.path.join(subject_dir, target_basenames)
             if "{}" in metric_filenames:
                 metric_filenames = metric_filenames.format(subject_id)
-            if not os.path.exists(metric_filenames):
+            if not os.path.exists(metric_filenames) and not skip_targets:
                 continue
         elif target_basenames is not None:
             metric_filenames = [os.path.join(subject_dir, mbn.format(subject_id)) for mbn in target_basenames]
@@ -154,7 +154,8 @@ def generate_filenames(config, name, system_config, skip_targets=False):
                                       config['target_basenames'],
                                       config['feature_basenames'],
                                       config[name],
-                                      config['hemispheres'] if 'hemispheres' in config else None)
+                                      config['hemispheres'] if 'hemispheres' in config else None,
+                                      skip_targets=skip_targets)
     elif config["generate_filenames"] == "paired":
         return generate_paired_filenames(in_config('directory', system_config, ""),
                                          config[name],

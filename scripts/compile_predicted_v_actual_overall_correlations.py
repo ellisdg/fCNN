@@ -138,7 +138,7 @@ def fetch_prediction_filenames(prediction_dir, hcp_dir, target_basename, surf_na
             if volume:
                 target_fn = os.path.join(
                     hcp_dir, sid, target_basename.format(sid)).replace(
-                    "/T1w/", "/MNINonLinear/").replace(".nii", "_resampled.nii")
+                    "/T1w/", "/MNINonLinear/")
             else:
                 target_fn = os.path.join(hcp_dir, sid, target_basename.format(sid)).replace(".nii.gz",
                                                                                             ".{}.dscalar.nii").format(

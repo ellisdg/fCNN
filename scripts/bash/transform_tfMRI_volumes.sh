@@ -17,6 +17,6 @@ wb_command -volume-warpfield-resample\
  "${TFMRIVOL}"\
  "${XFM}"\
  "${REF}"\
- ENCLOSING_VOXEL\
+ CUBIC\
  "${OUTVOL}"\
  -fnirt "${REF2}"

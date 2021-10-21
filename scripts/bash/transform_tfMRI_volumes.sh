@@ -1,3 +1,5 @@
+export PATH=$WORK/tools/workbench/bin_rh_linux64:$PATH
+
 HCPDIR=${WORK}/HCP/HCP_1200
 SUB=${1}
 SUBDIR=${HCPDIR}/${SUB}

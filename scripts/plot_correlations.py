@@ -184,7 +184,7 @@ def mean_diagonal(matrix):
     return mean_correlations(matrix.diagonal())
 
 
-def normalized_mean_diagonal(matrix, new_max=3, new_min=-3):
+def normalized_mean_diagonal(matrix, new_max=1, new_min=-1):
     return mean_diagonal(normalize_correlation_matrix(matrix=matrix, new_max=new_max, new_min=new_min))
 
 

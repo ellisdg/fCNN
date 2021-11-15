@@ -9,8 +9,8 @@ python scripts/plot_correlations.py\
  /work/aizenberg/dgellis/fCNN/predictions/v4_t1t2_unet_ALL-TAVOR_2mm_v2_pt_test/overall_correlations_MSMAll.npy\
  /work/aizenberg/dgellis/fCNN/predictions/v4_t1_unet_ALL-TAVOR_2mm_v2_pt_test/overall_correlations_MSMAll.npy\
  /work/aizenberg/dgellis/fCNN/predictions/v4_cortexmask_unet_ALL-TAVOR_2mm_v2_pt_test/overall_MSMAll_correlations.npy\
- /work/aizenberg/dgellis/fCNN/predictions/v4_wmmask_unet_ALL-TAVOR_2mm_v2_pt_test/overall_correlations_MSMAll.npy\
- /work/aizenberg/dgellis/fCNN/predictions/v4_brainmask_unet_ALL-TAVOR_2mm_v2_pt_test/overall_correlations_MSMAll.npy\
+ /work/aizenberg/dgellis/fCNN/predictions/v4_wmmask_unet_ALL-TAVOR_2mm_v2_pt_test/overall_MSMAll_correlations.npy\
+ /work/aizenberg/dgellis/fCNN/predictions/v4_brainmask_unet_ALL-TAVOR_2mm_v2_pt_test/overall_MSMAll_correlations.npy\
  /work/aizenberg/dgellis/fCNN/predictions/v4_struct14_unet_ALL-TAVOR_2mm_v2_pt_test/overall_correlations_MNINonLinear.npy\
  /work/aizenberg/dgellis/fCNN/predictions/v4_t1t2_unet_ALL-TAVOR_2mm_v2_pt_test/overall_correlations_MNINonLinear.npy\
  /work/aizenberg/dgellis/fCNN/predictions/v4_t1_unet_ALL-TAVOR_2mm_v2_pt_test/overall_correlations_MNINonLinear.npy\

@@ -1,7 +1,7 @@
 #!/bin/sh
 #SBATCH --time=7-00:00:00
 #SBATCH --job-name=correlations
-#SBATCH --ntasks-per-node=32
+#SBATCH --ntasks-per-node=16
 #SBATCH --mem-per-cpu=8000
 #SBATCH --error=/work/aizenberg/dgellis/fCNN/logs/job.%J.err
 #SBATCH --output=/work/aizenberg/dgellis/fCNN/logs/job.%J.out

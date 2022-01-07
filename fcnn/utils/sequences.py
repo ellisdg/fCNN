@@ -463,7 +463,8 @@ class WholeVolumeToSurfaceSequence(HCPRegressionSequence):
 
 class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
     def __init__(self, *args, target_interpolation=None, target_index=None, feature_index=0, extract_sub_volumes=False,
-                 feature_sub_volumes_index=1, target_sub_volumes_index=3, random_permutation_probability=0, **kwargs):
+                 feature_sub_volumes_index=1, target_sub_volumes_index=3, random_permutation_probability=0,
+                 pure_random=False, **kwargs):
         """
 
         :param args:
@@ -485,6 +486,7 @@ class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
         self.feature_sub_volumes_index = feature_sub_volumes_index
         self.target_sub_volumes_index = target_sub_volumes_index
         self.random_permutation_probability = random_permutation_probability
+        self.pure_random = pure_random
 
     def __getitem__(self, idx):
         x_batch = list()
@@ -499,6 +501,8 @@ class WholeVolumeAutoEncoderSequence(WholeVolumeToSurfaceSequence):
     def resample_input(self, input_filenames):
         input_image, target_image = self.resample_image(input_filenames)
         x, y = get_nibabel_data(input_image), get_nibabel_data(target_image)
+        if self.pure_random:
+            x = np.random.rand(*x.shape)
         return self.permute_inputs(x, y)
 
     def permute_inputs(self, x, y):

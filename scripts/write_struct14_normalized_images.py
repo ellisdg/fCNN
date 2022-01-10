@@ -106,7 +106,7 @@ def write_struct6_image(subject_id, hcp_dir, feature_basenames, channels_to_norm
             for (start, stop), basename in output_channels:
                 output_channel_filename = os.path.join(subject_dir, basename)
                 print(output_channel_filename)
-                if overwrite or os.path.exists(output_channel_filename):
+                if overwrite or not os.path.exists(output_channel_filename):
                     image.__class__(np.squeeze(image_data[..., start:stop]),
                                     image.affine).to_filename(output_channel_filename)
 

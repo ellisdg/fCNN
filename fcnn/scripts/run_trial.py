@@ -9,7 +9,6 @@ from fcnn.utils.pytorch.dataset import (WholeBrainCIFTI2DenseScalarDataset, HCPR
                                         WholeVolumeSegmentationDataset, WindowedAEDataset)
 from fcnn.utils.utils import load_json, in_config
 from fcnn.utils.custom import get_metric_data_from_config
-from fcnn.models.keras.resnet.resnet import compare_scores
 from fcnn.scripts.run_unet_inference import format_parser as format_prediction_args, check_hierarchy
 from fcnn.scripts.run_unet_inference import run_inference
 
@@ -51,6 +50,7 @@ def main():
     system_config = load_json(namespace.machine_config_filename)
 
     if namespace.group_average_filenames is not None:
+        from fcnn.models.keras.resnet.resnet import compare_scores
         group_average = get_metric_data_from_config(namespace.group_average_filenames, namespace.config_filename)
         model_metrics = [wrapped_partial(compare_scores, comparison=group_average)]
         metric_to_monitor = "compare_scores"

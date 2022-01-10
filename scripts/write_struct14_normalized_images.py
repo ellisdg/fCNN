@@ -43,11 +43,10 @@ def combine_images(images, axis=0, resample_unequal_affines=False, interpolation
 
 
 def main():
-    config = load_json(os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "subjects_v4.json"))
     system_config = load_json(os.path.join(os.path.dirname(os.path.dirname(__file__)),
                                            "data",
                                            "hcc_p100_config.json"))
-    subject_ids = config['validation'] + config["training"] + config['test']
+    subject_ids = [fn.split("/")[6] for fn in glob.glob("/work/aizenberg/dgellis/HCP/HCP_1200/*/T1w/Diffusion/dti_12.nii.gz")]
     feature_basenames = ["T1w/T1w_acpc_dc_restore_brain.nii.gz",
                          "T1w/T2w_acpc_dc_restore_brain.nii.gz",
                          "T1w/Diffusion/dti_12.nii.gz"]
@@ -60,8 +59,7 @@ def main():
                    hcp_dir=system_config['directory'],
                    feature_basenames=feature_basenames,
                    channels_to_normalize=channels_to_normalize,
-                   overwrite=True,
-                   output_channels=(((2, 14), "T1w/Diffusion/dti_12_normalized.nii.gz"),),
+                   overwrite=False,
                    normalization_kwargs={"floor_percentile": 25,
                                          "ceiling_percentile": 99.9})
     with Pool(8) as pool:

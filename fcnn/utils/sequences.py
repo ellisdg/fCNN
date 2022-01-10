@@ -2,7 +2,6 @@ import os
 from functools import partial
 import numpy as np
 import nibabel as nib
-from keras.utils import Sequence
 from nilearn.image import new_img_like, resample_to_img, reorder_img
 import random
 import warnings
@@ -21,6 +20,25 @@ from . import normalize
 from .resample import resample
 from .augment import scale_affine, add_noise, affine_swap_axis, translate_affine, random_blur, random_permutation_x_y
 from .affine import resize_affine
+
+
+class Sequence(object):
+    """
+    Based off of keras.utils.Sequence
+    """
+
+    def __getitem__(self, index):
+        raise NotImplementedError
+
+    def __len__(self):
+        raise NotImplementedError
+
+    def on_epoch_end(self):
+        pass
+
+    def __iter__(self):
+        for item in (self[i] for i in range(len(self))):
+            yield item
 
 
 def normalization_name_to_function(normalization_name):

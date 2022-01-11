@@ -96,7 +96,8 @@ def main():
                                                                    os.path.dirname(args["surface_template"])),
                              os.path.join(args["hcp_dir"], subject, os.path.dirname(args["surface_template"])),
                              verbose=verbose,
-                             include=[os.path.basename(surf)])
+                             include=[os.path.basename(surf)],
+                             exclude="*")
             volume_to_surface(vol, left_surf, right_surf, filename, args["surface_name"], method=args["method"],
                               name_file=args["task_names"], verbose=verbose,
                               right_atlas_roi=right_atlas_roi, left_atlas_roi=left_atlas_roi)

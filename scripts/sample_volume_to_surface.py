@@ -44,6 +44,8 @@ def download(f1, f2, include=None, exclude=None, verbose=False):
     if include is not None:
         for inclusion in include:
             cmd.extend(["--include", inclusion])
+    if exclude is not None:
+        cmd.extend(["--exclude", exclude])
     run_command(cmd, verbose=verbose)
 
 

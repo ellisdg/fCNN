@@ -91,10 +91,10 @@ def main():
         if os.path.exists(vol) and (overwrite or not os.path.exists(filename)):
             for surf, hemi in ((left_surf, "L"), (right_surf, "R")):
                 if not os.path.exists(surf):
-                    download(os.path.join("s3://hcp-openaccess/{}/".format(os.path.basename(args["hcp_dir"])),
-                                          subject,
-                                          os.path.dirname(surface_template)),
-                             os.path.join(args["hcp_dir"], subject, os.path.dirname(surface_template)),
+                    download("s3://hcp-openaccess/{}/{}/{}".format(os.path.basename(args["hcp_dir"]),
+                                                                   subject,
+                                                                   os.path.dirname(args["surface_template"])),
+                             os.path.join(args["hcp_dir"], subject, os.path.dirname(args["surface_template"])),
                              verbose=verbose,
                              include=[os.path.basename(surf)])
             volume_to_surface(vol, left_surf, right_surf, filename, args["surface_name"], method=args["method"],

@@ -63,7 +63,7 @@ def main():
                    overwrite=False,
                    normalization_kwargs={"floor_percentile": 25,
                                          "ceiling_percentile": 99.9})
-    with Pool(8) as pool:
+    with Pool(1) as pool:
         pool.map(func, subject_ids)
 
 

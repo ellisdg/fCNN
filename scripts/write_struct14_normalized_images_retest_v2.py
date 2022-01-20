@@ -57,7 +57,7 @@ def main():
                              True, False, False, False]
 
     func = partial(write_struct6_image,
-                   hcp_dir=system_config['directory'],
+                   hcp_dir="/work/aizenberg/dgellis/HCP/HCP_Retest",
                    feature_basenames=feature_basenames,
                    channels_to_normalize=channels_to_normalize,
                    overwrite=False,

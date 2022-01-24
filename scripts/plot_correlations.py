@@ -77,19 +77,21 @@ def extract_diagonal_and_extra_diagonal_elements(matrix):
 
 
 def plot_hist(correlations, ax, set_xlabel=True, set_ylabel=True, title=None, plot_p_value=True,
-              p_value_fontsize='medium', legend=False, legend_loc="upper left", legend_fontsize="small"):
+              p_value_fontsize='medium', legend=False, legend_loc="upper left", legend_fontsize="small",
+              bin_width=0.25, kde=True, stat="proportion"):
     diag_values, extra_diag_values = extract_diagonal_and_extra_diagonal_elements(correlations)
     for m, label, color in zip((diag_values, extra_diag_values),
                                ("correlation with self", "correlation with other"),
                                ("C1", "C0")):
-        seaborn.distplot(m, ax=ax, kde_kws={"shade": True}, label=label, color=color)
+        seaborn.histplot(m, ax=ax, kde=kde, kde_kws={"shade": True}, label=label, color=color, stat=stat,
+                         bin_width=bin_width)
     if title is not None:
         ax.set_title(title)
     if set_xlabel:
         ax.set_xlabel("Correlation")
         ax.tick_params(labelbottom=True)
     if set_ylabel:
-        ax.set_ylabel("Density")
+        ax.set_ylabel(stat.capitalize())
     d_value, p_value = ks_2samp(diag_values, extra_diag_values)
     if plot_p_value:
         ax.text(1, 1, "\n".join(("D=" + "{:.3f}".format(d_value)[1:], p_value_to_string(p_value))),

@@ -17,7 +17,7 @@ def parse_args():
     parser.add_argument('--level', default="overall", choices=["overall", "domain", "task"])
     parser.add_argument('--stats_filename', default=None)
     parser.add_argument('--extensions', nargs="*", default=[".pdf"])
-    parser.add_argument('--cmap', default=None)
+    parser.add_argument('--cmap', default="viridis")
     return vars(parser.parse_args())
 
 

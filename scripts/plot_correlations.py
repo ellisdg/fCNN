@@ -78,7 +78,7 @@ def extract_diagonal_and_extra_diagonal_elements(matrix):
 
 def plot_hist(correlations, ax, set_xlabel=True, set_ylabel=True, title=None, plot_p_value=True,
               p_value_fontsize='medium', legend=False, legend_loc="upper left", legend_fontsize="small",
-              bin_width=0.025, kde=True, stat="density", hist_alpha=0.3, kde_alpha=0.5):
+              bin_width=0.025, kde=True, stat="density", hist_alpha=0.3, kde_alpha=0.4):
     diag_values, extra_diag_values = extract_diagonal_and_extra_diagonal_elements(correlations)
     for m, label, color in zip((diag_values, extra_diag_values),
                                ("correlation with self", "correlation with other"),

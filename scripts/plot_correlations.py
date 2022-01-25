@@ -83,7 +83,7 @@ def plot_hist(correlations, ax, set_xlabel=True, set_ylabel=True, title=None, pl
     for m, label, color in zip((diag_values, extra_diag_values),
                                ("correlation with self", "correlation with other"),
                                ("C1", "C0")):
-        seaborn.histplot(m, ax=ax, kde=kde, kde_kws={"shade": True}, label=label, color=color, stat=stat,
+        seaborn.histplot(m, ax=ax, kde=kde, kde_kws={"fill": True}, label=label, color=color, stat=stat,
                          bin_width=bin_width)
     if title is not None:
         ax.set_title(title)

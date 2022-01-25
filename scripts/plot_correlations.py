@@ -84,6 +84,8 @@ def plot_hist(correlations, ax, set_xlabel=True, set_ylabel=True, title=None, pl
                                ("correlation with self", "correlation with other"),
                                ("C1", "C0")):
         seaborn.histplot(m, ax=ax, label=label, color=color, stat=stat, binwidth=bin_width)
+        if kde:
+            seaborn.kdeplot(m, ax=ax, color=color, fill=True)
     if title is not None:
         ax.set_title(title)
     if set_xlabel:

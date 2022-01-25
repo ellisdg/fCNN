@@ -82,7 +82,7 @@ def plot_hist(correlations, ax, set_xlabel=True, set_ylabel=True, title=None, pl
     diag_values, extra_diag_values = extract_diagonal_and_extra_diagonal_elements(correlations)
     for m, label, color in zip((diag_values, extra_diag_values),
                                ("correlation with self", "correlation with other"),
-                               ("C1", "C0")):
+                               ("C1", "C0"))[::-1]:
         seaborn.histplot(m, ax=ax, label=label, color=color, stat=stat, binwidth=bin_width, alpha=hist_alpha,
                          zorder=0, kde=kde)
         if kde and stat == "density":

@@ -235,7 +235,7 @@ def fit_model(initial_training_subjects,
         X = torch.linalg.lstsq(A, B).solution
         torch.save(X, X_filename)
     else:
-        torch.load(X_filename).cuda()
+        X = torch.load(X_filename).cuda()
     return X
 
 

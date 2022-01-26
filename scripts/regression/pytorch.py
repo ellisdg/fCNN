@@ -235,6 +235,18 @@ def predict_test(test_subjects, X):
     return B
 
 
+def data_to_nifti(data, filename):
+    print("Writing:", filename)
+
+
+
+def pytorch_matrix_to_nifti(B, test_subjects, output_dir):
+    for i, subject in enumerate(test_subjects):
+        filename = os.path.join(output_dir, subject + "_prediction.dscalar.nii")
+        data = B[i].numpy()
+        data_to_nifti(data, filename)
+
+
 def main():
     subjects_config = load_json("/home/aizenberg/dgellis/fCNN/data/subjects_v4.json")
     X = fit_model(initial_training_subjects=subjects_config["training"])

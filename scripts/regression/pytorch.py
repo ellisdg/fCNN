@@ -238,7 +238,7 @@ def predict_test(test_subjects, X):
 def main():
     subjects_config = load_json("/home/aizenberg/dgellis/fCNN/data/subjects_v4.json")
     X = fit_model(initial_training_subjects=subjects_config["training"])
-    predict_test(subjects_config["test"], X)
+    B = predict_test(subjects_config["test"], X)
 
 
 def fit_model(initial_training_subjects,

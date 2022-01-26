@@ -179,26 +179,37 @@ def load_roi(subject="100307"):
     return roi
 
 
-def load_data(subjects, norm_features=True):
-    struct14_data = list()
-    fmri_data = list()
-    select_subjects = list()
-    anat_data = list()
-    for subject in subjects:
-        read_subject(subject, struct14_data, fmri_data, select_subjects, anat_data)
-    # now that we have collected the data, a few things need to be cleaned up
-    # the struct14, sulc, and fmri data have vertices that aren't in the roi
-    # so we will take them out now
-    roi = load_roi()
-    roi_mask = roi == 1
-    struct14_data = np.asarray(struct14_data)[:, roi_mask]
-    anat_data_final = list()
-    for row in anat_data:
-        anat_data_final.append([row[0], row[1], row[2][:, roi_mask], row[3]])
-    fmri_data = np.asarray(fmri_data)[:, roi_mask]
-    # now we have all our data
-    # let's combine the anat and struct14 data
-    features = np.concatenate([struct14_data, np.asarray(anat_data_final)], axis=-1)
+def load_data(subjects, norm_features=True, output_dir="/work/aizenberg/dgellis/fCNN/regression", output_prefix=""):
+    feature_fn = os.path.join(output_dir, output_prefix + "features.npy")
+    fmri_fn = os.path.join(output_dir, output_prefix + "targets.npy")
+    subjects_fn = os.path.join(output_dir, output_prefix + "subjects.npy")
+    if not any([os.path.exists(fn) for fn in (feature_fn, fmri_fn, subjects_fn)]):
+        struct14_data = list()
+        fmri_data = list()
+        select_subjects = list()
+        anat_data = list()
+        for subject in subjects:
+            read_subject(subject, struct14_data, fmri_data, select_subjects, anat_data)
+        # now that we have collected the data, a few things need to be cleaned up
+        # the struct14, sulc, and fmri data have vertices that aren't in the roi
+        # so we will take them out now
+        roi = load_roi()
+        roi_mask = roi == 1
+        struct14_data = np.asarray(struct14_data)[:, roi_mask]
+        anat_data_final = list()
+        for row in anat_data:
+            anat_data_final.append([row[0], row[1], row[2][:, roi_mask], row[3]])
+        fmri_data = np.asarray(fmri_data)[:, roi_mask]
+        # now we have all our data
+        # let's combine the anat and struct14 data
+        features = np.concatenate([struct14_data, np.asarray(anat_data_final)], axis=-1)
+        np.save(features, feature_fn)
+        np.save(fmri_data, fmri_fn)
+        np.save(select_subjects, subjects_fn)
+    else:
+        features = np.load(feature_fn)
+        fmri_data = np.load(fmri_fn)
+        select_subjects = np.load(subjects_fn)
     if norm_features:
         # normalize the features by the values for the whole brain
         features = (features - features.mean(axis=1)) / features.std(axis=1)
@@ -215,7 +226,7 @@ def to_torch_features(training_features):
 def main():
     subjects_config = load_json("/home/aizenberg/dgellis/fCNN/data/subjects_v4.json")
     X = fit_model(initial_training_subjects=subjects_config["training"])
-    test_features, _, test_subjects = load_data(subjects_config["test"])
+    test_features, _, test_subjects = load_data(subjects_config["test"], output_prefix="test")
     A = to_torch_features(test_features).cuda()
     B = A*X
     torch.save(B, "/work/aizenberg/dgellis/fCNN/regression/B_pointwise_60k_test_prediction.pt")

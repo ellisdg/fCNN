@@ -224,12 +224,12 @@ def to_torch_features(training_features):
     return A
 
 
-def main():
+def main(cuda=0):
     subjects_config = load_json("/home/aizenberg/dgellis/fCNN/data/subjects_v4.json")
-    X = fit_model(initial_training_subjects=subjects_config["training"])
+    X = fit_model(initial_training_subjects=subjects_config["training"]).cuda(cuda)
     test_features, _, test_subjects = load_data(subjects_config["test"], output_prefix="test_")
-    A = to_torch_features(test_features).cuda()
-    B = A*X[None]
+    A = to_torch_features(test_features).cuda(cuda)
+    B = (A[..., None] * X[None]).sum(dim=-2)
     torch.save(B, "/work/aizenberg/dgellis/fCNN/regression/B_pointwise_60k_test_prediction.pt")
 
 

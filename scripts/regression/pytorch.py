@@ -229,7 +229,7 @@ def main():
     X = fit_model(initial_training_subjects=subjects_config["training"])
     test_features, _, test_subjects = load_data(subjects_config["test"], output_prefix="test_")
     A = to_torch_features(test_features).cuda()
-    B = A*X
+    B = A.cross(X)
     torch.save(B, "/work/aizenberg/dgellis/fCNN/regression/B_pointwise_60k_test_prediction.pt")
 
 

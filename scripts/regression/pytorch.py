@@ -213,7 +213,7 @@ def load_data(subjects, norm_features=True, output_dir="/work/aizenberg/dgellis/
         select_subjects = np.load(subjects_fn)
     if norm_features:
         # normalize the features by the values for the whole brain
-        features = (features - features.mean(axis=1)) / features.std(axis=1)
+        features = (features - features.mean(axis=1)[:, None]) / features.std(axis=1)[:, None]
     return features, fmri_data, np.asarray(select_subjects)
 
 

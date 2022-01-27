@@ -202,7 +202,7 @@ def load_data(subjects, norm_features=True, output_dir="/work/aizenberg/dgellis/
         fmri_data = np.asarray(fmri_data)[:, roi_mask]
         # now we have all our data
         # let's combine the anat and struct14 data
-        features = np.concatenate([struct14_data] + [np.asarray([row[i] for row in anat_data]) for i in range(4)],
+        features = np.concatenate([struct14_data] + [np.asarray([row[i] for row in anat_data_final]) for i in range(4)],
                                   axis=-1)
         np.save(features, feature_fn)
         np.save(fmri_data, fmri_fn)

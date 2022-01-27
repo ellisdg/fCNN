@@ -219,7 +219,7 @@ def load_data(subjects, norm_features=True, output_dir="/work/aizenberg/dgellis/
 
 def to_torch_features(training_features):
     A_np = np.concatenate([training_features,
-                           np.ones(training_features.shape[:2])[..., None]]).swapaxes(0, 1)
+                           np.ones(training_features.shape[:2])[..., None]], axis=-1).swapaxes(0, 1)
     A = torch.Tensor(A_np)
     return A
 

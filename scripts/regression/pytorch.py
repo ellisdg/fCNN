@@ -231,7 +231,7 @@ def new_cifti_like(array, cifti):
 def predictions_to_ciftis(predictions, subjects, out_template, reference_wc):
     for i, subject in enumerate(subjects):
         array = predictions[i]
-        reference = reference_wc.format(subject)
+        reference = nib.load(reference_wc.format(subject))
         cifti = new_cifti_like(array, reference)
         out_filename = out_template.format(subject)
         cifti.to_filename(out_filename)

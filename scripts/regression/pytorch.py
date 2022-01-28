@@ -223,34 +223,13 @@ def to_torch_features(training_features):
     return A
 
 
-def predict_test(test_subjects, X):
-    B_filename = "/work/aizenberg/dgellis/fCNN/regression/B_pointwise_60k_test_prediction.pt"
-    if not os.path.exists(B_filename):
-        test_features, _, test_subjects = load_data(test_subjects, output_prefix="test_")
-        A = to_torch_features(test_features).cuda()
-        B = A * X
-        torch.save(B, B_filename)
-    else:
-        B = torch.load(B_filename)
-    return B
-
-
-def data_to_nifti(data, filename):
-    print("Writing:", filename)
-
-
-
-def pytorch_matrix_to_nifti(B, test_subjects, output_dir):
-    for i, subject in enumerate(test_subjects):
-        filename = os.path.join(output_dir, subject + "_prediction.dscalar.nii")
-        data = B[i].numpy()
-        data_to_nifti(data, filename)
-
-
 def main():
     subjects_config = load_json("/home/aizenberg/dgellis/fCNN/data/subjects_v4.json")
     X = fit_model(initial_training_subjects=subjects_config["training"])
-    B = predict_test(subjects_config["test"], X)
+    test_features, _, test_subjects = load_data(subjects_config["test"], output_prefix="test")
+    A = to_torch_features(test_features).cuda()
+    B = A*X
+    torch.save(B, "/work/aizenberg/dgellis/fCNN/regression/B_pointwise_60k_test_prediction.pt")
 
 
 def fit_model(initial_training_subjects,

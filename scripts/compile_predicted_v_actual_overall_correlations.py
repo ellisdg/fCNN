@@ -201,6 +201,7 @@ def main():
         target_basename,
         surf_name,
         volume=args["volume"],
+        roi=args["roi"],
         covariate_dir=args["covariate_dir"])
 
     correlations = list()

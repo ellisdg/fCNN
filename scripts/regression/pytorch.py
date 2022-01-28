@@ -250,7 +250,7 @@ def main(cuda=0):
         B = torch.load(B_filename)
         test_subjects = np.load("/work/aizenberg/dgellis/fCNN/regression/test_subjects.npy")
     predictions_to_ciftis(B.cpu().numpy(), test_subjects,
-                          out_template="/work/aizenberg/dgellis/fCNN/regression/predictions/pointwise_60k/tfMRI-ALL.{}.dscalar.nii",
+                          out_template="/work/aizenberg/dgellis/fCNN/regression/predictions/pointwise_60k/{}.tfMRI-ALL.midthickness.dscalar.nii",
                           reference_wc="/work/aizenberg/dgellis/HCP/HCP_1200/{0}/T1w/Results/tfMRI_ALL/tfMRI_ALL_hp200_s2_level2.feat/{0}_tfMRI_ALL_level2_zstat_hp200_s2_TAVOR.roi.midthickness.dscalar.nii")
 
 

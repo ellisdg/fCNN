@@ -224,6 +224,19 @@ def to_torch_features(training_features):
     return A
 
 
+def new_cifti_like(array, cifti):
+    return nib.Cifti2Image(dataobj=array.swapaxes(0, 1), header=cifti.header)
+
+
+def predictions_to_ciftis(predictions, subjects, out_template, reference_wc):
+    for i, subject in enumerate(subjects):
+        array = predictions[i]
+        reference = reference_wc.format(subject)
+        cifti = new_cifti_like(array, reference)
+        out_filename = out_template.format(subject)
+        cifti.to_filename(out_filename)
+
+
 def main(cuda=0):
     subjects_config = load_json("/home/aizenberg/dgellis/fCNN/data/subjects_v4.json")
     B_filename = "/work/aizenberg/dgellis/fCNN/regression/B_pointwise_60k_test_prediction.pt"
@@ -235,6 +248,10 @@ def main(cuda=0):
         torch.save(B, B_filename)
     else:
         B = torch.load(B_filename)
+        test_subjects = np.load("/work/aizenberg/dgellis/fCNN/regression/test_subjects.npy")
+    predictions_to_ciftis(B.cpu().numpy(), test_subjects,
+                          out_template="/work/aizenberg/dgellis/fCNN/regression/predictions/pointwise_60k/tfMRI-ALL.{}.dscalar.nii",
+                          reference_wc="/work/aizenberg/dgellis/HCP/HCP_1200/{0}/T1w/Results/tfMRI_ALL/tfMRI_ALL_hp200_s2_level2.feat/{0}_tfMRI_ALL_level2_zstat_hp200_s2_TAVOR.roi.midthickness.dscalar.nii")
 
 
 def fit_model(initial_training_subjects,

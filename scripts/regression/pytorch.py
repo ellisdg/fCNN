@@ -198,37 +198,38 @@ def load_data(subjects, norm_features=True, output_dir="/work/aizenberg/dgellis/
         struct14_data = np.asarray(struct14_data)[:, roi_mask]
         anat_data_final = list()
         for row in anat_data:
-            anat_data_final.append([row[0], row[1], row[2][:, roi_mask], row[3]])
+            anat_data_final.append([row[0], row[1], row[2][roi_mask], row[3]])
         fmri_data = np.asarray(fmri_data)[:, roi_mask]
         # now we have all our data
         # let's combine the anat and struct14 data
-        features = np.concatenate([struct14_data, np.asarray(anat_data_final)], axis=-1)
-        np.save(features, feature_fn)
-        np.save(fmri_data, fmri_fn)
-        np.save(select_subjects, subjects_fn)
+        features = np.concatenate([struct14_data] + [np.asarray([row[i] for row in anat_data_final]) for i in range(4)],
+                                  axis=-1)
+        np.save(feature_fn, features)
+        np.save(fmri_fn, fmri_data)
+        np.save(subjects_fn, select_subjects)
     else:
         features = np.load(feature_fn)
         fmri_data = np.load(fmri_fn)
         select_subjects = np.load(subjects_fn)
     if norm_features:
         # normalize the features by the values for the whole brain
-        features = (features - features.mean(axis=1)) / features.std(axis=1)
+        features = (features - features.mean(axis=1)[:, None]) / features.std(axis=1)[:, None]
     return features, fmri_data, np.asarray(select_subjects)
 
 
 def to_torch_features(training_features):
     A_np = np.concatenate([training_features,
-                           np.ones(training_features.shape[:2])[..., None]]).swapaxes(0, 1)
+                           np.ones(training_features.shape[:2])[..., None]], axis=-1)
     A = torch.Tensor(A_np)
     return A
 
 
-def main():
+def main(cuda=0):
     subjects_config = load_json("/home/aizenberg/dgellis/fCNN/data/subjects_v4.json")
-    X = fit_model(initial_training_subjects=subjects_config["training"])
-    test_features, _, test_subjects = load_data(subjects_config["test"], output_prefix="test")
-    A = to_torch_features(test_features).cuda()
-    B = A*X
+    X = fit_model(initial_training_subjects=subjects_config["training"]).cuda(cuda)
+    test_features, _, test_subjects = load_data(subjects_config["test"], output_prefix="test_")
+    A = to_torch_features(test_features).cuda(cuda)
+    B = (A[..., None] * X[None]).sum(dim=-2)
     torch.save(B, "/work/aizenberg/dgellis/fCNN/regression/B_pointwise_60k_test_prediction.pt")
 
 

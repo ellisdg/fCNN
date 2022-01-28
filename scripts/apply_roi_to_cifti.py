@@ -9,7 +9,7 @@ def main():
     for fn in glob.glob("/work/aizenberg/dgellis/HCP/HCP_1200/*/T1w/Results/tfMRI_ALL/tfMRI_ALL_hp200_s2_level2.feat/*_tfMRI_ALL_level2_zstat_hp200_s2_TAVOR.midthickness.dscalar.nii"):
         out_file = fn.replace(".midthickness.", ".roi.midthickness.")
         if not os.path.exists(out_file):
-            subject = fn.split("")[6]
+            subject = fn.split("/")[6]
             cmd = ["wb_command",
                    "-cifti-restrict-dense-map",
                    fn, "COLUMN", out_file,

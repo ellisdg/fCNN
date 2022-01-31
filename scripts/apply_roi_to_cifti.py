@@ -10,6 +10,8 @@ def parse_args():
                         help="Wildcard for glob to get the files that to which the roi will be applied",
                         default="/work/aizenberg/dgellis/HCP/HCP_1200/*/T1w/Results/tfMRI_ALL/tfMRI_ALL_hp200_s2_level2.feat/*_tfMRI_ALL_level2_zstat_hp200_s2_TAVOR.midthickness.dscalar.nii")
     parser.add_argument("--surface_name", default="midthickness")
+    parser.add_argument("--prediction", action="store_true", default=False,
+                        help="Automatically change the output naming scheme and parse the subject id.")
     parser.add_argument("--replace", default=".roi.{surface}.",
                         help="How to label the output files. '.{surface}.' will be replaced with the string here. "
                              "The default is to place '.roi.' before the surface name in the file. But this can "
@@ -26,7 +28,10 @@ def main():
         out_file = fn.replace(".{surface}.".format(surface=namespace.surface_name),
                               namespace.replace.format(surface=namespace.surface_name))
         if not os.path.exists(out_file):
-            subject = fn.split("/")[6]
+            if namespace.prediction:
+                subject = fn.split("_")[0]
+            else:
+                subject = fn.split("/")[6]
             cmd = ["wb_command",
                    "-cifti-restrict-dense-map",
                    fn, "COLUMN", out_file,

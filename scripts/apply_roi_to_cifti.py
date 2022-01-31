@@ -24,7 +24,7 @@ def main():
     r_roi_wc = "/work/aizenberg/dgellis/HCP/HCP_1200/{0}/MNINonLinear/fsaverage_LR32k/{0}.R.atlasroi.32k_fs_LR.shape.gii"
     for fn in glob.glob(namespace.wildcard.format(surface=namespace.surface_name)):
         out_file = fn.replace(".{surface}.".format(surface=namespace.surface_name),
-                              namespace.format(surface=namespace.surface_name))
+                              namespace.replace.format(surface=namespace.surface_name))
         if not os.path.exists(out_file):
             subject = fn.split("/")[6]
             cmd = ["wb_command",

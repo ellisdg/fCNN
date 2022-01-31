@@ -78,14 +78,14 @@ def extract_diagonal_and_extra_diagonal_elements(matrix):
 
 def plot_hist(correlations, ax, set_xlabel=True, set_ylabel=True, title=None, plot_p_value=True,
               p_value_fontsize='medium', legend=False, legend_loc="upper left", legend_fontsize="small",
-              bin_width=0.025, kde=False, stat="density", hist_alpha=0.3, kde_alpha=0.2):
+              bin_width=0.025, kde=True, kde_fill=False, stat="density", hist_alpha=0.3, kde_alpha=0.2):
     diag_values, extra_diag_values = extract_diagonal_and_extra_diagonal_elements(correlations)
     for m, label, color in zip((extra_diag_values, diag_values),
                                ("correlation with other", "correlation with self"),
                                ("C0", "C1")):
         seaborn.histplot(m, ax=ax, label=label, color=color, stat=stat, binwidth=bin_width, alpha=hist_alpha,
                          zorder=0, kde=kde)
-        if kde and stat == "density":
+        if kde and kde_fill:
             seaborn.kdeplot(m, ax=ax, color=color, fill=True, alpha=kde_alpha, zorder=1)
     if title is not None:
         ax.set_title(title)

@@ -31,7 +31,7 @@ def main():
                               namespace.replace.format(surface=namespace.surface_name))
         if not os.path.exists(out_file):
             if namespace.prediction:
-                subject = fn.split("_")[0]
+                subject = os.path.basename(fn).split("_")[0]
             else:
                 subject = fn.split("/")[6]
             cmd = ["wb_command",

@@ -23,7 +23,7 @@ def parse_args():
 def main():
     namespace = parse_args()
     if namespace.prediction:
-        namespace.replace = ".{subject}.roi."
+        namespace.replace = ".{surface}.roi."
     l_roi_wc = "/work/aizenberg/dgellis/HCP/HCP_1200/{0}/MNINonLinear/fsaverage_LR32k/{0}.L.atlasroi.32k_fs_LR.shape.gii"
     r_roi_wc = "/work/aizenberg/dgellis/HCP/HCP_1200/{0}/MNINonLinear/fsaverage_LR32k/{0}.R.atlasroi.32k_fs_LR.shape.gii"
     for fn in glob.glob(namespace.wildcard.format(surface=namespace.surface_name)):

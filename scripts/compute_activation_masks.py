@@ -8,7 +8,7 @@ import numpy as np
 import nibabel as nib
 from fcnn.utils.nipy.ggmixture import GGGM
 from fcnn.utils.wquantiles.wquantiles import quantile_1D
-from fcnn.utils.hcp import get_metric_data
+from fcnn.utils.hcp import get_metric_data, extract_cifti_scalar_map_names
 
 
 def parse_args():
@@ -36,6 +36,8 @@ def g2gm_threshold(data, iterations=1000):
 
 
 def compute_activation_mask(image, subject, metric_names, surface_names):
+    if not np.all(np.in1d(metric_names, extract_cifti_scalar_map_names(image))):
+        metric_names = [name.split(" ")[-1] for name in metric_names]
     data = get_metric_data([image], [metric_names], surface_names=surface_names, subject_id=subject)
     mask_data = list()
     for i, metric_name in enumerate(metric_names):

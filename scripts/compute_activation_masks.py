@@ -76,7 +76,7 @@ def main():
     metric_names = read_namefile(namespace.namefile)
     func = partial(mp_compute_and_save_activation_mask,
                    metric_names=metric_names,
-                   surface_names=namespace.surface_names)
+                   surface_names=["Cortex Left", "Cortex Right"])
     args_list = list()
     for fn in glob.glob(namespace.wildcard):
         subject = os.path.basename(fn).split("_")[0]

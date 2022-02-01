@@ -66,9 +66,11 @@ def _compute_c(x, z, eps=0.00001):
     return c
 
 
-def _gaus_dens(mean, var, x):
+def _gaus_dens(mean, var, x, continuation=1e-6):
     """ evaluate the gaussian density (mean,var) at points x
     """
+    if var < continuation:
+        var = continuation
     Q = - (x - mean) ** 2 / (2 * var)
     return 1. / np.sqrt(2 * np.pi * var) * np.exp(Q)
 

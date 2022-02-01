@@ -8,14 +8,12 @@ import numpy as np
 import nibabel as nib
 from fcnn.utils.nipy.ggmixture import GGGM
 from fcnn.utils.wquantiles.wquantiles import quantile_1D
-from fcnn.utils.hcp import get_metric_data, extract_cifti_scalar_map_names
-from nilearn.plotting import plot_surf_stat_map
-import matplotlib.pyplot as plt
+from fcnn.utils.hcp import get_metric_data
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--task_namefile", default="/home/aizenberg/dgellis/fCNN/data/labels/ALL-TAVOR_name-file.txt")
+    parser.add_argument("--namefile", default="/home/aizenberg/dgellis/fCNN/data/labels/ALL-TAVOR_name-file.txt")
     parser.add_argument("--wildcard",
                         default="/work/aizenberg/dgellis/fCNN/predictions/v4_struct14_unet_ALL-TAVOR_2mm_v2_pt_test/"
                                 "*_model_v4_struct14_unet_ALL-TAVOR_2mm_v2_pt_struct14_normalized.midthickness.dscalar.nii")

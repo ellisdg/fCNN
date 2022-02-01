@@ -265,15 +265,15 @@ def compare_overall_correlation_models_and_methods(correlation_files, labels, ou
                                     xlabel="Self vs other increase (in %)",
                                     extensions=extensions)
 
-    plot_self_vs_other_correlations(correlations, model_labels, method_labels, output_directory,
-                                    metric_func=mean_diagonal,
-                                    output_filename="compared_mean_correlation",
-                                    xlabel="Mean Correlation", extensions=extensions)
-
-    plot_self_vs_other_correlations(correlations, model_labels, method_labels, output_directory,
-                                    metric_func=normalized_mean_diagonal,
-                                    output_filename="compared_normalized_mean_correlation",
-                                    xlabel="Normalized Mean Correlation", extensions=extensions)
+    # plot_self_vs_other_correlations(correlations, model_labels, method_labels, output_directory,
+    #                                 metric_func=mean_diagonal,
+    #                                 output_filename="compared_mean_correlation",
+    #                                 xlabel="Mean Correlation", extensions=extensions)
+    #
+    # plot_self_vs_other_correlations(correlations, model_labels, method_labels, output_directory,
+    #                                 metric_func=normalized_mean_diagonal,
+    #                                 output_filename="compared_normalized_mean_correlation",
+    #                                 xlabel="Normalized Mean Correlation", extensions=extensions)
 
 
 def plot_per_domain(corr_matrices, domains, metric_names, method_labels, labels, output_dir, average_per_domain=True,

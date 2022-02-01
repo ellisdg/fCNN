@@ -19,7 +19,7 @@ def parse_args():
                                 "*_model_v4_struct14_unet_ALL-TAVOR_2mm_v2_pt_struct14_normalized.midthickness.dscalar.nii")
     parser.add_argument("--target",
                         default="/work/aizenberg/dgellis/HCP/HCP_1200/{subject}/T1w/Results/tfMRI_ALL/tfMRI_ALL_hp200_s2_level2.feat/{subject}_tfMRI_ALL_level2_zstat_hp200_s2_TAVOR.midthickness.dscalar.nii")
-    parser.add_argument("--nthreads", default=1)
+    parser.add_argument("--nthreads", default=1, type=int)
     return parser.parse_args()
 
 

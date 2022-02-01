@@ -45,7 +45,7 @@ def compute_activation_mask(image, subject, metric_names, surface_names):
     return mask_data
 
 def new_cifti_like(array, cifti):
-    return nib.Cifti2Image(dataobj=array.swapaxes(0, 1), header=cifti.header)
+    return nib.Cifti2Image(dataobj=array, header=cifti.header)
 
 
 def compute_and_save_activation_mask(filename, subject, metric_names, surface_names, output_filename=None):

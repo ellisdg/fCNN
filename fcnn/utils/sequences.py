@@ -164,7 +164,12 @@ def decision(probability):
 class BaseSequence(Sequence):
     def __init__(self, filenames, batch_size, target_labels, window, spacing, classification='binary', shuffle=True,
                  points_per_subject=1, flip=False, reorder=False, iterations_per_epoch=1, deformation_augmentation=None,
-                 base_directory=None, subject_ids=None, inputs_per_epoch=None, channel_axis=3):
+                 base_directory=None, subject_ids=None, inputs_per_epoch=None, channel_axis=3, randomize_inputs=False):
+        """
+        randomize_inputs: (True or False) decouples the inputs from the outputs. So will shuffle the input order on each
+        epoch end. This is supposed to sort of be like a permutation test. I am implementing this at the request of
+        a reviewer.
+        """
         self.deformation_augmentation = deformation_augmentation
         self.base_directory = base_directory
         self.subject_ids = subject_ids
@@ -194,6 +199,7 @@ class BaseSequence(Sequence):
         else:
             self._classify = classification
         self.channel_axis = channel_axis
+        self.randomize_inputs = randomize_inputs
         self.on_epoch_end()
 
     def get_number_of_subjects_per_epoch(self):
@@ -251,6 +257,20 @@ class BaseSequence(Sequence):
 
     def on_epoch_end(self):
         self.generate_epoch_filenames()
+        if self.randomize_inputs:
+            self.shuffle_inputs()
+
+    def shuffle_inputs(self, input_index=0):
+        """
+        Randomly shuffles the input order so that the inputs aren't coupled to the outputs. (This probably isn't useful
+        for you.)
+        input_index: the index for the inputs. Default assumes the inputs are in the first position of the list.
+        """
+        _epoch_filenames = np.array(self.epoch_filenames).copy()
+        _shuffled_inputs = _epoch_filenames[:, input_index].copy()
+        np.random.shuffle(_shuffled_inputs)
+        _epoch_filenames[:, input_index] = _shuffled_inputs
+        self.epoch_filenames = _epoch_filenames.tolist()
 
     def sample_filenames(self):
         """

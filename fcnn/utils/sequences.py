@@ -199,7 +199,8 @@ class BaseSequence(Sequence):
         else:
             self._classify = classification
         self.channel_axis = channel_axis
-        self.randomize_inputs = randomize_inputs
+        if randomize_inputs:
+            self.shuffle_inputs()
         self.on_epoch_end()
 
     def get_number_of_subjects_per_epoch(self):
@@ -257,8 +258,6 @@ class BaseSequence(Sequence):
 
     def on_epoch_end(self):
         self.generate_epoch_filenames()
-        if self.randomize_inputs:
-            self.shuffle_inputs()
 
     def shuffle_inputs(self, input_index=0):
         """
@@ -266,11 +265,11 @@ class BaseSequence(Sequence):
         for you.)
         input_index: the index for the inputs. Default assumes the inputs are in the first position of the list.
         """
-        _epoch_filenames = np.array(self.epoch_filenames).copy()
-        _shuffled_inputs = _epoch_filenames[:, input_index].copy()
+        _filenames = np.array(self.filenames).copy()
+        _shuffled_inputs = _filenames[:, input_index].copy()
         np.random.shuffle(_shuffled_inputs)
-        _epoch_filenames[:, input_index] = _shuffled_inputs
-        self.epoch_filenames = _epoch_filenames.tolist()
+        _filenames[:, input_index] = _shuffled_inputs
+        self.filenames = _filenames.tolist()
 
     def sample_filenames(self):
         """

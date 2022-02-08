@@ -3,7 +3,7 @@ import glob
 import numpy as np
 import nibabel as nib
 from nilearn.image import new_img_like
-from .compute_activation_masks import g2gm_threshold
+from compute_activation_masks import g2gm_threshold
 import argparse
 from multiprocessing import Pool
 from functools import partial

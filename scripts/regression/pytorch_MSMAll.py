@@ -205,7 +205,14 @@ def load_data(subjects, norm_features=True, output_dir="/work/aizenberg/dgellis/
         struct14_data = np.asarray(struct14_data)[:, roi_mask]
         anat_data_final = list()
         for row in anat_data:
-            anat_data_final.append([row[0], row[1], row[2][roi_mask], row[3]])
+            new_row = list()
+            for row_array in row:
+                if row_array.shape[0] == 64984:
+                    _row_array = row_array[roi_mask]
+                else:
+                    _row_array = row_array
+                new_row.append(_row_array)
+            anat_data_final.append(new_row)
         fmri_data = np.asarray(fmri_data)[:, roi_mask]
         # now we have all our data
         # let's combine the anat and struct14 data

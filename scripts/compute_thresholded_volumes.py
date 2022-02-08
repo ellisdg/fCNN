@@ -31,10 +31,10 @@ def threshold_4d_volume(data, threshold_func=g2gm_threshold, **threshold_kwargs)
     return data
 
 
-def threshold_4d_nifti_volume(filename, output_filename=None, overwite=False):
+def threshold_4d_nifti_volume(filename, output_filename=None, overwrite=False):
     if output_filename is None:
         output_filename = filename.replace(".nii", "_g2gmactivationmask.nii")
-    if overwite or not os.path.exists(output_filename):
+    if overwrite or not os.path.exists(output_filename):
         image = nib.load(filename)
         data = threshold_4d_volume(image.get_fdata())
         output_image = new_img_like(image, data)

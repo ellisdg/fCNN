@@ -17,6 +17,7 @@ def parse_args():
                         default="/work/aizenberg/dgellis/HCP/HCP_1200/{subject}/MNINonLinear/Results/tfMRI_ALL/"
                                 "tfMRI_ALL_hp200_s2_level2.feat/{subject}_tfMRI_ALL_level2_zstat_hp200_s2_TAVOR.nii.gz")
     parser.add_argument("--nthreads", default=1, type=int)
+    parser.add_argument("--skip_target", default=False, action="store_true")
     parser.add_argument("--overwrite", default=False, action="store_true")
     return parser.parse_args()
 
@@ -48,8 +49,9 @@ def main():
 
     for i, filename in enumerate(filenames):
         subject = os.path.basename(filename).split("_")[0]
-        target_fn = namespace.target.format(subject=subject)
-        target_filenames.append(target_fn)
+        if not namespace.skip_target:
+            target_fn = namespace.target.format(subject=subject)
+            target_filenames.append(target_fn)
 
     func = partial(threshold_4d_nifti_volume, overwrite=namespace.overwrite)
 

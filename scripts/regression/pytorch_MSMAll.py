@@ -258,7 +258,7 @@ def main(cuda=0):
         X = fit_model(initial_training_subjects=subjects_config["training"]).cuda(cuda)
         test_features, _, test_subjects = load_data(subjects_config["test"], output_prefix="test_")
         A = to_torch_features(test_features).cuda(cuda)
-        B = (A[..., None] * X[None]).sum(dim=-2)
+        B = (A[..., None].cuda(1) * X[None].cuda(1)).sum(dim=-2)
         torch.save(B, B_filename)
     else:
         B = torch.load(B_filename)

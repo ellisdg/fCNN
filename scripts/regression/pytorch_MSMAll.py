@@ -279,7 +279,7 @@ def fit_model(initial_training_subjects,
         A = to_torch_features(training_features).cuda()
         B_np = training_target.swapaxes(0, 1)
         B = torch.Tensor(B_np).cuda()
-        X = torch.linalg.lstsq(A, B).solution
+        X = torch.linalg.lstsq(A.swapaxes(0, 1), B.swapaxes(0, 1)).solution
         torch.save(X, X_filename)
     else:
         X = torch.load(X_filename).cuda()

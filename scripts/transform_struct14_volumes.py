@@ -13,7 +13,7 @@ def parse_args():
 
 
 def call_script(subject, script="/home/aizenberg/dgellis/fCNN/scripts/bash/transform_struct14_volumes.sh"):
-    cmd = ["bash", "/home/aizenberg/dgellis/fCNN/scripts/bash/transform_tfMRI_volumes.sh", subject]
+    cmd = ["bash", script, subject]
     print(" ".join(cmd))
     subprocess.call(cmd)
 

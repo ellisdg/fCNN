@@ -8,7 +8,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--wildcard",
                         help="Wildcard for glob to get the files that to which the roi will be applied",
-                        default="/work/aizenberg/dgellis/HCP/HCP_1200/*/T1w/Results/tfMRI_ALL/tfMRI_ALL_hp200_s2_level2.feat/*_tfMRI_ALL_level2_zstat_hp200_s2_TAVOR.midthickness.dscalar.nii")
+                        default="/work/aizenberg/dgellis/HCP/HCP_1200/*/T1w/Results/tfMRI_ALL/tfMRI_ALL_hp200_s2_level2.feat/*_tfMRI_ALL_level2_zstat_hp200_s2_TAVOR.{surface}.dscalar.nii")
     parser.add_argument("--surface_name", default="midthickness")
     parser.add_argument("--prediction", action="store_true", default=False,
                         help="Automatically change the output naming scheme and parse the subject id.")

@@ -258,7 +258,7 @@ def main(cuda=0):
         X = fit_model(initial_training_subjects=subjects_config["training"]).cuda(cuda)
         test_features, _, test_subjects = load_data(subjects_config["test"], output_prefix="test_")
         A = to_torch_features(test_features).cuda(cuda)
-        B = (A[..., None] * X[None]).sum(dim=-2)
+        B = (A[..., None].cuda(1) * X[None].cuda(1)).sum(dim=-2)
         torch.save(B, B_filename)
     else:
         B = torch.load(B_filename)
@@ -277,9 +277,8 @@ def fit_model(initial_training_subjects,
         # we are going to add 1 to n_features to fit the intercept
         # we are also going to swap the axis so that the model fits every individual point
         A = to_torch_features(training_features).cuda()
-        B_np = training_target.swapaxes(0, 1)
-        B = torch.Tensor(B_np).cuda()
-        X = torch.linalg.lstsq(A, B).solution
+        B = torch.Tensor(training_target).cuda()
+        X = torch.linalg.lstsq(A.swapaxes(0, 1), B.swapaxes(0, 1)).solution
         torch.save(X, X_filename)
     else:
         X = torch.load(X_filename).cuda()

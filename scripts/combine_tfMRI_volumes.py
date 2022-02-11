@@ -33,15 +33,14 @@ def main():
                                    "{subject}_tfMRI_{task}_level2_zstat_hp200_s2_TAVOR.nii.gz")
     for subject in subjects:
         output_filename = volume_template.format(subject=subject, task="ALL")
-        print(output_filename)
         cmd = ["wb_command", "-volume-merge", output_filename]
         complete = True
         for task in tasks:
             volume_filename = volume_template.format(subject=subject, task=task)
             if not os.path.exists(volume_filename):
-                complete = False
-            else:
                 print("Doesn't exist:", volume_filename)
+                complete = False
+
             cmd.extend(["-volume", volume_filename])
         if complete and not os.path.exists(output_filename):
             if not os.path.exists(os.path.dirname(output_filename)):

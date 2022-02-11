@@ -39,6 +39,8 @@ def main():
             volume_filename = volume_template.format(subject=subject, task=task)
             if not os.path.exists(volume_filename):
                 complete = False
+            else:
+                print("Doesn't exist:", volume_filename)
             cmd.extend(["-volume", volume_filename])
         if complete and not os.path.exists(output_filename):
             if not os.path.exists(os.path.dirname(output_filename)):

@@ -46,6 +46,8 @@ def main():
             if not os.path.exists(os.path.dirname(output_filename)):
                 os.makedirs(os.path.dirname(output_filename))
             run_command(cmd)
+        elif complete and os.path.exists(output_filename):
+            print("Skipping existing output:", output_filename)
 
     name_filename = "/work/aizenberg/dgellis/ALL-TAVOR_name-file.txt"
     names = list()

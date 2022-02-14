@@ -31,7 +31,7 @@ def main():
     namespace = parse_args()
     subjects = load_json(namespace.subjects_file)[namespace.group]
     func = partial(transform_subject, overwrite=namespace.overwrite,
-                   output_template=namespace.check_output_tempalte)
+                   output_template=namespace.check_output_template)
     with Pool(namespace.nthreads) as pool:
         pool.map(func, subjects)
 

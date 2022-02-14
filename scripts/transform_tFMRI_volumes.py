@@ -13,7 +13,7 @@ def parse_args():
     parser.add_argument("--nthreads", type=int, default=1)
     parser.add_argument("--overwrite", action="store_true", default=False)
     parser.add_argument("--check_output_template",
-                        default="/work/aizenberg/dgellis/HCP/HCP_1200/{subject}/MNINonLinear/Results/tfMRI_ALL/tfMRI_ALL_hp200_s2_level2.feat/${subject}_tfMRI_ALL_level2_zstat_hp200_s2_TAVOR.nii.gz")
+                        default="/work/aizenberg/dgellis/HCP/HCP_1200/{subject}/MNINonLinear/Results/tfMRI_ALL/tfMRI_ALL_hp200_s2_level2.feat/{subject}_tfMRI_ALL_level2_zstat_hp200_s2_TAVOR.nii.gz")
     return parser.parse_args()
 
 

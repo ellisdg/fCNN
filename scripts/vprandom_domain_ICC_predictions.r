@@ -6,7 +6,7 @@ library("hash")
 num_cores = 16
 
 subjects <- c("103818", "105923", "111312", "114823", "115320", "122317", "125525", "130518", "135528", "137128", "139839", "143325", "146129", "149337", "149741", "151526", "158035", "172332", "175439", "185442", "187547", "192439", "194140", "195041", "200109", "200614", "250427", "287248", "341834", "433839", "562345", "599671", "601127", "660951", "783462", "859671", "861456", "917255")
-raters <- c("1200", "Retest")
+raters <- c("test", "retest")
 
 points_per_map = 64984
 maps_per_subject = 47
@@ -19,9 +19,10 @@ for (i_subject in 1:2){
     end = start + points_per_map - 1
     for (i_rater in 1:length(raters)){
         rater <- raters[i_rater]
-        filename <- paste("/work/aizenberg/dgellis/HCP/HCP_", rater, "/", subject, "/",
-                          "T1w/Results/tfMRI_ALL/tfMRI_ALL_hp200_s2_level2.feat/", subject,
-                          "_tfMRI_ALL_level2_zstat_hp200_s2_TAVOR.midthickness.dscalar.nii", sep="")
+        filename <- paste("/work/aizenberg/dgellis/fCNN/predictions/",
+                          "vprandom_struct14_ALL-TAVOR_2mm_v2_pt_", rater, "/", subject,
+                          "_model_vprandom_struct14_unet_ALL-TAVOR_2mm_v2_pt_struct14_normalized.",
+                          "midthickness.dscalar.nii", sep="")
         dscalar <- read_cifti(filename)
         for (i_map in 1:maps_per_subject){
             all_data_3[start:end, i_rater, i_map] <- dscalar$data[ ,i_map]
@@ -60,4 +61,4 @@ for (key in keys(domains)){
 
     df[nrow(df) + 1, ] <- c(key, results$value, results$lbound, results$ubound, results$subjects, results$raters)
 }
-write.csv(df, "/work/aizenberg/dgellis/HCP_CACHE/test-retest_ICC_scores_domain.csv")
+write.csv(df, "/work/aizenberg/dgellis/fCNN/predictions/vprandom_test-retest_struct14_v2_ICC_scores_domain.csv")

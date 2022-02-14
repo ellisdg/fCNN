@@ -20,7 +20,7 @@ for (i_subject in 1:2){
     for (i_rater in 1:length(raters)){
         rater <- raters[i_rater]
         filename <- paste("/work/aizenberg/dgellis/fCNN/predictions/",
-                          "vprandom_struct14_ALL-TAVOR_2mm_v2_pt_", rater, "/", subject,
+                          "vprandom_struct14_unet_ALL-TAVOR_2mm_v2_pt_", rater, "/", subject,
                           "_model_vprandom_struct14_unet_ALL-TAVOR_2mm_v2_pt_struct14_normalized.",
                           "midthickness.dscalar.nii", sep="")
         dscalar <- read_cifti(filename)

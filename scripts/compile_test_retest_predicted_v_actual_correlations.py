@@ -81,6 +81,10 @@ def main():
         _filenames = (test_filename, retest_filename, pred_test_filename, pred_retest_filename)
         if all([os.path.exists(filename) for filename in _filenames]):
             filenames.append(_filenames)
+        else:
+            for filename in _filenames:
+                if not os.path.exists(filename):
+                    print("Does not exist:", filename)
 
     metric_names = read_namefile(args["metric_names"])
 

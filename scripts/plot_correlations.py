@@ -78,14 +78,14 @@ def extract_diagonal_and_extra_diagonal_elements(matrix):
 
 def plot_hist(correlations, ax, set_xlabel=True, set_ylabel=True, title=None, plot_p_value=True,
               p_value_fontsize='medium', legend=False, legend_loc="upper left", legend_fontsize="small",
-              bin_width=0.025, kde=True, stat="proportion", hist_alpha=0.3, kde_alpha=0.2):
+              bin_width=0.025, kde=True, kde_fill=False, stat="density", hist_alpha=0.3, kde_alpha=0.2):
     diag_values, extra_diag_values = extract_diagonal_and_extra_diagonal_elements(correlations)
     for m, label, color in zip((extra_diag_values, diag_values),
                                ("correlation with other", "correlation with self"),
                                ("C0", "C1")):
         seaborn.histplot(m, ax=ax, label=label, color=color, stat=stat, binwidth=bin_width, alpha=hist_alpha,
                          zorder=0, kde=kde)
-        if kde and stat == "density":
+        if kde and kde_fill:
             seaborn.kdeplot(m, ax=ax, color=color, fill=True, alpha=kde_alpha, zorder=1)
     if title is not None:
         ax.set_title(title)
@@ -123,7 +123,7 @@ def plot_heatmap(data, ax, vmin, vmax, cmap, cbar=True, cbar_ax=None, set_xlabel
         ax.set_ylabel(ylabel)
 
 
-def plot_correlation_panel(corr_matrix, column_width=3, row_height=3, norm_vmax=3, norm_vmin=-3, output_dir=".",
+def plot_correlation_panel(corr_matrix, column_width=3, row_height=3, norm_vmax=None, norm_vmin=None, output_dir=".",
                            extensions=(".pdf",), cmap="viridis"):
     # define a separate color bar for the overall corr matrix
     overall_cbar_fig, overall_cbar_ax = plt.subplots(figsize=(0.5, 5))
@@ -149,6 +149,10 @@ def plot_correlation_panel(corr_matrix, column_width=3, row_height=3, norm_vmax=
     plot_heatmap(data=corr_matrix, ax=_overall_ax, set_xlabel=True, set_ylabel=True, cbar=False, vmax=overall_vmax,
                  vmin=overall_vmin, cmap=overall_cmap)
     _overall_cbar_ax.axis("off")
+    if norm_vmax is None:
+        norm_vmax = overall_vmax
+    if norm_vmin is None:
+        norm_vmin = overall_vmin
     corr_matrix_norm = normalize_correlation_matrix(corr_matrix, norm_vmax, norm_vmin, axes=(0, 1))
     overall_norm_fig, overall_norm_ax = plt.subplots(figsize=(column_width, row_height))
     plot_heatmap(data=corr_matrix_norm, ax=overall_norm_ax, set_xlabel=True, set_ylabel=True, cbar=False, vmax=norm_vmax,
@@ -261,15 +265,15 @@ def compare_overall_correlation_models_and_methods(correlation_files, labels, ou
                                     xlabel="Self vs other increase (in %)",
                                     extensions=extensions)
 
-    plot_self_vs_other_correlations(correlations, model_labels, method_labels, output_directory,
-                                    metric_func=mean_diagonal,
-                                    output_filename="compared_mean_correlation",
-                                    xlabel="Mean Correlation", extensions=extensions)
-
-    plot_self_vs_other_correlations(correlations, model_labels, method_labels, output_directory,
-                                    metric_func=normalized_mean_diagonal,
-                                    output_filename="compared_normalized_mean_correlation",
-                                    xlabel="Normalized Mean Correlation", extensions=extensions)
+    # plot_self_vs_other_correlations(correlations, model_labels, method_labels, output_directory,
+    #                                 metric_func=mean_diagonal,
+    #                                 output_filename="compared_mean_correlation",
+    #                                 xlabel="Mean Correlation", extensions=extensions)
+    #
+    # plot_self_vs_other_correlations(correlations, model_labels, method_labels, output_directory,
+    #                                 metric_func=normalized_mean_diagonal,
+    #                                 output_filename="compared_normalized_mean_correlation",
+    #                                 xlabel="Normalized Mean Correlation", extensions=extensions)
 
 
 def plot_per_domain(corr_matrices, domains, metric_names, method_labels, labels, output_dir, average_per_domain=True,

@@ -7,7 +7,7 @@ TFMRIVOL=${SUBDIR}/T1w/Results/tfMRI_ALL/tfMRI_ALL_hp200_s2_level2.feat/${SUB}_t
 XFM=${SUBDIR}/MNINonLinear/xfms/acpc_dc2standard.nii.gz
 REF=${SUBDIR}/MNINonLinear/T1w_restore.2.nii.gz
 REF2=${SUBDIR}/T1w/T1w_acpc_dc_restore_brain.nii.gz
-OUTDIR=${SUBDIR}/MNINonLinear/Results/tfMRI_ALL
+OUTDIR=${SUBDIR}/MNINonLinear/Results/tfMRI_ALL/tfMRI_ALL_hp200_s2_level2.feat
 
 mkdir -p "${OUTDIR}"
 

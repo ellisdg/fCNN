@@ -117,12 +117,17 @@ def parse_args():
     parser.add_argument('--submit', action="store_true", default=False)
     parser.add_argument('--mem_per_cpu', default=4, type=int)
     parser.add_argument('--covariate_dir', required=False)
+    parser.add_argument('--roi', action="store_true", default=False,
+                        help="Look for files that are restricted to the cortical atlas roi.")
     return vars(parser.parse_args())
 
 
-def fetch_prediction_filenames(prediction_dir, hcp_dir, target_basename, surf_name, volume=False, covariate_dir=None):
+def fetch_prediction_filenames(prediction_dir, hcp_dir, target_basename, surf_name, volume=False, covariate_dir=None,
+                               roi=False):
     if volume:
         all_prediction_images = glob.glob(os.path.join(prediction_dir, "*.nii.gz"))
+    elif roi:
+        all_prediction_images = glob.glob(os.path.join(prediction_dir, "*.{}.roi.dscalar.nii".format(surf_name)))
     else:
         all_prediction_images = glob.glob(os.path.join(prediction_dir, "*.{}.dscalar.nii".format(surf_name)))
 
@@ -139,6 +144,10 @@ def fetch_prediction_filenames(prediction_dir, hcp_dir, target_basename, surf_na
                 target_fn = os.path.join(
                     hcp_dir, sid, target_basename.format(sid)).replace(
                     "/T1w/", "/MNINonLinear/")
+            elif roi:
+                target_fn = os.path.join(hcp_dir, sid, target_basename.format(sid)).replace(".nii.gz",
+                                                                                            ".roi.{}.dscalar.nii").format(
+                    surf_name)
             else:
                 target_fn = os.path.join(hcp_dir, sid, target_basename.format(sid)).replace(".nii.gz",
                                                                                             ".{}.dscalar.nii").format(
@@ -192,6 +201,7 @@ def main():
         target_basename,
         surf_name,
         volume=args["volume"],
+        roi=args["roi"],
         covariate_dir=args["covariate_dir"])
 
     correlations = list()

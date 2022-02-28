@@ -36,10 +36,7 @@ def compute_correlation_row(predicted_fn, target_fns, metric_names, structure_na
 def compute_correlation(target_fn, predicted_data, metric_names, structure_names):
     target_image = nib.load(target_fn)
     target_data = get_metric_data([target_image], [metric_names], structure_names, None)
-    task_row = list()
-    for i, task_name in enumerate(metric_names):
-        task_row.append(pearsonr(predicted_data[..., i].flatten(), target_data[..., i].flatten()))
-    return task_row
+    return pearsonr(predicted_data.flatten(), target_data.flatten())
 
 
 def main():

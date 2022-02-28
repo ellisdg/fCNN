@@ -38,12 +38,16 @@ def main():
         for task in tasks:
             volume_filename = volume_template.format(subject=subject, task=task)
             if not os.path.exists(volume_filename):
+                print("Doesn't exist:", volume_filename)
                 complete = False
+
             cmd.extend(["-volume", volume_filename])
         if complete and not os.path.exists(output_filename):
             if not os.path.exists(os.path.dirname(output_filename)):
                 os.makedirs(os.path.dirname(output_filename))
             run_command(cmd)
+        elif complete and os.path.exists(output_filename):
+            print("Skipping existing output:", output_filename)
 
     name_filename = "/work/aizenberg/dgellis/ALL-TAVOR_name-file.txt"
     names = list()

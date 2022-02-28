@@ -16,7 +16,7 @@ def parse_args():
 def read_anat_features(subject):
     row_data = list()
     for feature in ("thickness", "MyelinMap", "sulc", "curvature"):
-        fn = "/work/aizenberg/dgellis/HCP/HCP_1200/{0}/MNINonLinear/fsaverage_LR32k/{0}.{1}.32k_fs_LR.dscalar.nii".format(
+        fn = "/work/aizenberg/dgellis/HCP/HCP_1200/{0}/MNINonLinear/fsaverage_LR32k/{0}.{1}_MSMAll.32k_fs_LR.dscalar.nii".format(
             subject, feature
         )
         print(fn)
@@ -65,8 +65,8 @@ def read_fmri(fmri_fn, fmri_data):
         )
 
 
-struct14_wc = "/work/aizenberg/dgellis/HCP/HCP_1200/{}/T1w/struct14_normalized.midthickness.dscalar.nii"
-fmri_wc = "/work/aizenberg/dgellis/HCP/HCP_1200/{0}/T1w/Results/tfMRI_ALL/tfMRI_ALL_hp200_s2_level2.feat/{0}_tfMRI_ALL_level2_zstat_hp200_s2_TAVOR.midthickness.dscalar.nii"
+struct14_wc = "/work/aizenberg/dgellis/HCP/HCP_1200/{}/T1w/struct14_normalized.midthickness_MSMAll.dscalar.nii"
+fmri_wc = "/work/aizenberg/dgellis/HCP/HCP_1200/{0}/T1w/Results/tfMRI_ALL/tfMRI_ALL_hp200_s2_level2.feat/{0}_tfMRI_ALL_level2_zstat_hp200_s2_TAVOR.midthickness_MSMAll.dscalar.nii"
 struct14_map_names = ['T1w',
              'T2w',
              'MD-1000',
@@ -187,9 +187,9 @@ def load_roi(subject="100307"):
 
 
 def load_data(subjects, norm_features=True, output_dir="/work/aizenberg/dgellis/fCNN/regression", output_prefix=""):
-    feature_fn = os.path.join(output_dir, output_prefix + "features.npy")
-    fmri_fn = os.path.join(output_dir, output_prefix + "targets.npy")
-    subjects_fn = os.path.join(output_dir, output_prefix + "subjects.npy")
+    feature_fn = os.path.join(output_dir, output_prefix + "features_MSMAll.npy")
+    fmri_fn = os.path.join(output_dir, output_prefix + "targets_MSMAll.npy")
+    subjects_fn = os.path.join(output_dir, output_prefix + "subjects_MSMAll.npy")
     if not any([os.path.exists(fn) for fn in (feature_fn, fmri_fn, subjects_fn)]):
         struct14_data = list()
         fmri_data = list()
@@ -205,7 +205,14 @@ def load_data(subjects, norm_features=True, output_dir="/work/aizenberg/dgellis/
         struct14_data = np.asarray(struct14_data)[:, roi_mask]
         anat_data_final = list()
         for row in anat_data:
-            anat_data_final.append([row[0], row[1], row[2][roi_mask], row[3]])
+            new_row = list()
+            for row_array in row:
+                if row_array.shape[0] == 64984:
+                    _row_array = row_array[roi_mask]
+                else:
+                    _row_array = row_array
+                new_row.append(_row_array)
+            anat_data_final.append(new_row)
         fmri_data = np.asarray(fmri_data)[:, roi_mask]
         # now we have all our data
         # let's combine the anat and struct14 data
@@ -246,23 +253,23 @@ def predictions_to_ciftis(predictions, subjects, out_template, reference_wc):
 
 def main(cuda=0):
     subjects_config = load_json("/home/aizenberg/dgellis/fCNN/data/subjects_v4.json")
-    B_filename = "/work/aizenberg/dgellis/fCNN/regression/B_pointwise_60k_test_prediction.pt"
+    B_filename = "/work/aizenberg/dgellis/fCNN/regression/B_pointwise_60k_MSMAll_test_prediction.pt"
     if not os.path.exists(B_filename):
         X = fit_model(initial_training_subjects=subjects_config["training"]).cuda(cuda)
         test_features, _, test_subjects = load_data(subjects_config["test"], output_prefix="test_")
         A = to_torch_features(test_features).cuda(cuda)
-        B = (A[..., None] * X[None]).sum(dim=-2)
+        B = (A[..., None].cuda(1) * X[None].cuda(1)).sum(dim=-2)
         torch.save(B, B_filename)
     else:
         B = torch.load(B_filename)
-        test_subjects = np.load("/work/aizenberg/dgellis/fCNN/regression/test_subjects.npy")
+        test_subjects = np.load("/work/aizenberg/dgellis/fCNN/regression/test_subjects_MSMAll.npy")
     predictions_to_ciftis(B.cpu().numpy(), test_subjects,
-                          out_template="/work/aizenberg/dgellis/fCNN/regression/predictions/pointwise_60k/{}.tfMRI-ALL.roi.midthickness.dscalar.nii",
-                          reference_wc="/work/aizenberg/dgellis/HCP/HCP_1200/{0}/T1w/Results/tfMRI_ALL/tfMRI_ALL_hp200_s2_level2.feat/{0}_tfMRI_ALL_level2_zstat_hp200_s2_TAVOR.roi.midthickness.dscalar.nii")
+                          out_template="/work/aizenberg/dgellis/fCNN/regression/predictions/pointwise_60k/{}.tfMRI-ALL.roi.midthickness_MSMAll.dscalar.nii",
+                          reference_wc="/work/aizenberg/dgellis/HCP/HCP_1200/{0}/T1w/Results/tfMRI_ALL/tfMRI_ALL_hp200_s2_level2.feat/{0}_tfMRI_ALL_level2_zstat_hp200_s2_TAVOR.roi.midthickness_MSMAll.dscalar.nii")
 
 
 def fit_model(initial_training_subjects,
-              X_filename="/work/aizenberg/dgellis/fCNN/regression/X_pointwise_60k_solution.pt",
+              X_filename="/work/aizenberg/dgellis/fCNN/regression/X_pointwise_60k_MSMAll_solution.pt",
               overwrite=False):
     if not os.path.exists(X_filename) or overwrite:
         training_features, training_target, training_subjects = load_data(initial_training_subjects)

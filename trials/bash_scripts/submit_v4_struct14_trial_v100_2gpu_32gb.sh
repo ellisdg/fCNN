@@ -35,3 +35,13 @@ OUTPUT_DIRECTORY=/work/aizenberg/dgellis/fCNN/predictions/${TRIAL}
  --model_filename ${MODEL}\
  --machine_config_filename ${HCC_CONFIG}\
  --output_directory ${OUTPUT_DIRECTORY}
+
+/home/aizenberg/dgellis/.conda/envs/${ENV}/bin/python fCNN/scripts/sample_volume_to_surface.py\
+ --volume_template "${OUTPUT_DIRECTORY}/{subject}_model_${TRIAL}_struct14_normalized.nii.gz"\
+ --config $HOME/fCNN/data/subjects_v4-retest.json
+
+/home/aizenberg/dgellis/.conda/envs/${ENV}/bin/python fCNN/scripts/compile_predicted_v_actual_overall_correlations.py\
+ --output_filename ${OUTPUT_DIRECTORY}/overall_correlations.npy\
+ --output_dir ${OUTPUT_DIRECTORY}\
+ --config_filename ${CONFIG}\
+ --nthreads 40 --verbose
